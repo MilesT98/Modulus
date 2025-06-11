@@ -121,15 +121,23 @@ function App() {
   const handleRegister = useCallback(async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, registerForm);
+      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
+        email: regEmail,
+        password: regPassword,
+        company_name: regCompany,
+        full_name: regFullName
+      });
       localStorage.setItem('token', response.data.access_token);
       setUser(response.data.user);
       setCurrentView('dashboard');
-      setRegisterForm({ email: '', password: '', company_name: '', full_name: '' });
+      setRegEmail('');
+      setRegPassword('');
+      setRegCompany('');
+      setRegFullName('');
     } catch (error) {
       alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
     }
-  }, [registerForm]);
+  }, [regEmail, regPassword, regCompany, regFullName]);
 
   const api = axios.create({
     baseURL: API_BASE_URL,
