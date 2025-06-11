@@ -122,7 +122,6 @@ function App() {
   });
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showDemoSwitcher, setShowDemoSwitcher] = useState(false);
-  const [showDemoSwitcher, setShowDemoSwitcher] = useState(false);
 
   // Auth forms state - SIMPLE STRINGS
   const [loginEmail, setLoginEmail] = useState('');
