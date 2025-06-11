@@ -387,6 +387,14 @@ function App() {
                 </div>
                 <span className="text-sm text-gray-300">{user.company_name}</span>
                 <button
+                  onClick={() => setShowDemoSwitcher(true)}
+                  className="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center"
+                  title="Demo: Switch Tiers"
+                >
+                  <Crown className="w-4 h-4 mr-1" />
+                  Demo
+                </button>
+                <button
                   onClick={handleLogout}
                   className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-sm font-medium transition-colors"
                 >
