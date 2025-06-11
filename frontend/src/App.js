@@ -117,20 +117,21 @@ function App() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    const fullName = document.getElementById('reg-fullname').value;
+    const company = document.getElementById('reg-company').value;
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    
     try {
       const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
-        email: regEmail,
-        password: regPassword,
-        company_name: regCompany,
-        full_name: regFullName
+        email: email,
+        password: password,
+        company_name: company,
+        full_name: fullName
       });
       localStorage.setItem('token', response.data.access_token);
       setUser(response.data.user);
       setCurrentView('dashboard');
-      setRegEmail('');
-      setRegPassword('');
-      setRegCompany('');
-      setRegFullName('');
     } catch (error) {
       alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
     }
