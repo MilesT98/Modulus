@@ -742,14 +742,14 @@ function App() {
             <h3 className="text-xl font-bold text-slate-900 mb-4">Recent Activity</h3>
             <div className="space-y-3">
               <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-                <span className="text-xl mr-3">📝</span>
+                <Edit className="w-5 h-5 mr-3 text-green-600" />
                 <div>
                   <p className="font-medium text-slate-900">Account Created</p>
                   <p className="text-sm text-gray-600">Welcome to Modulus Defence!</p>
                 </div>
               </div>
               <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-                <span className="text-xl mr-3">🎯</span>
+                <CheckCircle className="w-5 h-5 mr-3 text-blue-600" />
                 <div>
                   <p className="font-medium text-slate-900">Profile Setup</p>
                   <p className="text-sm text-gray-600">Your profile is ready for opportunities</p>
