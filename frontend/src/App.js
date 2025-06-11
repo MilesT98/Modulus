@@ -215,16 +215,6 @@ function App() {
     }
   };
 
-  const BackButton = ({ onClick, text = "Back" }) => (
-    <button
-      onClick={onClick}
-      className="flex items-center text-cyan-600 hover:text-cyan-700 font-medium mb-6 transition-colors"
-    >
-      <ArrowLeft className="w-4 h-4 mr-2" />
-      {text}
-    </button>
-  );
-
   const NavBar = () => (
     <nav className="bg-slate-900 text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
