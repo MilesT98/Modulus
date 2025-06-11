@@ -535,6 +535,7 @@ function App() {
   const RegisterPage = () => (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
+        <BackButton onClick={() => setCurrentView('home')} text="Back to Home" />
         <div className="text-center">
           <h2 className="text-3xl font-bold text-slate-900">Get started with Modulus Defence</h2>
           <p className="mt-2 text-gray-600">Create your free account in seconds</p>
@@ -547,7 +548,7 @@ function App() {
                 type="text"
                 required
                 value={registerForm.full_name}
-                onChange={(e) => setRegisterForm({...registerForm, full_name: e.target.value})}
+                onChange={(e) => setRegisterForm(prev => ({...prev, full_name: e.target.value}))}
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="John Smith"
               />
@@ -558,7 +559,7 @@ function App() {
                 type="text"
                 required
                 value={registerForm.company_name}
-                onChange={(e) => setRegisterForm({...registerForm, company_name: e.target.value})}
+                onChange={(e) => setRegisterForm(prev => ({...prev, company_name: e.target.value}))}
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="Your Defence Company Ltd"
               />
@@ -569,7 +570,7 @@ function App() {
                 type="email"
                 required
                 value={registerForm.email}
-                onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
+                onChange={(e) => setRegisterForm(prev => ({...prev, email: e.target.value}))}
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="your.email@company.com"
               />
@@ -580,7 +581,7 @@ function App() {
                 type="password"
                 required
                 value={registerForm.password}
-                onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
+                onChange={(e) => setRegisterForm(prev => ({...prev, password: e.target.value}))}
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="••••••••"
               />
