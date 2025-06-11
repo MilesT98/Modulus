@@ -829,7 +829,7 @@ function App() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Tech Area</label>
               <select
                 value={selectedFilters.tech_area}
-                onChange={(e) => setSelectedFilters(prev => ({...prev, tech_area: e.target.value}))}
+                onChange={(e) => handleFilterChange('tech_area', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               >
                 <option value="">All Tech Areas</option>
