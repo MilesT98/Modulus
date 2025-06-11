@@ -606,10 +606,10 @@ function App() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
               <input
+                id="reg-fullname"
                 type="text"
                 required
-                value={regFullName}
-                onChange={(e) => setRegFullName(e.target.value)}
+                defaultValue=""
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="John Smith"
               />
