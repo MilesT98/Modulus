@@ -286,7 +286,7 @@ class DataIntegrationService:
         
         # Remove duplicates and sort by closing date
         unique_opportunities = self._remove_duplicates(all_opportunities)
-        unique_opportunities.sort(key=lambda x: x.get('closing_date', datetime.min))
+        unique_opportunities.sort(key=lambda x: x.get('closing_date') or datetime.now() + timedelta(days=365))
         
         return unique_opportunities
     
