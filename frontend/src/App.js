@@ -99,16 +99,17 @@ function App() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
     try {
       const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
-        email: loginEmail,
-        password: loginPassword
+        email: email,
+        password: password
       });
       localStorage.setItem('token', response.data.access_token);
       setUser(response.data.user);
       setCurrentView('dashboard');
-      setLoginEmail('');
-      setLoginPassword('');
     } catch (error) {
       alert('Login failed: ' + (error.response?.data?.detail || 'Unknown error'));
     }
