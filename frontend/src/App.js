@@ -98,7 +98,22 @@ function App() {
   }, [user, currentView]);
 
   const handleRegisterFormChange = useCallback((field, value) => {
-    setRegisterForm(prev => ({...prev, [field]: value}));
+    switch(field) {
+      case 'full_name':
+        setRegFullName(value);
+        break;
+      case 'company_name':
+        setRegCompany(value);
+        break;
+      case 'email':
+        setRegEmail(value);
+        break;
+      case 'password':
+        setRegPassword(value);
+        break;
+      default:
+        break;
+    }
   }, []);
 
   const handleLogin = useCallback(async (e) => {
