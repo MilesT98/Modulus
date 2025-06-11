@@ -111,6 +111,15 @@ function App() {
     }
   };
 
+  // Stable onChange handlers to prevent re-renders
+  const handleLoginFormChange = useCallback((field, value) => {
+    setLoginForm(prev => ({...prev, [field]: value}));
+  }, []);
+
+  const handleRegisterFormChange = useCallback((field, value) => {
+    setRegisterForm(prev => ({...prev, [field]: value}));
+  }, []);
+
   // Memoized input component to prevent focus loss
   const StableInput = React.memo(({ type, value, onChange, placeholder, label, required = false }) => (
     <div>
