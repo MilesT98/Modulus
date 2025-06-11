@@ -124,6 +124,10 @@ function App() {
     setSelectedFilters(prev => ({...prev, [field]: value}));
   }, []);
 
+  const handleRegisterFormChange = useCallback((field, value) => {
+    setRegisterForm(prev => ({...prev, [field]: value}));
+  }, []);
+
   // Memoized input component to prevent focus loss
   const StableInput = React.memo(({ type, value, onChange, placeholder, label, required = false }) => (
     <div>
