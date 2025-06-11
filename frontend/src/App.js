@@ -482,6 +482,7 @@ function App() {
   const LoginPage = () => (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
+        <BackButton onClick={() => setCurrentView('home')} text="Back to Home" />
         <div className="text-center">
           <h2 className="text-3xl font-bold text-slate-900">Welcome back</h2>
           <p className="mt-2 text-gray-600">Sign in to your Modulus Defence account</p>
@@ -494,7 +495,7 @@ function App() {
                 type="email"
                 required
                 value={loginForm.email}
-                onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
+                onChange={(e) => setLoginForm(prev => ({...prev, email: e.target.value}))}
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="your.email@company.com"
               />
@@ -505,7 +506,7 @@ function App() {
                 type="password"
                 required
                 value={loginForm.password}
-                onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                onChange={(e) => setLoginForm(prev => ({...prev, password: e.target.value}))}
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="••••••••"
               />
