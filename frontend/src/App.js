@@ -625,8 +625,8 @@ function App() {
               <input
                 type="text"
                 required
-                value={registerForm.full_name}
-                onChange={(e) => setRegisterForm({...registerForm, full_name: e.target.value})}
+                value={regFullName}
+                onChange={(e) => setRegFullName(e.target.value)}
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="John Smith"
               />
@@ -636,8 +636,8 @@ function App() {
               <input
                 type="text"
                 required
-                value={registerForm.company_name}
-                onChange={(e) => setRegisterForm({...registerForm, company_name: e.target.value})}
+                value={regCompany}
+                onChange={(e) => setRegCompany(e.target.value)}
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="Your Defence Company Ltd"
               />
@@ -647,8 +647,8 @@ function App() {
               <input
                 type="email"
                 required
-                value={registerForm.email}
-                onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
+                value={regEmail}
+                onChange={(e) => setRegEmail(e.target.value)}
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="your.email@company.com"
               />
@@ -658,8 +658,8 @@ function App() {
               <input
                 type="password"
                 required
-                value={registerForm.password}
-                onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
+                value={regPassword}
+                onChange={(e) => setRegPassword(e.target.value)}
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="••••••••"
               />
