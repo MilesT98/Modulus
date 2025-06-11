@@ -213,6 +213,15 @@ function App() {
     }
   };
 
+  const refreshLiveData = async () => {
+    try {
+      const response = await api.post('/api/data/refresh');
+      alert('Live data refresh initiated! New opportunities will appear shortly.');
+    } catch (error) {
+      alert('Refresh failed: ' + (error.response?.data?.detail || 'Unknown error'));
+    }
+  };
+
   const getTierColor = (tier) => {
     switch (tier) {
       case 'free': return 'text-gray-600 bg-gray-100';
