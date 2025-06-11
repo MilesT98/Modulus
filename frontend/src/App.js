@@ -520,7 +520,7 @@ function App() {
               type="email"
               required
               value={loginForm.email}
-              onChange={(e) => setLoginForm(prev => ({...prev, email: e.target.value}))}
+              onChange={(e) => handleLoginFormChange('email', e.target.value)}
               placeholder="your.email@company.com"
               label="Email"
             />
@@ -528,7 +528,7 @@ function App() {
               type="password"
               required
               value={loginForm.password}
-              onChange={(e) => setLoginForm(prev => ({...prev, password: e.target.value}))}
+              onChange={(e) => handleLoginFormChange('password', e.target.value)}
               placeholder="••••••••"
               label="Password"
             />
