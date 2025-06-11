@@ -621,10 +621,10 @@ function App() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
               <input
+                id="reg-company"
                 type="text"
                 required
-                value={regCompany}
-                onChange={(e) => setRegCompany(e.target.value)}
+                defaultValue=""
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="Your Defence Company Ltd"
               />
