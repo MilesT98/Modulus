@@ -198,7 +198,16 @@ function App() {
 
   // Stable onChange handlers to prevent re-renders
   const handleLoginFormChange = useCallback((field, value) => {
-    setLoginForm(prev => ({...prev, [field]: value}));
+    switch(field) {
+      case 'email':
+        setLoginEmail(value);
+        break;
+      case 'password':
+        setLoginPassword(value);
+        break;
+      default:
+        break;
+    }
   }, []);
 
   const handleSearchChange = useCallback((value) => {
