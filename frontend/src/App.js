@@ -95,6 +95,36 @@ function App() {
     }
   }, [user, currentView]);
 
+  const handleRegisterFormChange = useCallback((field, value) => {
+    setRegisterForm(prev => ({...prev, [field]: value}));
+  }, []);
+
+  const handleLogin = useCallback(async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, loginForm);
+      localStorage.setItem('token', response.data.access_token);
+      setUser(response.data.user);
+      setCurrentView('dashboard');
+      setLoginForm({ email: '', password: '' });
+    } catch (error) {
+      alert('Login failed: ' + (error.response?.data?.detail || 'Unknown error'));
+    }
+  }, [loginForm]);
+
+  const handleRegister = useCallback(async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, registerForm);
+      localStorage.setItem('token', response.data.access_token);
+      setUser(response.data.user);
+      setCurrentView('dashboard');
+      setRegisterForm({ email: '', password: '', company_name: '', full_name: '' });
+    } catch (error) {
+      alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
+    }
+  }, [registerForm]);
+
   const api = axios.create({
     baseURL: API_BASE_URL,
     headers: {
