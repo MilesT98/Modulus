@@ -1,5 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { 
+  ArrowLeft, 
+  Zap, 
+  Target, 
+  FileText, 
+  BarChart3, 
+  Plus, 
+  Clock, 
+  Search, 
+  Bell, 
+  Edit, 
+  CheckCircle,
+  Shield,
+  Cpu,
+  Users,
+  Star,
+  Crown,
+  Menu,
+  X
+} from 'lucide-react';
 import './App.css';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
