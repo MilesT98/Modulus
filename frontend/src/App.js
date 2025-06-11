@@ -844,9 +844,9 @@ function App() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
               <input
+                id="search-input"
                 type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                defaultValue=""
                 placeholder="Search opportunities..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               />
