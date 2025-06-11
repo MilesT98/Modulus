@@ -87,15 +87,10 @@ function App() {
 
   useEffect(() => {
     if (user && currentView === 'opportunities') {
-      fetchOpportunities();
+      const searchValue = document.getElementById('search-input')?.value || '';
+      fetchOpportunities(searchValue);
     }
-  }, [user, currentView, searchTerm, selectedFilters]);
-
-  useEffect(() => {
-    if (user && currentView === 'dashboard') {
-      fetchDashboardStats();
-    }
-  }, [user, currentView]);
+  }, [user, currentView, selectedFilters]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
