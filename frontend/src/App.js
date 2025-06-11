@@ -18,7 +18,9 @@ import {
   Star,
   Crown,
   Menu,
-  X
+  X,
+  Lock,
+  AlertCircle
 } from 'lucide-react';
 import './App.css';
 
