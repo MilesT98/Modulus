@@ -815,7 +815,7 @@ function App() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Funding Body</label>
               <select
                 value={selectedFilters.funding_body}
-                onChange={(e) => setSelectedFilters(prev => ({...prev, funding_body: e.target.value}))}
+                onChange={(e) => handleFilterChange('funding_body', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               >
                 <option value="">All Funding Bodies</option>
