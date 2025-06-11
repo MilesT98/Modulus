@@ -180,13 +180,6 @@ function App() {
     setSelectedFilters(prev => ({...prev, [field]: value}));
   }, []);
 
-  const api = axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-      'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : ''
-    }
-  });
-
   const handleLogout = () => {
     localStorage.removeItem('token');
     setUser(null);
