@@ -147,6 +147,82 @@ def get_current_user(user_id: str = Depends(verify_token)):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+# Initialize data integration service
+data_service = DataIntegrationService()
+
+# API Routes
+@app.get("/api/")
+async def root():
+    return {"message": "Modulus Defence API is running"}
+
+@app.post("/api/data/refresh")
+async def refresh_live_data(background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
+    """
+    Refresh opportunities from live government sources (Pro/Enterprise only)
+    """
+    if current_user["tier"] == "free":
+        raise HTTPException(status_code=403, detail="Upgrade to Pro to access live data refresh")
+    
+    background_tasks.add_task(fetch_and_store_live_data)
+    return {"message": "Live data refresh initiated", "status": "processing"}
+
+@app.get("/api/data/sources")
+async def get_data_sources():
+    """
+    Get information about available data sources
+    """
+    return {
+        "sources": [
+            {
+                "name": "UK Contracts Finder",
+                "description": "Government contracts over £12,000",
+                "status": "active",
+                "last_updated": datetime.utcnow().isoformat()
+            },
+            {
+                "name": "Find a Tender Service", 
+                "description": "High-value public sector contracts",
+                "status": "active",
+                "last_updated": datetime.utcnow().isoformat()
+            },
+            {
+                "name": "Defence and Security Accelerator (DASA)",
+                "description": "Innovation funding for defence technology",
+                "status": "active", 
+                "last_updated": datetime.utcnow().isoformat()
+            },
+            {
+                "name": "Innovate UK",
+                "description": "Innovation grants including defence applications",
+                "status": "active",
+                "last_updated": datetime.utcnow().isoformat()
+            }
+        ],
+        "total_sources": 4,
+        "refresh_frequency": "Every 6 hours"
+    }
+
+async def fetch_and_store_live_data():
+    """
+    Background task to fetch live data and store in database
+    """
+    try:
+        print("Starting live data refresh...")
+        live_opportunities = await data_service.aggregate_all_opportunities()
+        
+        # Store in database with source tracking
+        for opp in live_opportunities:
+            # Check if opportunity already exists
+            existing = opportunities_collection.find_one({"id": opp["id"]})
+            if not existing:
+                opportunities_collection.insert_one(opp)
+                print(f"Added new opportunity: {opp['title']}")
+        
+        print(f"Live data refresh completed. Processed {len(live_opportunities)} opportunities")
+        
+    except Exception as e:
+        print(f"Error in live data refresh: {e}")
+
 # API Routes
 @app.get("/api/")
 async def root():
