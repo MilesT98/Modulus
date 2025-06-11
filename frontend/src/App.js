@@ -1649,6 +1649,7 @@ function App() {
       {currentView === 'alerts' && user && <AlertsPage />}
       {currentView === 'procurement-act' && user && <ProcurementActHub />}
       {showUpgradeModal && <UpgradeModal />}
+      {showDemoSwitcher && <DemoTierSwitcher />}
     </div>
   );
 }
