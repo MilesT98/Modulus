@@ -1,6 +1,6 @@
 """
-Modulus Defence - Live Data Integration Service
-Aggregates defence opportunities from multiple UK government sources
+Modulus Defence - REAL Live Data Integration Service
+Aggregates defence opportunities from ACTUAL UK government sources
 """
 
 import requests
@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 import json
 import re
+from bs4 import BeautifulSoup
+import xml.etree.ElementTree as ET
 
 class DataIntegrationService:
     """
