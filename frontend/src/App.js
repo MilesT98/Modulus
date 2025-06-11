@@ -227,6 +227,19 @@ function App() {
     }
   };
 
+  const handleDemoTierSwitch = async (tier) => {
+    try {
+      await api.post('/api/users/upgrade', null, { params: { tier } });
+      await fetchUserProfile();
+      if (currentView === 'dashboard') {
+        await fetchDashboardStats();
+      }
+      setShowDemoSwitcher(false);
+    } catch (error) {
+      alert('Tier switch failed: ' + (error.response?.data?.detail || 'Unknown error'));
+    }
+  };
+
   const refreshLiveData = async () => {
     try {
       const response = await api.post('/api/data/refresh');
