@@ -126,21 +126,6 @@ function App() {
     </div>
   ));
 
-  // Memoized input component to prevent focus loss
-  const StableInput = React.memo(({ type, value, onChange, placeholder, label, required = false }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
-      <input
-        type={type}
-        required={required}
-        value={value}
-        onChange={onChange}
-        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-        placeholder={placeholder}
-      />
-    </div>
-  ));
-
   const handleLogin = useCallback(async (e) => {
     e.preventDefault();
     try {
