@@ -104,15 +104,19 @@ function App() {
   const handleLogin = useCallback(async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, loginForm);
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+        email: loginEmail,
+        password: loginPassword
+      });
       localStorage.setItem('token', response.data.access_token);
       setUser(response.data.user);
       setCurrentView('dashboard');
-      setLoginForm({ email: '', password: '' });
+      setLoginEmail('');
+      setLoginPassword('');
     } catch (error) {
       alert('Login failed: ' + (error.response?.data?.detail || 'Unknown error'));
     }
-  }, [loginForm]);
+  }, [loginEmail, loginPassword]);
 
   const handleRegister = useCallback(async (e) => {
     e.preventDefault();
