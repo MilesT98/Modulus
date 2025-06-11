@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   ArrowLeft, 
@@ -13,45 +13,13 @@ import {
   Edit, 
   CheckCircle,
   Shield,
-  Cpu,
   Users,
   Star,
-  Crown,
-  Menu,
-  X
+  Crown
 } from 'lucide-react';
 import './App.css';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
-
-// Simple input component that maintains focus
-const SimpleInput = ({ type, value, onChange, placeholder, label, required = false }) => {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
-      <input
-        type={type}
-        required={required}
-        value={value || ''}
-        onChange={onChange}
-        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-        placeholder={placeholder}
-        autoComplete="off"
-      />
-    </div>
-  );
-};
-
-// Back button component
-const BackButton = ({ onClick, text = "Back" }) => (
-  <button
-    onClick={onClick}
-    className="flex items-center text-cyan-600 hover:text-cyan-700 font-medium mb-6 transition-colors"
-  >
-    <ArrowLeft className="w-4 h-4 mr-2" />
-    {text}
-  </button>
-);
 
 function App() {
   const [user, setUser] = useState(null);
@@ -64,13 +32,8 @@ function App() {
     tech_area: ''
   });
   const [dashboardStats, setDashboardStats] = useState(null);
-  const [alertPreferences, setAlertPreferences] = useState({
-    keywords: [],
-    tech_areas: [],
-    funding_bodies: []
-  });
 
-  // Auth forms state - SIMPLE STRINGS
+  // Simple form states - like the working test
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [regFullName, setRegFullName] = useState('');
