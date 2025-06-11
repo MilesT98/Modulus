@@ -24,20 +24,23 @@ import './App.css';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Memoized input component to prevent focus loss - MOVED OUTSIDE App component
-const StableInput = React.memo(({ type, value, onChange, placeholder, label, required = false }) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
-    <input
-      type={type}
-      required={required}
-      value={value}
-      onChange={onChange}
-      className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-      placeholder={placeholder}
-    />
-  </div>
-));
+// Simple input component that maintains focus
+const SimpleInput = ({ type, value, onChange, placeholder, label, required = false }) => {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+      <input
+        type={type}
+        required={required}
+        value={value || ''}
+        onChange={onChange}
+        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+    </div>
+  );
+};
 
 // Back button component
 const BackButton = ({ onClick, text = "Back" }) => (
