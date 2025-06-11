@@ -621,7 +621,7 @@ function App() {
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex items-center">
                 <div className="p-3 bg-cyan-100 rounded-lg">
-                  <span className="text-2xl">📊</span>
+                  <BarChart3 className="w-6 h-6 text-cyan-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Opportunities</p>
@@ -633,7 +633,7 @@ function App() {
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex items-center">
                 <div className="p-3 bg-green-100 rounded-lg">
-                  <span className="text-2xl">🆕</span>
+                  <Plus className="w-6 h-6 text-green-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">New This Week</p>
@@ -645,7 +645,7 @@ function App() {
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex items-center">
                 <div className="p-3 bg-red-100 rounded-lg">
-                  <span className="text-2xl">⏰</span>
+                  <Clock className="w-6 h-6 text-red-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Closing Soon</p>
