@@ -116,8 +116,12 @@ function App() {
     setLoginForm(prev => ({...prev, [field]: value}));
   }, []);
 
-  const handleRegisterFormChange = useCallback((field, value) => {
-    setRegisterForm(prev => ({...prev, [field]: value}));
+  const handleSearchChange = useCallback((value) => {
+    setSearchTerm(value);
+  }, []);
+
+  const handleFilterChange = useCallback((field, value) => {
+    setSelectedFilters(prev => ({...prev, [field]: value}));
   }, []);
 
   // Memoized input component to prevent focus loss
