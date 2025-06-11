@@ -54,11 +54,6 @@
   background: #94a3b8;
 }
 
-/* Smooth transitions for all elements */
-* {
-  transition: all 0.2s ease-in-out;
-}
-
 /* Focus states for accessibility */
 input:focus,
 select:focus,
