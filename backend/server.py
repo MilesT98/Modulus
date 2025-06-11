@@ -154,7 +154,10 @@ def get_current_user(user_id: str = Depends(verify_token)):
     return user
 
 # Initialize data integration service
-data_service = DataIntegrationService()
+if DATA_SERVICE_AVAILABLE:
+    data_service = DataIntegrationService()
+else:
+    data_service = None
 
 # API Routes
 @app.get("/api/")
