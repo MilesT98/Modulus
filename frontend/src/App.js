@@ -571,7 +571,7 @@ function App() {
               type="text"
               required
               value={registerForm.full_name}
-              onChange={(e) => setRegisterForm(prev => ({...prev, full_name: e.target.value}))}
+              onChange={(e) => handleRegisterFormChange('full_name', e.target.value)}
               placeholder="John Smith"
               label="Full Name"
             />
@@ -579,7 +579,7 @@ function App() {
               type="text"
               required
               value={registerForm.company_name}
-              onChange={(e) => setRegisterForm(prev => ({...prev, company_name: e.target.value}))}
+              onChange={(e) => handleRegisterFormChange('company_name', e.target.value)}
               placeholder="Your Defence Company Ltd"
               label="Company Name"
             />
@@ -587,7 +587,7 @@ function App() {
               type="email"
               required
               value={registerForm.email}
-              onChange={(e) => setRegisterForm(prev => ({...prev, email: e.target.value}))}
+              onChange={(e) => handleRegisterFormChange('email', e.target.value)}
               placeholder="your.email@company.com"
               label="Email"
             />
@@ -595,7 +595,7 @@ function App() {
               type="password"
               required
               value={registerForm.password}
-              onChange={(e) => setRegisterForm(prev => ({...prev, password: e.target.value}))}
+              onChange={(e) => handleRegisterFormChange('password', e.target.value)}
               placeholder="••••••••"
               label="Password"
             />
