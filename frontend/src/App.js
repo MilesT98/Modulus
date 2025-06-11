@@ -505,7 +505,7 @@ function App() {
             <h2 className="text-3xl font-bold text-slate-900">Welcome back</h2>
             <p className="mt-2 text-gray-600">Sign in to your Modulus Defence account</p>
           </div>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+          <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="space-y-4">
             <StableInput
               type="email"
