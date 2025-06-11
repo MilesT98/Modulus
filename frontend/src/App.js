@@ -149,11 +149,11 @@ function App() {
     }
   };
 
-  const fetchOpportunities = async () => {
+  const fetchOpportunities = async (search = '') => {
     setLoading(true);
     try {
       const params = {};
-      if (searchTerm) params.search = searchTerm;
+      if (search) params.search = search;
       if (selectedFilters.funding_body) params.funding_body = selectedFilters.funding_body;
       if (selectedFilters.tech_area) params.tech_area = selectedFilters.tech_area;
 
