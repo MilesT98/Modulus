@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, BackgroundTasks
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient
@@ -11,6 +11,8 @@ import jwt
 from passlib.context import CryptContext
 import uuid
 from enum import Enum
+import asyncio
+from data_integration_service import DataIntegrationService
 
 load_dotenv()
 
