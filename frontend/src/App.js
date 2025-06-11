@@ -1163,6 +1163,248 @@ function App() {
     </div>
   );
 
+  // Upgrade Modal Component
+  const UpgradeModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-md w-full p-6 relative">
+        <button 
+          onClick={() => setShowUpgradeModal(false)}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+        >
+          <X className="w-6 h-6" />
+        </button>
+        
+        <div className="text-center">
+          <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-cyan-600" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">Pro Feature Required</h3>
+          <p className="text-gray-600 mb-6">
+            This feature requires a Pro/SME subscription. Upgrade now for instant access and expert insights!
+          </p>
+          
+          <div className="space-y-3">
+            <button
+              onClick={() => {
+                setShowUpgradeModal(false);
+                handleUpgrade('pro');
+              }}
+              className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-lg font-semibold transition-colors"
+            >
+              Upgrade to Pro - £49/month
+            </button>
+            <button
+              onClick={() => setShowUpgradeModal(false)}
+              className="w-full text-gray-600 hover:text-gray-800 py-2 text-sm transition-colors"
+            >
+              Maybe later
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Procurement Act Hub Component
+  const ProcurementActHub = () => (
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
+        
+        {user?.tier === 'free' ? (
+          // Free Tier - Locked Content
+          <div className="text-center py-20">
+            <div className="w-24 h-24 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-8">
+              <Lock className="w-12 h-12 text-cyan-600" />
+            </div>
+            
+            <h1 className="text-4xl font-bold text-slate-900 mb-4">Procurement Act Hub</h1>
+            <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto border-2 border-cyan-200">
+              <h2 className="text-2xl font-bold text-slate-900 mb-4">
+                Unlock the full Procurement Act Hub with a Pro/SME Subscription
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Gain in-depth legal interpretations and interactive compliance tools designed specifically for UK defence contracts.
+              </p>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center text-left">
+                  <div className="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center mr-4">
+                    <CheckCircle className="w-5 h-5 text-cyan-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">Detailed Legal Interpretations</h4>
+                    <p className="text-sm text-gray-600">Specific guidance for defence contracts under the new Act</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center text-left">
+                  <div className="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center mr-4">
+                    <CheckCircle className="w-5 h-5 text-cyan-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">Interactive Compliance Checklists</h4>
+                    <p className="text-sm text-gray-600">Step-by-step guides for procurement compliance</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center text-left">
+                  <div className="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center mr-4">
+                    <CheckCircle className="w-5 h-5 text-cyan-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">Defence & Security Provisions</h4>
+                    <p className="text-sm text-gray-600">Deep dives into defence-specific contract requirements</p>
+                  </div>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => handleUpgrade('pro')}
+                className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-4 rounded-lg font-semibold text-lg transition-colors"
+              >
+                Upgrade to Pro - £49/month
+              </button>
+            </div>
+          </div>
+        ) : (
+          // Pro/Enterprise Tier - Full Content
+          <div>
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-slate-900">Procurement Act Hub</h1>
+              <p className="text-gray-600 mt-2">
+                Comprehensive guidance for navigating the UK Procurement Act 2023 in defence contracts
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Navigation Sidebar */}
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 h-fit">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Navigation</h3>
+                <div className="space-y-2">
+                  {[
+                    'Act Overview',
+                    'Defence & Security Provisions', 
+                    'Compliance Checklists',
+                    'Contract Types',
+                    'Bid Requirements',
+                    'IP & Data Handling',
+                    'Security Clearances',
+                    'Cyber Essentials'
+                  ].map((item) => (
+                    <button 
+                      key={item}
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50 hover:text-cyan-700 transition-colors text-gray-700"
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Main Content */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200">
+                  <h2 className="text-2xl font-bold text-slate-900 mb-4">Procurement Act 2023 Overview</h2>
+                  <p className="text-gray-600 mb-6">
+                    The Procurement Act 2023 represents the most significant reform of UK public procurement law in decades. 
+                    For defence contractors, understanding the new framework is crucial for successful bidding.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div className="p-4 bg-blue-50 rounded-lg">
+                      <h4 className="font-bold text-blue-900 mb-2">Key Changes</h4>
+                      <ul className="text-sm text-blue-800 space-y-1">
+                        <li>• Single procurement framework</li>
+                        <li>• Enhanced transparency rules</li>
+                        <li>• New competitive procedures</li>
+                        <li>• Strengthened oversight</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <h4 className="font-bold text-green-900 mb-2">For Defence SMEs</h4>
+                      <ul className="text-sm text-green-800 space-y-1">
+                        <li>• Improved SME access provisions</li>
+                        <li>• Clearer qualification criteria</li>
+                        <li>• Enhanced payment protections</li>
+                        <li>• Streamlined processes</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200">
+                  <h3 className="text-xl font-bold text-slate-900 mb-4">
+                    Defence & Security Contract Provisions
+                  </h3>
+                  
+                  <div className="space-y-6">
+                    <div className="border-l-4 border-red-500 pl-4">
+                      <h4 className="font-bold text-red-900 mb-2">Security Requirements</h4>
+                      <p className="text-gray-600 mb-3">
+                        Defence contracts often require enhanced security measures including personnel security clearance and facility security.
+                      </p>
+                      <div className="bg-red-50 p-4 rounded-lg">
+                        <h5 className="font-semibold text-red-800 mb-2">Required Clearances:</h5>
+                        <ul className="text-sm text-red-700 space-y-1">
+                          <li>• <strong>SC (Security Check):</strong> Standard for most defence work</li>
+                          <li>• <strong>DV (Developed Vetting):</strong> Required for TOP SECRET access</li>
+                          <li>• <strong>Cyber Essentials Plus:</strong> Mandatory for most MOD contracts</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="border-l-4 border-cyan-500 pl-4">
+                      <h4 className="font-bold text-cyan-900 mb-2">IP and Data Handling</h4>
+                      <p className="text-gray-600 mb-3">
+                        Intellectual property rights and data handling requirements are critical considerations in defence procurement.
+                      </p>
+                      <div className="bg-cyan-50 p-4 rounded-lg">
+                        <h5 className="font-semibold text-cyan-800 mb-2">Key Considerations:</h5>
+                        <ul className="text-sm text-cyan-700 space-y-1">
+                          <li>• Background IP vs. Foreground IP</li>
+                          <li>• Government Purpose Rights (GPR)</li>
+                          <li>• Data classification and handling</li>
+                          <li>• Export control compliance</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200">
+                  <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center">
+                    <CheckCircle className="w-6 h-6 mr-2 text-green-600" />
+                    Interactive Compliance Checklist
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    {[
+                      'Review contract opportunity requirements',
+                      'Confirm eligibility and qualification criteria',
+                      'Assess security clearance requirements',
+                      'Verify Cyber Essentials Plus certification',
+                      'Prepare technical capability evidence',
+                      'Complete financial standing documentation',
+                      'Draft technical proposal response',
+                      'Conduct final compliance review'
+                    ].map((item, index) => (
+                      <label key={index} className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                        <input type="checkbox" className="rounded text-cyan-600 focus:ring-cyan-500 mr-3" />
+                        <span className="text-gray-700">{item}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="App">
       <NavBar />
@@ -1173,6 +1415,8 @@ function App() {
       {currentView === 'dashboard' && user && <DashboardPage />}
       {currentView === 'opportunities' && <OpportunitiesPage />}
       {currentView === 'alerts' && user && <AlertsPage />}
+      {currentView === 'procurement-act' && user && <ProcurementActHub />}
+      {showUpgradeModal && <UpgradeModal />}
     </div>
   );
 }
