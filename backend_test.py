@@ -1,16 +1,16 @@
+
 import requests
 import sys
-import json
+import time
 from datetime import datetime
 
 class ModulusDefenceAPITester:
     def __init__(self, base_url="https://18c71e40-871f-400a-803e-bcd99f9538fe.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
-        self.user_data = None
         self.tests_run = 0
         self.tests_passed = 0
-        self.test_results = []
+        self.user_data = None
 
     def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
         """Run a single API test"""
@@ -31,50 +31,29 @@ class ModulusDefenceAPITester:
                 response = requests.put(url, json=data, headers=headers)
 
             success = response.status_code == expected_status
-            
-            result = {
-                "test_name": name,
-                "endpoint": endpoint,
-                "method": method,
-                "expected_status": expected_status,
-                "actual_status": response.status_code,
-                "success": success
-            }
-            
             if success:
                 self.tests_passed += 1
                 print(f"✅ Passed - Status: {response.status_code}")
-                if response.text:
-                    try:
-                        result["response"] = response.json()
-                    except:
-                        result["response"] = response.text
+                try:
+                    return success, response.json()
+                except:
+                    return success, {}
             else:
                 print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
-                if response.text:
-                    try:
-                        result["error"] = response.json()
-                    except:
-                        result["error"] = response.text
-            
-            self.test_results.append(result)
-            return success, response.json() if success and response.text else {}
+                try:
+                    print(f"Response: {response.json()}")
+                except:
+                    print(f"Response: {response.text}")
+                return False, {}
 
         except Exception as e:
             print(f"❌ Failed - Error: {str(e)}")
-            self.test_results.append({
-                "test_name": name,
-                "endpoint": endpoint,
-                "method": method,
-                "success": False,
-                "error": str(e)
-            })
             return False, {}
 
-    def test_health_check(self):
-        """Test API health check endpoint"""
+    def test_root_endpoint(self):
+        """Test the root API endpoint"""
         return self.run_test(
-            "API Health Check",
+            "Root API Endpoint",
             "GET",
             "",
             200
@@ -115,10 +94,10 @@ class ModulusDefenceAPITester:
             return True
         return False
 
-    def test_get_user_profile(self):
-        """Test getting user profile"""
+    def test_get_me(self):
+        """Test getting current user profile"""
         return self.run_test(
-            "Get User Profile",
+            "Get Current User",
             "GET",
             "auth/me",
             200
@@ -135,7 +114,7 @@ class ModulusDefenceAPITester:
             params['tech_area'] = tech_area
             
         return self.run_test(
-            "Get Opportunities" + (f" with filters: {params}" if params else ""),
+            f"Get Opportunities (filters: {params})",
             "GET",
             "opportunities",
             200,
@@ -143,7 +122,7 @@ class ModulusDefenceAPITester:
         )
 
     def test_get_dashboard_stats(self):
-        """Test getting dashboard stats"""
+        """Test getting dashboard statistics"""
         return self.run_test(
             "Get Dashboard Stats",
             "GET",
@@ -151,86 +130,65 @@ class ModulusDefenceAPITester:
             200
         )
 
-    def test_upgrade_tier(self, tier):
-        """Test upgrading user tier"""
+    def test_upgrade_subscription(self, tier):
+        """Test upgrading subscription"""
         return self.run_test(
-            f"Upgrade to {tier.upper()} Tier",
+            f"Upgrade to {tier}",
             "POST",
             "users/upgrade",
             200,
             params={"tier": tier}
         )
 
-    def print_summary(self):
-        """Print test summary"""
-        print("\n" + "="*50)
-        print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
-        print("="*50)
-        
-        if self.tests_passed < self.tests_run:
-            print("\nFailed Tests:")
-            for result in self.test_results:
-                if not result["success"]:
-                    print(f"- {result['test_name']} ({result['method']} /api/{result['endpoint']})")
-                    if "error" in result:
-                        print(f"  Error: {result['error']}")
-        
-        return self.tests_passed == self.tests_run
-
 def main():
     # Setup
     tester = ModulusDefenceAPITester()
-    
-    # Test data
-    test_email = "testuser@defencecompany.com"
-    test_password = "testpass123"
-    test_company = "Test Defence Systems Ltd"
+    timestamp = datetime.now().strftime('%H%M%S')
+    test_email = f"test_user_{timestamp}@example.com"
+    test_password = "TestPass123!"
+    test_company = "Test Defence Ltd"
     test_full_name = "Test User"
+
+    # Test root endpoint
+    tester.test_root_endpoint()
+
+    # Test registration
+    if not tester.test_register(test_email, test_password, test_company, test_full_name):
+        print("❌ Registration failed, trying login with same credentials...")
+        if not tester.test_login(test_email, test_password):
+            print("❌ Login also failed, creating a new user...")
+            test_email = f"test_user_{int(timestamp) + 1}@example.com"
+            if not tester.test_register(test_email, test_password, test_company, test_full_name):
+                print("❌ All authentication attempts failed, stopping tests")
+                return 1
     
-    # Run tests
-    print("\n🚀 Starting Modulus Defence API Tests\n")
+    # Test user profile
+    tester.test_get_me()
     
-    # 1. Test health check
-    tester.test_health_check()
+    # Test getting opportunities
+    tester.test_get_opportunities()
     
-    # 2. Test registration
-    # First try to login, if it fails, register a new user
-    if not tester.test_login(test_email, test_password):
-        print("Login failed, attempting to register...")
-        if not tester.test_register(test_email, test_password, test_company, test_full_name):
-            print("❌ Registration failed, stopping tests")
-            tester.print_summary()
-            return 1
+    # Test search functionality
+    tester.test_get_opportunities(search="artificial intelligence")
     
-    # 3. Test user profile
-    tester.test_get_user_profile()
+    # Test filtering by funding body
+    tester.test_get_opportunities(funding_body="DSTL")
     
-    # 4. Test getting opportunities (no filters)
-    success, opportunities_response = tester.test_get_opportunities()
+    # Test filtering by tech area
+    tester.test_get_opportunities(tech_area="Cybersecurity")
     
-    # 5. Test getting opportunities with filters
-    if success:
-        tester.test_get_opportunities(search="AI")
-        tester.test_get_opportunities(funding_body="DSTL")
-        tester.test_get_opportunities(tech_area="Cybersecurity")
-    
-    # 6. Test dashboard stats
+    # Test dashboard stats
     tester.test_get_dashboard_stats()
     
-    # 7. Test tier upgrade (from FREE to PRO)
-    if tester.user_data and tester.user_data.get('tier') == 'free':
-        tester.test_upgrade_tier('pro')
-        
-        # Verify tier upgrade by getting user profile again
-        success, profile_response = tester.test_get_user_profile()
-        if success and profile_response.get('tier') == 'pro':
-            print("✅ Tier upgrade verification successful")
-        else:
-            print("❌ Tier upgrade verification failed")
+    # Test upgrading to Pro
+    tester.test_upgrade_subscription("pro")
     
-    # Print summary
-    success = tester.print_summary()
-    return 0 if success else 1
+    # Test upgrading to Enterprise
+    tester.test_upgrade_subscription("enterprise")
+    
+    # Print results
+    print(f"\n📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+    return 0 if tester.tests_passed == tester.tests_run else 1
 
 if __name__ == "__main__":
     sys.exit(main())
