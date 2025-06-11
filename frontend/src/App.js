@@ -934,35 +934,148 @@ function App() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Funding Body</label>
-              <select
-                value={selectedFilters.funding_body}
-                onChange={(e) => handleFilterChange('funding_body', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-              >
-                <option value="">All Funding Bodies</option>
-                <option value="DSTL">DSTL</option>
-                <option value="UKRI">UKRI</option>
-                <option value="MOD">MOD</option>
-                <option value="Innovate UK">Innovate UK</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tech Area</label>
-              <select
-                value={selectedFilters.tech_area}
-                onChange={(e) => handleFilterChange('tech_area', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-              >
-                <option value="">All Tech Areas</option>
-                <option value="Artificial Intelligence">AI</option>
-                <option value="Cybersecurity">Cybersecurity</option>
-                <option value="Quantum Computing">Quantum</option>
-                <option value="Robotics">Robotics</option>
-              </select>
-            </div>
+            
+            {/* Advanced filters only for Pro/Enterprise users */}
+            {user?.tier !== 'free' ? (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Funding Body</label>
+                  <select
+                    value={selectedFilters.funding_body}
+                    onChange={(e) => handleFilterChange('funding_body', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  >
+                    <option value="">All Funding Bodies</option>
+                    <option value="DSTL">DSTL</option>
+                    <option value="UKRI">UKRI</option>
+                    <option value="MOD">MOD</option>
+                    <option value="Innovate UK">Innovate UK</option>
+                    <option value="DASA">DASA</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tech Area</label>
+                  <select
+                    value={selectedFilters.tech_area}
+                    onChange={(e) => handleFilterChange('tech_area', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  >
+                    <option value="">All Tech Areas</option>
+                    <option value="Artificial Intelligence">AI</option>
+                    <option value="Cybersecurity">Cybersecurity</option>
+                    <option value="Quantum Computing">Quantum</option>
+                    <option value="Robotics">Robotics</option>
+                    <option value="Maritime Defence">Maritime</option>
+                    <option value="Aerospace">Aerospace</option>
+                  </select>
+                </div>
+              </>
+            ) : (
+              // Free tier users see locked advanced filters
+              <>
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Funding Body
+                    <Lock className="w-4 h-4 inline ml-1 text-gray-400" />
+                  </label>
+                  <select
+                    disabled
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed"
+                  >
+                    <option>Upgrade to Pro for Advanced Filters</option>
+                  </select>
+                  <div 
+                    className="absolute inset-0 cursor-pointer"
+                    onClick={() => setShowUpgradeModal(true)}
+                  ></div>
+                </div>
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tech Area
+                    <Lock className="w-4 h-4 inline ml-1 text-gray-400" />
+                  </label>
+                  <select
+                    disabled
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed"
+                  >
+                    <option>Upgrade to Pro for Advanced Filters</option>
+                  </select>
+                  <div 
+                    className="absolute inset-0 cursor-pointer"
+                    onClick={() => setShowUpgradeModal(true)}
+                  ></div>
+                </div>
+              </>
+            )}
           </div>
+          
+          {/* Additional Pro filters */}
+          {user?.tier !== 'free' && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">TRL Level</label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                  <option value="">All TRL Levels</option>
+                  <option value="TRL 1-3">TRL 1-3 (Research)</option>
+                  <option value="TRL 4-6">TRL 4-6 (Development)</option>
+                  <option value="TRL 7-9">TRL 7-9 (Demonstration)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">MOD Department</label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                  <option value="">All Departments</option>
+                  <option value="Army">Army</option>
+                  <option value="Navy">Navy</option>
+                  <option value="RAF">RAF</option>
+                  <option value="DSTL">DSTL</option>
+                  <option value="DASA">DASA</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Contract Type</label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                  <option value="">All Contract Types</option>
+                  <option value="Research">Research & Development</option>
+                  <option value="Innovation">Innovation Grant</option>
+                  <option value="Public">Public Contract</option>
+                  <option value="Strategic">Strategic Research</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Funding Range</label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                  <option value="">All Ranges</option>
+                  <option value="0-500k">£0 - £500K</option>
+                  <option value="500k-2m">£500K - £2M</option>
+                  <option value="2m-10m">£2M - £10M</option>
+                  <option value="10m+">£10M+</option>
+                </select>
+              </div>
+            </div>
+          )}
+          
+          {user?.tier === 'free' && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-200">
+                <div className="flex items-center">
+                  <AlertCircle className="w-5 h-5 text-cyan-600 mr-2" />
+                  <div>
+                    <h4 className="font-semibold text-cyan-900">Advanced Search Available in Pro</h4>
+                    <p className="text-sm text-cyan-700">
+                      Upgrade to Pro for advanced filters including TRL levels, MOD departments, contract types, and funding ranges.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="ml-4 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                  >
+                    Upgrade
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Opportunities List */}
