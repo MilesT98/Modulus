@@ -921,6 +921,7 @@ function App() {
   const AlertsPage = () => (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900">Alert Preferences</h1>
           <p className="text-gray-600 mt-2">
@@ -935,7 +936,7 @@ function App() {
           {user?.tier === 'free' ? (
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl">🔒</span>
+                <Shield className="w-8 h-8 text-cyan-600" />
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-4">Real-Time Alerts Available in Pro</h3>
               <p className="text-gray-600 mb-6 max-w-md mx-auto">
