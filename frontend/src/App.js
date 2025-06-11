@@ -117,6 +117,15 @@ function App() {
     const email = document.getElementById('reg-email').value;
     const password = document.getElementById('reg-password').value;
     
+    // Debug logging
+    console.log('Registration attempt:', { fullName, company, email, password: '***' });
+    
+    // Validation
+    if (!fullName || !company || !email || !password) {
+      alert('Please fill in all fields');
+      return;
+    }
+    
     try {
       const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
         email: email,
@@ -128,7 +137,8 @@ function App() {
       setUser(response.data.user);
       setCurrentView('dashboard');
     } catch (error) {
-      alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
+      console.error('Registration error:', error);
+      alert('Registration failed: ' + (error.response?.data?.detail || error.message || 'Unknown error'));
     }
   };
 
