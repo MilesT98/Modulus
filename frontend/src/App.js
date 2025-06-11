@@ -765,6 +765,7 @@ function App() {
   const OpportunitiesPage = () => (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {user && <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900">Defence Opportunities</h1>
           <p className="text-gray-600 mt-2">
@@ -792,7 +793,7 @@ function App() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Funding Body</label>
               <select
                 value={selectedFilters.funding_body}
-                onChange={(e) => setSelectedFilters({...selectedFilters, funding_body: e.target.value})}
+                onChange={(e) => setSelectedFilters(prev => ({...prev, funding_body: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               >
                 <option value="">All Funding Bodies</option>
@@ -806,7 +807,7 @@ function App() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Tech Area</label>
               <select
                 value={selectedFilters.tech_area}
-                onChange={(e) => setSelectedFilters({...selectedFilters, tech_area: e.target.value})}
+                onChange={(e) => setSelectedFilters(prev => ({...prev, tech_area: e.target.value}))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               >
                 <option value="">All Tech Areas</option>
