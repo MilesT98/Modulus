@@ -150,50 +150,12 @@ function App() {
     setSelectedFilters(prev => ({...prev, [field]: value}));
   }, []);
 
-  const handleRegisterFormChange = useCallback((field, value) => {
-    setRegisterForm(prev => ({...prev, [field]: value}));
-  }, []);
-
-  // Memoized input component to prevent focus loss
-  const StableInput = React.memo(({ type, value, onChange, placeholder, label, required = false }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
-      <input
-        type={type}
-        required={required}
-        value={value}
-        onChange={onChange}
-        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-        placeholder={placeholder}
-      />
-    </div>
-  ));
-
-  const handleLogin = useCallback(async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, loginForm);
-      localStorage.setItem('token', response.data.access_token);
-      setUser(response.data.user);
-      setCurrentView('dashboard');
-      setLoginForm({ email: '', password: '' });
-    } catch (error) {
-      alert('Login failed: ' + (error.response?.data?.detail || 'Unknown error'));
+  const api = axios.create({
+    baseURL: API_BASE_URL,
+    headers: {
+      'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : ''
     }
-  }, [loginForm]);
-
-  const handleRegister = useCallback(async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, registerForm);
-      localStorage.setItem('token', response.data.access_token);
-      setUser(response.data.user);
-      setCurrentView('dashboard');
-      setRegisterForm({ email: '', password: '', company_name: '', full_name: '' });
-    } catch (error) {
-      alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
-    }
-  }, [registerForm]);
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('token');
