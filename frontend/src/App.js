@@ -316,6 +316,54 @@ function App() {
     }
   };
 
+  // Demo Tier Switcher Component (inside App to access state)
+  const DemoTierSwitcher = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-md w-full p-6 relative">
+        <button 
+          onClick={() => setShowDemoSwitcher(false)}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+        >
+          <X className="w-6 h-6" />
+        </button>
+        
+        <div className="text-center">
+          <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Crown className="w-8 h-8 text-purple-600" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">Demo Tier Switcher</h3>
+          <p className="text-gray-600 mb-6">
+            Switch between tiers to demo the different access levels
+          </p>
+          
+          <div className="space-y-3">
+            <button
+              onClick={() => handleDemoTierSwitch('free')}
+              className="w-full bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center"
+            >
+              <Users className="w-5 h-5 mr-2" />
+              Switch to FREE Tier
+            </button>
+            <button
+              onClick={() => handleDemoTierSwitch('pro')}
+              className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center"
+            >
+              <Star className="w-5 h-5 mr-2" />
+              Switch to PRO Tier
+            </button>
+            <button
+              onClick={() => handleDemoTierSwitch('enterprise')}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center"
+            >
+              <Crown className="w-5 h-5 mr-2" />
+              Switch to ENTERPRISE Tier
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const NavBar = () => (
     <nav className="bg-slate-900 text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
