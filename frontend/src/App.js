@@ -97,26 +97,7 @@ function App() {
     }
   }, [user, currentView]);
 
-  const handleRegisterFormChange = useCallback((field, value) => {
-    switch(field) {
-      case 'full_name':
-        setRegFullName(value);
-        break;
-      case 'company_name':
-        setRegCompany(value);
-        break;
-      case 'email':
-        setRegEmail(value);
-        break;
-      case 'password':
-        setRegPassword(value);
-        break;
-      default:
-        break;
-    }
-  }, []);
-
-  const handleLogin = useCallback(async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
@@ -131,9 +112,9 @@ function App() {
     } catch (error) {
       alert('Login failed: ' + (error.response?.data?.detail || 'Unknown error'));
     }
-  }, [loginEmail, loginPassword]);
+  };
 
-  const handleRegister = useCallback(async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     try {
       const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
@@ -152,7 +133,7 @@ function App() {
     } catch (error) {
       alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
     }
-  }, [regEmail, regPassword, regCompany, regFullName]);
+  };
 
   const api = axios.create({
     baseURL: API_BASE_URL,
