@@ -643,10 +643,10 @@ function App() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <input
+                id="reg-password"
                 type="password"
                 required
-                value={regPassword}
-                onChange={(e) => setRegPassword(e.target.value)}
+                defaultValue=""
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="••••••••"
               />
