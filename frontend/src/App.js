@@ -980,8 +980,8 @@ function App() {
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-xl font-bold text-slate-900">{opp.title}</h3>
                       {opp.is_delayed && (
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">
-                          Delayed for Free Users
+                        <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full border border-yellow-300">
+                          {opp.delay_message || "Delayed Access: Pro/SME Members See This Instantly"}
                         </span>
                       )}
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getTierColor(opp.tier_required)}`}>
