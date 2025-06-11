@@ -218,6 +218,10 @@ async def fetch_and_store_live_data():
     """
     Background task to fetch live data and store in database
     """
+    if not DATA_SERVICE_AVAILABLE or not data_service:
+        print("Data integration service not available")
+        return
+        
     try:
         print("Starting live data refresh...")
         live_opportunities = await data_service.aggregate_all_opportunities()
