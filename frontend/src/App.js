@@ -716,7 +716,7 @@ function App() {
                 className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center">
-                  <span className="text-xl mr-3">🔍</span>
+                  <Search className="w-5 h-5 mr-3 text-cyan-600" />
                   <div>
                     <p className="font-medium text-slate-900">Browse Opportunities</p>
                     <p className="text-sm text-gray-600">Find the latest defence funding opportunities</p>
@@ -728,7 +728,7 @@ function App() {
                 className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center">
-                  <span className="text-xl mr-3">🔔</span>
+                  <Bell className="w-5 h-5 mr-3 text-cyan-600" />
                   <div>
                     <p className="font-medium text-slate-900">Set Up Alerts</p>
                     <p className="text-sm text-gray-600">Configure personalized opportunity notifications</p>
