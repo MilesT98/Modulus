@@ -12,7 +12,13 @@ from passlib.context import CryptContext
 import uuid
 from enum import Enum
 import asyncio
-from data_integration_service import DataIntegrationService
+
+try:
+    from data_integration_service import DataIntegrationService
+    DATA_SERVICE_AVAILABLE = True
+except ImportError:
+    print("Warning: Data integration service not available")
+    DATA_SERVICE_AVAILABLE = False
 
 load_dotenv()
 
