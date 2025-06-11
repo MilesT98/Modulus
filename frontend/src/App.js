@@ -200,26 +200,29 @@ function App() {
               <div className="hidden md:flex space-x-6">
                 <button
                   onClick={() => setCurrentView('dashboard')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
                     currentView === 'dashboard' ? 'bg-slate-700 text-cyan-400' : 'hover:bg-slate-700'
                   }`}
                 >
+                  <BarChart3 className="w-4 h-4 mr-2" />
                   Dashboard
                 </button>
                 <button
                   onClick={() => setCurrentView('opportunities')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
                     currentView === 'opportunities' ? 'bg-slate-700 text-cyan-400' : 'hover:bg-slate-700'
                   }`}
                 >
+                  <Search className="w-4 h-4 mr-2" />
                   Opportunities
                 </button>
                 <button
                   onClick={() => setCurrentView('alerts')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
                     currentView === 'alerts' ? 'bg-slate-700 text-cyan-400' : 'hover:bg-slate-700'
                   }`}
                 >
+                  <Bell className="w-4 h-4 mr-2" />
                   Alert Settings
                 </button>
               </div>
@@ -228,8 +231,9 @@ function App() {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                <div className={`px-3 py-1 rounded-full text-xs font-semibold ${getTierColor(user.tier)}`}>
-                  {getTierIcon(user.tier)} {user.tier.toUpperCase()}
+                <div className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center ${getTierColor(user.tier)}`}>
+                  {getTierIcon(user.tier)} 
+                  <span className="ml-1">{user.tier.toUpperCase()}</span>
                 </div>
                 <span className="text-sm text-gray-300">{user.company_name}</span>
                 <button
