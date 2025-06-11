@@ -227,14 +227,18 @@ async def fetch_and_store_live_data():
         live_opportunities = await data_service.aggregate_all_real_opportunities()
         
         # Store in database with source tracking
+        stored_count = 0
         for opp in live_opportunities:
-            # Check if opportunity already exists
-            existing = opportunities_collection.find_one({"id": opp["id"]})
+            # Check if opportunity already exists (by title to avoid duplicates)
+            existing = opportunities_collection.find_one({"title": opp["title"]})
             if not existing:
                 opportunities_collection.insert_one(opp)
-                print(f"Added new opportunity: {opp['title']}")
+                stored_count += 1
+                print(f"✅ Added new opportunity: {opp['title'][:60]}...")
+            else:
+                print(f"🔄 Skipped duplicate: {opp['title'][:60]}...")
         
-        print(f"Live data refresh completed. Processed {len(live_opportunities)} opportunities")
+        print(f"Live data refresh completed. Stored {stored_count} new opportunities (out of {len(live_opportunities)} collected)")
         
     except Exception as e:
         print(f"Error in live data refresh: {e}")
