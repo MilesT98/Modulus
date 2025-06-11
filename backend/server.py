@@ -348,9 +348,10 @@ async def get_opportunities(
     # Get opportunities
     opportunities = list(opportunities_collection.find(query))
     
-    # Filter based on user tier
+    # Filter based on user tier and apply 48-hour delay for free users
     user_tier = current_user["tier"]
     filtered_opportunities = []
+    current_time = datetime.utcnow()
     
     for opp in opportunities:
         # Convert ObjectId to string for JSON serialization
@@ -358,11 +359,24 @@ async def get_opportunities(
         
         # Check tier access
         if user_tier == UserTier.FREE:
-            if opp.get("tier_required") == UserTier.PRO or opp.get("tier_required") == UserTier.ENTERPRISE:
-                continue  # Skip pro/enterprise only opportunities
-            # Add delay indicator for free users
-            if opp.get("is_delayed_for_free", False):
-                opp["is_delayed"] = True
+            # For free users, apply 48-hour delay on all Pro/Enterprise opportunities
+            if opp.get("tier_required") in [UserTier.PRO, UserTier.ENTERPRISE]:
+                # Check if opportunity is older than 48 hours
+                opp_created = opp.get("created_at", current_time)
+                hours_since_creation = (current_time - opp_created).total_seconds() / 3600
+                
+                if hours_since_creation < 48:
+                    continue  # Skip opportunities less than 48 hours old
+                else:
+                    # Show delayed opportunity with clear marking
+                    opp["is_delayed"] = True
+                    opp["delay_message"] = "Delayed Access: Pro/SME Members See This Instantly"
+            else:
+                # Free tier opportunities shown immediately
+                opp["is_delayed"] = False
+        else:
+            # Pro/Enterprise users see everything immediately
+            opp["is_delayed"] = False
         
         filtered_opportunities.append(opp)
     
