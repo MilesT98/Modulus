@@ -288,6 +288,22 @@ function App() {
                   Opportunities
                 </button>
                 <button
+                  onClick={() => {
+                    if (user?.tier === 'free') {
+                      setShowUpgradeModal(true);
+                    } else {
+                      setCurrentView('procurement-act');
+                    }
+                  }}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
+                    currentView === 'procurement-act' ? 'bg-slate-700 text-cyan-400' : 'hover:bg-slate-700'
+                  }`}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Procurement Act
+                  {user?.tier === 'free' && <Lock className="w-3 h-3 ml-1" />}
+                </button>
+                <button
                   onClick={() => setCurrentView('alerts')}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
                     currentView === 'alerts' ? 'bg-slate-700 text-cyan-400' : 'hover:bg-slate-700'
