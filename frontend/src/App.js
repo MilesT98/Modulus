@@ -833,7 +833,57 @@ function App() {
           </p>
         </div>
 
-        {/* Search and Filters */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Live Data Sources</h3>
+              <p className="text-gray-600">
+                {user?.tier === 'free' 
+                  ? 'Upgrade to Pro for real-time data from UK government sources'
+                  : 'Access live opportunities from multiple UK government sources'
+                }
+              </p>
+            </div>
+            <div>
+              {user?.tier !== 'free' ? (
+                <button
+                  onClick={refreshLiveData}
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors flex items-center"
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  Refresh Live Data
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleUpgrade('pro')}
+                  className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+                >
+                  Upgrade for Live Data
+                </button>
+              )}
+            </div>
+          </div>
+          {user?.tier !== 'free' && (
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <div className="font-semibold text-green-800">Contracts Finder</div>
+                <div className="text-green-600">Active</div>
+              </div>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <div className="font-semibold text-green-800">Find a Tender</div>
+                <div className="text-green-600">Active</div>
+              </div>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <div className="font-semibold text-green-800">DASA</div>
+                <div className="text-green-600">Active</div>
+              </div>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <div className="font-semibold text-green-800">Innovate UK</div>
+                <div className="text-green-600">Active</div>
+              </div>
+            </div>
+          )}
+        </div>
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
