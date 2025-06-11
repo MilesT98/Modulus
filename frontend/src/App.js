@@ -522,28 +522,22 @@ function App() {
           </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                required
-                value={loginForm.email}
-                onChange={(e) => setLoginForm(prev => ({...prev, email: e.target.value}))}
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                placeholder="your.email@company.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <input
-                type="password"
-                required
-                value={loginForm.password}
-                onChange={(e) => setLoginForm(prev => ({...prev, password: e.target.value}))}
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                placeholder="••••••••"
-              />
-            </div>
+            <StableInput
+              type="email"
+              required
+              value={loginForm.email}
+              onChange={(e) => setLoginForm(prev => ({...prev, email: e.target.value}))}
+              placeholder="your.email@company.com"
+              label="Email"
+            />
+            <StableInput
+              type="password"
+              required
+              value={loginForm.password}
+              onChange={(e) => setLoginForm(prev => ({...prev, password: e.target.value}))}
+              placeholder="••••••••"
+              label="Password"
+            />
           </div>
           <button
             type="submit"
