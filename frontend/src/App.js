@@ -111,7 +111,7 @@ function App() {
     }
   };
 
-  const handleLogin = async (e) => {
+  const handleLogin = useCallback(async (e) => {
     e.preventDefault();
     try {
       const response = await axios.post(`${API_BASE_URL}/api/auth/login`, loginForm);
@@ -122,9 +122,9 @@ function App() {
     } catch (error) {
       alert('Login failed: ' + (error.response?.data?.detail || 'Unknown error'));
     }
-  };
+  }, [loginForm]);
 
-  const handleRegister = async (e) => {
+  const handleRegister = useCallback(async (e) => {
     e.preventDefault();
     try {
       const response = await axios.post(`${API_BASE_URL}/api/auth/register`, registerForm);
@@ -135,7 +135,7 @@ function App() {
     } catch (error) {
       alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
     }
-  };
+  }, [registerForm]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
