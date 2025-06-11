@@ -554,50 +554,38 @@ function App() {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleRegister}>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-              <input
-                type="text"
-                required
-                value={registerForm.full_name}
-                onChange={(e) => setRegisterForm(prev => ({...prev, full_name: e.target.value}))}
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                placeholder="John Smith"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
-              <input
-                type="text"
-                required
-                value={registerForm.company_name}
-                onChange={(e) => setRegisterForm(prev => ({...prev, company_name: e.target.value}))}
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                placeholder="Your Defence Company Ltd"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                required
-                value={registerForm.email}
-                onChange={(e) => setRegisterForm(prev => ({...prev, email: e.target.value}))}
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                placeholder="your.email@company.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <input
-                type="password"
-                required
-                value={registerForm.password}
-                onChange={(e) => setRegisterForm(prev => ({...prev, password: e.target.value}))}
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                placeholder="••••••••"
-              />
-            </div>
+            <StableInput
+              type="text"
+              required
+              value={registerForm.full_name}
+              onChange={(e) => setRegisterForm(prev => ({...prev, full_name: e.target.value}))}
+              placeholder="John Smith"
+              label="Full Name"
+            />
+            <StableInput
+              type="text"
+              required
+              value={registerForm.company_name}
+              onChange={(e) => setRegisterForm(prev => ({...prev, company_name: e.target.value}))}
+              placeholder="Your Defence Company Ltd"
+              label="Company Name"
+            />
+            <StableInput
+              type="email"
+              required
+              value={registerForm.email}
+              onChange={(e) => setRegisterForm(prev => ({...prev, email: e.target.value}))}
+              placeholder="your.email@company.com"
+              label="Email"
+            />
+            <StableInput
+              type="password"
+              required
+              value={registerForm.password}
+              onChange={(e) => setRegisterForm(prev => ({...prev, password: e.target.value}))}
+              placeholder="••••••••"
+              label="Password"
+            />
           </div>
           <button
             type="submit"
