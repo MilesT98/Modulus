@@ -547,10 +547,10 @@ function App() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
               <input
+                id="login-email"
                 type="email"
                 required
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
+                defaultValue=""
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="your.email@company.com"
               />
@@ -558,10 +558,10 @@ function App() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <input
+                id="login-password"
                 type="password"
                 required
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
+                defaultValue=""
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 placeholder="••••••••"
               />
