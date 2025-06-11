@@ -69,6 +69,7 @@ function App() {
     tech_areas: [],
     funding_bodies: []
   });
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Auth forms state - SIMPLE STRINGS
   const [loginEmail, setLoginEmail] = useState('');
