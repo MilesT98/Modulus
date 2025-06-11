@@ -320,7 +320,7 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center p-8 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
               <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl">⚡</span>
+                <Zap className="w-8 h-8 text-cyan-600" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-4">Real-Time Alerts</h3>
               <p className="text-gray-600">
@@ -330,7 +330,7 @@ function App() {
 
             <div className="text-center p-8 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl">🎯</span>
+                <Target className="w-8 h-8 text-blue-600" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-4">Expert Analysis</h3>
               <p className="text-gray-600">
@@ -340,7 +340,7 @@ function App() {
 
             <div className="text-center p-8 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl">📋</span>
+                <FileText className="w-8 h-8 text-purple-600" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-4">Procurement Guidance</h3>
               <p className="text-gray-600">
