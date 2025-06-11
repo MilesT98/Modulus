@@ -70,14 +70,13 @@ function App() {
     funding_bodies: []
   });
 
-  // Auth forms state
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [registerForm, setRegisterForm] = useState({
-    email: '',
-    password: '',
-    company_name: '',
-    full_name: ''
-  });
+  // Auth forms state - SIMPLE STRINGS
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [regFullName, setRegFullName] = useState('');
+  const [regCompany, setRegCompany] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
