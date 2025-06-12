@@ -73,14 +73,6 @@ function App() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showDemoSwitcher, setShowDemoSwitcher] = useState(false);
 
-  // Login form state - SIMPLE STRINGS
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [registerEmail, setRegisterEmail] = useState('');
-  const [registerPassword, setRegisterPassword] = useState('');
-  const [registerCompanyName, setRegisterCompanyName] = useState('');
-  const [registerFullName, setRegisterFullName] = useState('');
-
   // Initialize authentication check
   useEffect(() => {
     const token = localStorage.getItem('access_token');
