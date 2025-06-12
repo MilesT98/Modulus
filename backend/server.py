@@ -18,7 +18,7 @@ try:
     DATA_SERVICE_AVAILABLE = True
 except ImportError:
     print("Warning: Comprehensive data service not available")
-    COMPREHENSIVE_SERVICE_AVAILABLE = False
+    DATA_SERVICE_AVAILABLE = False
 
 load_dotenv()
 
