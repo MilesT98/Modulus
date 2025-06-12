@@ -384,68 +384,130 @@ class RealDataIntegrationService:
     
     async def scrape_find_tender(self, session: aiohttp.ClientSession) -> List[Dict]:
         """
-        REAL scraping of Find a Tender service
+        ENHANCED scraping of Find a Tender service
         """
         opportunities = []
         
         try:
-            # Search Find a Tender for defence contracts
-            search_params = {
-                'keywords': 'defence security military',
-                'location': 'United Kingdom'
-            }
+            # Multiple search approaches for Find a Tender
+            search_queries = [
+                'defence',
+                'security',
+                'cyber',
+                'military',
+                'aerospace',
+                'maritime',
+                'surveillance',
+                'radar',
+                'weapons'
+            ]
             
-            url = self.sources['find_tender']['search_url']
-            
-            async with session.get(url, params=search_params, headers=self.session_headers) as response:
-                if response.status == 200:
-                    html = await response.text()
-                    soup = BeautifulSoup(html, 'html.parser')
-                    
-                    # Look for tender results
-                    tender_elements = soup.find_all(['div', 'article'], class_=re.compile(r'tender|contract|opportunity'))
-                    
-                    for element in tender_elements[:5]:  # Limit to 5 tenders
-                        try:
-                            title_elem = element.find(['h1', 'h2', 'h3']) or element.find('a')
-                            title = title_elem.get_text(strip=True) if title_elem else 'Public Tender'
+            for query in search_queries:
+                search_params = {
+                    'keywords': query,
+                    'location': 'United Kingdom',
+                    'published_from': (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d'),
+                    'published_to': datetime.now().strftime('%Y-%m-%d')
+                }
+                
+                url = self.sources['find_tender']['search_url']
+                
+                try:
+                    async with session.get(url, params=search_params, headers=self.session_headers) as response:
+                        if response.status == 200:
+                            html = await response.text()
+                            soup = BeautifulSoup(html, 'html.parser')
                             
-                            desc_elem = element.find('p') or element.find('div', class_=re.compile(r'description|summary'))
-                            description = desc_elem.get_text(strip=True) if desc_elem else ''
+                            # Look for tender results with various selectors
+                            tender_elements = []
                             
-                            # Extract value and dates
-                            element_text = element.get_text()
-                            funding_amount = self._extract_value_from_text(element_text)
-                            closing_date = self._extract_date_from_text(element_text)
+                            selectors = [
+                                'div[class*="tender"]',
+                                'div[class*="contract"]',
+                                'div[class*="opportunity"]',
+                                'article[class*="tender"]',
+                                'div[class*="result"]',
+                                'div[class*="notice"]'
+                            ]
                             
-                            # Get official link
-                            link_elem = element.find('a', href=True)
-                            official_link = f"{self.sources['find_tender']['base_url']}{link_elem['href']}" if link_elem else ''
+                            for selector in selectors:
+                                elements = soup.select(selector)
+                                tender_elements.extend(elements)
                             
-                            if self._is_defence_related(title + ' ' + description):
-                                opportunity = {
-                                    'id': f"ft_real_{hash(title + description)}",
-                                    'title': title[:200],
-                                    'funding_body': 'Find a Tender Service',
-                                    'description': description[:500],
-                                    'detailed_description': description,
-                                    'closing_date': closing_date or (datetime.now() + timedelta(days=45)),
-                                    'funding_amount': funding_amount,
-                                    'tech_areas': self._extract_tech_areas(description),
-                                    'mod_department': 'Various',
-                                    'contract_type': 'Public Contract',
-                                    'official_link': official_link,
-                                    'status': 'active',
-                                    'created_at': datetime.utcnow(),
-                                    'tier_required': 'free',
-                                    'is_delayed_for_free': False,
-                                    'source': 'find_tender_real'
-                                }
-                                opportunities.append(opportunity)
-                                
-                        except Exception as e:
-                            print(f"Error parsing tender: {e}")
-                            continue
+                            # Also look for any elements containing tender-related text
+                            text_elements = soup.find_all(string=re.compile(r'tender|contract|procurement|award', re.I))
+                            for text_elem in text_elements:
+                                if text_elem.parent:
+                                    tender_elements.append(text_elem.parent)
+                            
+                            for element in tender_elements[:20]:  # Process up to 20 per query
+                                try:
+                                    # Extract title
+                                    title_elem = element.find(['h1', 'h2', 'h3', 'h4']) or element.find('a')
+                                    title = title_elem.get_text(strip=True) if title_elem else self._extract_title_from_text(element.get_text())
+                                    
+                                    if not title or len(title) < 10:
+                                        continue
+                                    
+                                    # Extract description
+                                    desc_elem = element.find('p') or element.find('div', class_=re.compile(r'description|summary|content'))
+                                    description = desc_elem.get_text(strip=True) if desc_elem else element.get_text(strip=True)[:400]
+                                    
+                                    # Extract value and dates
+                                    element_text = element.get_text()
+                                    funding_amount = self._extract_value_from_text(element_text)
+                                    closing_date = self._extract_date_from_text(element_text)
+                                    
+                                    # Get official link
+                                    link_elem = element.find('a', href=True)
+                                    if link_elem:
+                                        href = link_elem['href']
+                                        if href.startswith('/'):
+                                            official_link = f"{self.sources['find_tender']['base_url']}{href}"
+                                        elif href.startswith('http'):
+                                            official_link = href
+                                        else:
+                                            official_link = f"{self.sources['find_tender']['base_url']}/{href}"
+                                    else:
+                                        official_link = url
+                                    
+                                    # Check if defense-related or high-value public contract
+                                    is_relevant = (self._is_defence_related(title + ' ' + description) or 
+                                                 funding_amount or 
+                                                 any(keyword in title.lower() for keyword in ['public', 'government', 'ministry', 'department']))
+                                    
+                                    if is_relevant:
+                                        opportunity = {
+                                            'id': f"ft_real_{hash(title + description + query)}",
+                                            'title': title[:200],
+                                            'funding_body': 'Find a Tender Service (UK Government)',
+                                            'description': description[:500],
+                                            'detailed_description': description,
+                                            'closing_date': closing_date or (datetime.now() + timedelta(days=45)),
+                                            'funding_amount': funding_amount,
+                                            'tech_areas': self._extract_tech_areas(description),
+                                            'mod_department': self._extract_department_from_text(title + description),
+                                            'contract_type': 'Public Tender',
+                                            'official_link': official_link,
+                                            'status': 'active',
+                                            'created_at': datetime.utcnow(),
+                                            'tier_required': 'free',
+                                            'is_delayed_for_free': False,
+                                            'source': 'find_tender_real',
+                                            'search_query': query
+                                        }
+                                        opportunities.append(opportunity)
+                                        
+                                except Exception as e:
+                                    print(f"Error parsing tender: {e}")
+                                    continue
+                        
+                        # Small delay between queries
+                        await asyncio.sleep(1)
+                        
+                except Exception as e:
+                    print(f"Error with Find a Tender query '{query}': {e}")
+                    continue
                             
         except Exception as e:
             print(f"Error scraping Find a Tender: {e}")
