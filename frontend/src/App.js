@@ -1507,8 +1507,8 @@ function App() {
                   Minimum Funding (£)
                 </label>
                 <input
+                  name="min_funding"
                   type="number"
-                  defaultValue=""
                   placeholder="e.g., 50000"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 />
@@ -1518,8 +1518,8 @@ function App() {
                   Maximum Funding (£)
                 </label>
                 <input
+                  name="max_funding"
                   type="number"
-                  defaultValue=""
                   placeholder="e.g., 2000000"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 />
