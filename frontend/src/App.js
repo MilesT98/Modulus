@@ -72,8 +72,6 @@ function App() {
   });
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showDemoSwitcher, setShowDemoSwitcher] = useState(false);
-
-  // Initialize authentication check
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
