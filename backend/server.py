@@ -17,8 +17,8 @@ try:
     from data_integration_service import DataIntegrationService
     DATA_SERVICE_AVAILABLE = True
 except ImportError:
-    print("Warning: Data integration service not available")
-    DATA_SERVICE_AVAILABLE = False
+    print("Warning: Comprehensive data service not available")
+    COMPREHENSIVE_SERVICE_AVAILABLE = False
 
 load_dotenv()
 
