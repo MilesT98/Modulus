@@ -167,13 +167,32 @@ async def root():
 @app.post("/api/data/refresh")
 async def refresh_live_data(background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
     """
-    Refresh opportunities from live government sources (Pro/Enterprise only)
+    Refresh opportunities from live defence sources (Pro/Enterprise only)
     """
     if current_user["tier"] == "free":
         raise HTTPException(status_code=403, detail="Upgrade to Pro to access live data refresh")
     
-    # For now, just return success message - data service integration will be added later
-    return {"message": "Live data refresh initiated", "status": "processing"}
+    # Import and run defence filter
+    try:
+        from defence_filter_service import DefenceOpportunityFilter
+        
+        async def refresh_defence_data():
+            filter_service = DefenceOpportunityFilter()
+            new_opportunities = await filter_service.collect_defence_opportunities()
+            
+            if new_opportunities:
+                # Add new opportunities (don't clear existing)
+                for opp in new_opportunities:
+                    existing = opportunities_collection.find_one({"title": opp["title"]})
+                    if not existing:
+                        opportunities_collection.insert_one(opp)
+                        print(f"Added new defence opportunity: {opp['title']}")
+        
+        background_tasks.add_task(refresh_defence_data)
+        return {"message": "Defence data refresh initiated", "status": "processing"}
+        
+    except ImportError:
+        return {"message": "Defence data refresh service not available", "status": "error"}
 
 @app.get("/api/data/sources")
 async def get_data_sources():
