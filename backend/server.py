@@ -243,6 +243,15 @@ async def fetch_and_store_live_data():
     except Exception as e:
         print(f"Error in live data refresh: {e}")
 
+async def periodic_data_refresh():
+    """
+    Periodically refresh live data every 4 hours
+    """
+    while True:
+        await asyncio.sleep(4 * 60 * 60)  # Sleep for 4 hours
+        print("🔄 Starting scheduled live data refresh...")
+        await fetch_and_store_live_data()
+
 # API Routes
 @app.get("/api/")
 async def root():
