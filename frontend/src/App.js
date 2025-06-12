@@ -942,24 +942,37 @@ function App() {
             Sign in to your account
           </h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+        <form className="mt-8 space-y-6" onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          const email = formData.get('email');
+          const password = formData.get('password');
+          
+          api.post('/api/auth/login', { email, password })
+            .then(response => {
+              localStorage.setItem('access_token', response.data.access_token);
+              setUser(response.data.user);
+              setCurrentView('dashboard');
+            })
+            .catch(error => {
+              alert('Login failed: ' + (error.response?.data?.detail || 'Unknown error'));
+            });
+        }}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <input
+                name="email"
                 type="email"
                 required
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
               />
             </div>
             <div>
               <input
+                name="password"
                 type="password"
                 required
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
               />
