@@ -1011,37 +1011,50 @@ function App() {
             Create your account
           </h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
+        <form className="mt-8 space-y-6" onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          const full_name = formData.get('full_name');
+          const company_name = formData.get('company_name');
+          const email = formData.get('email');
+          const password = formData.get('password');
+          
+          api.post('/api/auth/register', { full_name, company_name, email, password })
+            .then(response => {
+              localStorage.setItem('access_token', response.data.access_token);
+              setUser(response.data.user);
+              setCurrentView('dashboard');
+            })
+            .catch(error => {
+              alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
+            });
+        }}>
           <div className="space-y-4">
             <input
+              name="full_name"
               type="text"
               required
-              value={registerFullName}
-              onChange={(e) => setRegisterFullName(e.target.value)}
               className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
               placeholder="Full name"
             />
             <input
+              name="company_name"
               type="text"
               required
-              value={registerCompanyName}
-              onChange={(e) => setRegisterCompanyName(e.target.value)}
               className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
               placeholder="Company name"
             />
             <input
+              name="email"
               type="email"
               required
-              value={registerEmail}
-              onChange={(e) => setRegisterEmail(e.target.value)}
               className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
               placeholder="Email address"
             />
             <input
+              name="password"
               type="password"
               required
-              value={registerPassword}
-              onChange={(e) => setRegisterPassword(e.target.value)}
               className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
               placeholder="Password"
             />
