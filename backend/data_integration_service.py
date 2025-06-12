@@ -258,81 +258,124 @@ class RealDataIntegrationService:
     
     async def scrape_innovate_uk(self, session: aiohttp.ClientSession) -> List[Dict]:
         """
-        REAL scraping of Innovate UK website
+        ENHANCED scraping of Innovate UK website
         """
         opportunities = []
         
         try:
-            # Scrape Innovate UK competition search
-            url = self.sources['innovate_uk']['search_url']
+            # Multiple search URLs and approaches
+            urls_to_try = [
+                'https://apply-for-innovation-funding.service.gov.uk/competition/search',
+                'https://www.gov.uk/government/organisations/innovate-uk/about/procurement',
+                'https://www.gov.uk/find-a-tender',
+                'https://competitions.innovateuk.org/'  # Alternative portal
+            ]
             
-            async with session.get(url, headers=self.session_headers) as response:
-                if response.status == 200:
-                    html = await response.text()
-                    soup = BeautifulSoup(html, 'html.parser')
-                    
-                    # Look for competition cards/tiles
-                    competition_elements = soup.find_all(['div', 'article'], class_=re.compile(r'competition|funding|opportunity'))
-                    
-                    if not competition_elements:
-                        # Fallback: look for any links containing competition keywords
-                        competition_elements = soup.find_all('a', string=re.compile(r'competition|funding|innovation|defence', re.I))
-                    
-                    for element in competition_elements[:5]:  # Limit to 5 competitions
-                        try:
-                            if element.name == 'a':
-                                title = element.get_text(strip=True)
-                                link = element.get('href', '')
-                            else:
-                                title_elem = element.find(['h1', 'h2', 'h3', 'h4']) or element.find('a')
-                                title = title_elem.get_text(strip=True) if title_elem else 'Innovation Competition'
-                                link_elem = element.find('a', href=True)
-                                link = link_elem['href'] if link_elem else ''
+            for url in urls_to_try:
+                try:
+                    async with session.get(url, headers=self.session_headers) as response:
+                        if response.status == 200:
+                            html = await response.text()
+                            soup = BeautifulSoup(html, 'html.parser')
                             
-                            # Get description from element or follow link
-                            description = ''
-                            desc_elem = element.find('p') or element.find('div', class_=re.compile(r'description|summary'))
-                            if desc_elem:
-                                description = desc_elem.get_text(strip=True)
+                            # Look for various types of competition/funding elements
+                            competition_elements = []
                             
-                            # Extract funding info
-                            element_text = element.get_text()
-                            funding_amount = self._extract_value_from_text(element_text)
-                            closing_date = self._extract_date_from_text(element_text)
+                            # Try different selectors
+                            selectors = [
+                                'div[class*="competition"]',
+                                'article[class*="competition"]',
+                                'div[class*="funding"]',
+                                'div[class*="opportunity"]',
+                                'a[href*="competition"]',
+                                'a[href*="funding"]'
+                            ]
                             
-                            # Create full URL
-                            if link.startswith('/'):
-                                full_link = f"{self.sources['innovate_uk']['base_url']}{link}"
-                            elif link.startswith('http'):
-                                full_link = link
-                            else:
-                                full_link = f"{self.sources['innovate_uk']['base_url']}/{link}"
+                            for selector in selectors:
+                                elements = soup.select(selector)
+                                competition_elements.extend(elements)
                             
-                            if title and len(title) > 5:
-                                opportunity = {
-                                    'id': f"iuk_real_{hash(title)}",
-                                    'title': title[:200],
-                                    'funding_body': 'Innovate UK',
-                                    'description': description[:500] or 'Innovation funding opportunity from Innovate UK',
-                                    'detailed_description': description or 'Innovation funding opportunity from Innovate UK',
-                                    'closing_date': closing_date or (datetime.now() + timedelta(days=45)),
-                                    'funding_amount': funding_amount or '£100K - £2M',
-                                    'tech_areas': self._extract_tech_areas(title + ' ' + description),
-                                    'mod_department': 'Innovate UK',
-                                    'trl_level': 'TRL 4-8',
-                                    'contract_type': 'Innovation Grant',
-                                    'official_link': full_link,
-                                    'status': 'active',
-                                    'created_at': datetime.utcnow(),
-                                    'tier_required': 'free',
-                                    'is_delayed_for_free': False,
-                                    'source': 'innovate_uk_real'
-                                }
-                                opportunities.append(opportunity)
-                                
-                        except Exception as e:
-                            print(f"Error parsing Innovate UK opportunity: {e}")
-                            continue
+                            # Also look for any links with funding-related text
+                            funding_links = soup.find_all('a', string=re.compile(r'competition|funding|innovation|grant|defence|security|cyber|aerospace|maritime', re.I))
+                            competition_elements.extend(funding_links)
+                            
+                            for element in competition_elements[:20]:  # Process up to 20 per URL
+                                try:
+                                    if element.name == 'a':
+                                        title = element.get_text(strip=True)
+                                        link = element.get('href', '')
+                                    else:
+                                        title_elem = element.find(['h1', 'h2', 'h3', 'h4']) or element.find('a')
+                                        title = title_elem.get_text(strip=True) if title_elem else element.get_text(strip=True)[:100]
+                                        link_elem = element.find('a', href=True)
+                                        link = link_elem['href'] if link_elem else ''
+                                    
+                                    if not title or len(title) < 10:
+                                        continue
+                                    
+                                    # Get description from element or nearby text
+                                    description = ''
+                                    desc_elem = element.find('p') or element.find('div', class_=re.compile(r'description|summary|content'))
+                                    if desc_elem:
+                                        description = desc_elem.get_text(strip=True)
+                                    else:
+                                        # Look for description in parent or sibling elements
+                                        parent = element.parent
+                                        if parent:
+                                            desc_text = parent.get_text(strip=True)
+                                            description = desc_text[:500]
+                                    
+                                    # Extract funding info
+                                    element_text = element.get_text() + ' ' + description
+                                    funding_amount = self._extract_value_from_text(element_text)
+                                    closing_date = self._extract_date_from_text(element_text)
+                                    
+                                    # Create full URL
+                                    if link.startswith('/'):
+                                        full_link = f"https://apply-for-innovation-funding.service.gov.uk{link}"
+                                    elif link.startswith('http'):
+                                        full_link = link
+                                    elif link:
+                                        full_link = f"https://apply-for-innovation-funding.service.gov.uk/{link}"
+                                    else:
+                                        full_link = url
+                                    
+                                    # Check if it's relevant (either defence-related or just innovation funding)
+                                    is_relevant = (self._is_defence_related(title + ' ' + description) or 
+                                                 any(keyword in title.lower() for keyword in ['innovation', 'funding', 'competition', 'grant']))
+                                    
+                                    if is_relevant and title:
+                                        opportunity = {
+                                            'id': f"iuk_real_{hash(title + url)}",
+                                            'title': title[:200],
+                                            'funding_body': 'Innovate UK',
+                                            'description': description[:500] if description else f'Innovation funding opportunity: {title}',
+                                            'detailed_description': description or f'Innovation funding opportunity from Innovate UK: {title}',
+                                            'closing_date': closing_date or (datetime.now() + timedelta(days=45)),
+                                            'funding_amount': funding_amount or '£100K - £2M',
+                                            'tech_areas': self._extract_tech_areas(title + ' ' + description),
+                                            'mod_department': 'Innovate UK',
+                                            'trl_level': 'TRL 4-8',
+                                            'contract_type': 'Innovation Grant',
+                                            'official_link': full_link,
+                                            'status': 'active',
+                                            'created_at': datetime.utcnow(),
+                                            'tier_required': 'free',
+                                            'is_delayed_for_free': False,
+                                            'source': 'innovate_uk_real'
+                                        }
+                                        opportunities.append(opportunity)
+                                        
+                                except Exception as e:
+                                    print(f"Error parsing Innovate UK opportunity: {e}")
+                                    continue
+                        
+                        # Small delay between URLs
+                        await asyncio.sleep(1)
+                        
+                except Exception as e:
+                    print(f"Error with URL {url}: {e}")
+                    continue
                             
         except Exception as e:
             print(f"Error scraping Innovate UK: {e}")
