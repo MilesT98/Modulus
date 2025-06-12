@@ -504,109 +504,27 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         }.get(user_tier, [])
     }
 
-# Initialize some sample data
+async def periodic_data_refresh():
+    """
+    Periodically refresh live data every 4 hours
+    """
+    while True:
+        await fetch_and_store_live_data()
+        await asyncio.sleep(4 * 60 * 60)  # Sleep for 4 hours
+
+# Initialize with live data only
 @app.on_event("startup")
-async def create_sample_data():
-    # Check if data already exists
-    if opportunities_collection.count_documents({}) > 0:
-        return
-    
-    # Sample opportunities
-    sample_opportunities = [
-        {
-            "id": str(uuid.uuid4()),
-            "title": "AI-Powered Threat Detection System",
-            "funding_body": "Defence Science and Technology Laboratory (DSTL)",
-            "description": "Develop next-generation AI systems for autonomous threat detection in maritime environments.",
-            "detailed_description": "This opportunity seeks innovative AI solutions that can autonomously identify and classify threats in complex maritime scenarios. The system must demonstrate high accuracy in diverse weather conditions and integrate with existing naval platforms.",
-            "closing_date": datetime.utcnow() + timedelta(days=30),
-            "funding_amount": "£2.5M - £5M",
-            "tech_areas": ["Artificial Intelligence", "Machine Learning", "Computer Vision", "Maritime Defence"],
-            "mod_department": "Navy Command",
-            "trl_level": "TRL 4-6",
-            "contract_type": "Research and Development",
-            "official_link": "https://www.gov.uk/government/organisations/defence-science-and-technology-laboratory",
-            "status": OpportunityStatus.ACTIVE,
-            "created_at": datetime.utcnow(),
-            "tier_required": UserTier.FREE,
-            "is_delayed_for_free": False
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "title": "Cyber Security Framework for Critical Infrastructure",
-            "funding_body": "UK Research and Innovation (UKRI)",
-            "description": "Develop comprehensive cybersecurity solutions for protecting critical national infrastructure.",
-            "detailed_description": "Advanced cybersecurity framework development focusing on real-time threat detection, automated response systems, and resilience against state-level attacks. Must comply with UK NCSC guidelines.",
-            "closing_date": datetime.utcnow() + timedelta(days=45),
-            "funding_amount": "£1M - £3M",
-            "tech_areas": ["Cybersecurity", "Critical Infrastructure", "Threat Intelligence"],
-            "mod_department": "Defence Digital",
-            "trl_level": "TRL 3-5",
-            "contract_type": "Innovation Contract",
-            "official_link": "https://www.ukri.org/",
-            "status": OpportunityStatus.ACTIVE,
-            "created_at": datetime.utcnow(),
-            "tier_required": UserTier.PRO,
-            "is_delayed_for_free": True
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "title": "Quantum Communication Networks",
-            "funding_body": "Ministry of Defence (MOD)",
-            "description": "Research and develop quantum-secure communication networks for military applications.",
-            "detailed_description": "Cutting-edge quantum communication research focusing on unhackable communication channels for sensitive military operations. Requires deep expertise in quantum mechanics and cryptography.",
-            "closing_date": datetime.utcnow() + timedelta(days=60),
-            "funding_amount": "£5M - £10M",
-            "tech_areas": ["Quantum Computing", "Cryptography", "Secure Communications"],
-            "mod_department": "Defence Science and Technology",
-            "trl_level": "TRL 2-4",
-            "contract_type": "Strategic Research",
-            "official_link": "https://www.gov.uk/government/organisations/ministry-of-defence",
-            "status": OpportunityStatus.ACTIVE,
-            "created_at": datetime.utcnow(),
-            "tier_required": UserTier.ENTERPRISE,
-            "is_delayed_for_free": True
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "title": "Autonomous Drone Swarm Technology",
-            "funding_body": "Innovate UK",
-            "description": "Develop intelligent swarm robotics for reconnaissance and surveillance missions.",
-            "detailed_description": "Revolutionary drone swarm technology that can operate autonomously in contested environments. Focus on distributed intelligence, self-healing networks, and adaptive mission planning.",
-            "closing_date": datetime.utcnow() + timedelta(days=25),
-            "funding_amount": "£500K - £2M",
-            "tech_areas": ["Robotics", "Swarm Intelligence", "Autonomous Systems", "Surveillance"],
-            "mod_department": "Army",
-            "trl_level": "TRL 5-7",
-            "contract_type": "Innovation Grant",
-            "official_link": "https://www.innovateuk.org/",
-            "status": OpportunityStatus.ACTIVE,
-            "created_at": datetime.utcnow(),
-            "tier_required": UserTier.FREE,
-            "is_delayed_for_free": False
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "title": "Advanced Materials for Body Armour",
-            "funding_body": "Defence Equipment and Support",
-            "description": "Develop next-generation lightweight materials for enhanced soldier protection.",
-            "detailed_description": "Innovation in advanced composite materials that provide superior ballistic protection while reducing weight and improving mobility for military personnel.",
-            "closing_date": datetime.utcnow() + timedelta(days=40),
-            "funding_amount": "£1.5M - £4M",
-            "tech_areas": ["Materials Science", "Ballistics", "Soldier Systems"],
-            "mod_department": "Army",
-            "trl_level": "TRL 4-6",
-            "contract_type": "Development Contract",
-            "official_link": "https://www.gov.uk/government/organisations/defence-equipment-and-support",
-            "status": OpportunityStatus.ACTIVE,
-            "created_at": datetime.utcnow(),
-            "tier_required": UserTier.PRO,
-            "is_delayed_for_free": True
-        }
-    ]
-    
-    opportunities_collection.insert_many(sample_opportunities)
-    print("Sample opportunities created successfully")
+async def initialize_live_data():
+    # Check if we need to populate with live data
+    if opportunities_collection.count_documents({}) == 0:
+        print("🔄 No opportunities found, fetching live data...")
+        await fetch_and_store_live_data()
+    else:
+        live_count = opportunities_collection.count_documents({'source': {'$exists': True}})
+        print(f"📊 Database contains {live_count} live opportunities")
+        
+    # Schedule periodic live data refresh (every 4 hours)
+    asyncio.create_task(periodic_data_refresh())
 
 if __name__ == "__main__":
     import uvicorn
