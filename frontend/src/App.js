@@ -137,50 +137,6 @@ function App() {
     }
   }, [user, currentView]);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await api.post('/api/auth/login', {
-        email: loginEmail,
-        password: loginPassword
-      });
-      
-      localStorage.setItem('access_token', response.data.access_token);
-      setUser(response.data.user);
-      setCurrentView('dashboard');
-      
-      // Clear form
-      setLoginEmail('');
-      setLoginPassword('');
-    } catch (error) {
-      alert('Login failed: ' + (error.response?.data?.detail || 'Unknown error'));
-    }
-  };
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await api.post('/api/auth/register', {
-        email: registerEmail,
-        password: registerPassword,
-        company_name: registerCompanyName,
-        full_name: registerFullName
-      });
-      
-      localStorage.setItem('access_token', response.data.access_token);
-      setUser(response.data.user);
-      setCurrentView('dashboard');
-      
-      // Clear form
-      setRegisterEmail('');
-      setRegisterPassword('');
-      setRegisterCompanyName('');
-      setRegisterFullName('');
-    } catch (error) {
-      alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
-    }
-  };
-
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     setUser(null);
