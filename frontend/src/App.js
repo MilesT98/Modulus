@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   ArrowLeft, 
@@ -20,39 +20,38 @@ import {
   Menu,
   X,
   Lock,
-  AlertCircle
+  AlertCircle,
+  Calendar,
+  ExternalLink,
+  Building,
+  TrendingUp,
+  Download,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  RefreshCw
 } from 'lucide-react';
 import './App.css';
 
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+const api = axios.create({
+  baseURL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
 
-// Simple input component that maintains focus
-const SimpleInput = ({ type, value, onChange, placeholder, label, required = false }) => {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
-      <input
-        type={type}
-        required={required}
-        value={value || ''}
-        onChange={onChange}
-        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-        placeholder={placeholder}
-        autoComplete="off"
-      />
-    </div>
-  );
-};
-
-// Back button component
-const BackButton = ({ onClick, text = "Back" }) => (
-  <button
-    onClick={onClick}
-    className="flex items-center text-cyan-600 hover:text-cyan-700 font-medium mb-6 transition-colors"
-  >
-    <ArrowLeft className="w-4 h-4 mr-2" />
-    {text}
-  </button>
+// Request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 function App() {
@@ -63,7 +62,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({
     funding_body: '',
-    tech_area: ''
+    industry: ''  // Changed from tech_area to industry
   });
   const [dashboardStats, setDashboardStats] = useState(null);
   const [alertPreferences, setAlertPreferences] = useState({
@@ -74,109 +73,57 @@ function App() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showDemoSwitcher, setShowDemoSwitcher] = useState(false);
 
-  // Auth forms state - SIMPLE STRINGS
+  // Login form state - SIMPLE STRINGS
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [regFullName, setRegFullName] = useState('');
-  const [regCompany, setRegCompany] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
+  const [registerEmail, setRegisterEmail] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+  const [registerCompanyName, setRegisterCompanyName] = useState('');
+  const [registerFullName, setRegisterFullName] = useState('');
 
+  // Initialize authentication check
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (token) {
       fetchUserProfile();
     }
   }, []);
-
-  useEffect(() => {
-    if (user && currentView === 'opportunities') {
-      const searchValue = document.getElementById('search-input')?.value || '';
-      fetchOpportunities(searchValue);
-    }
-  }, [user, currentView, selectedFilters]);
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
-        email: email,
-        password: password
-      });
-      localStorage.setItem('token', response.data.access_token);
-      setUser(response.data.user);
-      setCurrentView('dashboard');
-    } catch (error) {
-      alert('Login failed: ' + (error.response?.data?.detail || 'Unknown error'));
-    }
-  };
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    const fullName = document.getElementById('reg-fullname').value;
-    const company = document.getElementById('reg-company').value;
-    const email = document.getElementById('reg-email').value;
-    const password = document.getElementById('reg-password').value;
-    
-    // Debug logging
-    console.log('Registration attempt:', { fullName, company, email, password: '***' });
-    
-    // Validation
-    if (!fullName || !company || !email || !password) {
-      alert('Please fill in all fields');
-      return;
-    }
-    
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
-        email: email,
-        password: password,
-        company_name: company,
-        full_name: fullName
-      });
-      localStorage.setItem('token', response.data.access_token);
-      setUser(response.data.user);
-      setCurrentView('dashboard');
-    } catch (error) {
-      console.error('Registration error:', error);
-      alert('Registration failed: ' + (error.response?.data?.detail || error.message || 'Unknown error'));
-    }
-  };
-
-  const api = axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-      'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : ''
-    }
-  });
 
   const fetchUserProfile = async () => {
     try {
       const response = await api.get('/api/auth/me');
       setUser(response.data);
     } catch (error) {
-      console.error('Error fetching user profile:', error);
-      localStorage.removeItem('token');
+      localStorage.removeItem('access_token');
+      setUser(null);
     }
   };
 
-  const fetchOpportunities = async (search = '') => {
+  const fetchOpportunities = async () => {
     setLoading(true);
     try {
       const params = {};
-      if (search) params.search = search;
-      if (selectedFilters.funding_body) params.funding_body = selectedFilters.funding_body;
-      if (selectedFilters.tech_area) params.tech_area = selectedFilters.tech_area;
+      
+      // Get search term from DOM input
+      const searchInput = document.getElementById('search-input');
+      if (searchInput && searchInput.value.trim()) {
+        params.search = searchInput.value.trim();
+      }
+      
+      if (selectedFilters.funding_body) {
+        params.funding_body = selectedFilters.funding_body;
+      }
+      if (selectedFilters.industry) {  // Changed from tech_area to industry
+        params.tech_area = selectedFilters.industry;
+      }
 
       const response = await api.get('/api/opportunities', { params });
       setOpportunities(response.data);
     } catch (error) {
       console.error('Error fetching opportunities:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const fetchDashboardStats = async () => {
@@ -188,32 +135,73 @@ function App() {
     }
   };
 
-  // Stable onChange handlers to prevent re-renders
-  const handleLoginFormChange = useCallback((field, value) => {
-    switch(field) {
-      case 'email':
-        setLoginEmail(value);
-        break;
-      case 'password':
-        setLoginPassword(value);
-        break;
-      default:
-        break;
+  useEffect(() => {
+    if (user && currentView === 'opportunities') {
+      fetchOpportunities();
     }
-  }, []);
+  }, [user, currentView, selectedFilters]);
 
-  const handleSearchChange = useCallback((value) => {
-    setSearchTerm(value);
-  }, []);
+  useEffect(() => {
+    if (user && currentView === 'dashboard') {
+      fetchDashboardStats();
+    }
+  }, [user, currentView]);
 
-  const handleFilterChange = useCallback((field, value) => {
-    setSelectedFilters(prev => ({...prev, [field]: value}));
-  }, []);
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await api.post('/api/auth/login', {
+        email: loginEmail,
+        password: loginPassword
+      });
+      
+      localStorage.setItem('access_token', response.data.access_token);
+      setUser(response.data.user);
+      setCurrentView('dashboard');
+      
+      // Clear form
+      setLoginEmail('');
+      setLoginPassword('');
+    } catch (error) {
+      alert('Login failed: ' + (error.response?.data?.detail || 'Unknown error'));
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await api.post('/api/auth/register', {
+        email: registerEmail,
+        password: registerPassword,
+        company_name: registerCompanyName,
+        full_name: registerFullName
+      });
+      
+      localStorage.setItem('access_token', response.data.access_token);
+      setUser(response.data.user);
+      setCurrentView('dashboard');
+      
+      // Clear form
+      setRegisterEmail('');
+      setRegisterPassword('');
+      setRegisterCompanyName('');
+      setRegisterFullName('');
+    } catch (error) {
+      alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
+    }
+  };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('access_token');
     setUser(null);
     setCurrentView('home');
+  };
+
+  const handleFilterChange = (filterType, value) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
   };
 
   const handleUpgrade = async (tier) => {
@@ -240,30 +228,18 @@ function App() {
     }
   };
 
-  const refreshLiveData = async () => {
+  const handleRefreshData = async () => {
     try {
-      const response = await api.post('/api/data/refresh');
-      alert('Live data refresh initiated! New opportunities will appear shortly.');
+      setLoading(true);
+      await api.post('/api/data/refresh');
+      alert('Data refresh initiated! New opportunities will appear shortly.');
+      setTimeout(() => {
+        fetchOpportunities();
+      }, 3000);
     } catch (error) {
-      alert('Refresh failed: ' + (error.response?.data?.detail || 'Unknown error'));
-    }
-  };
-
-  const getTierColor = (tier) => {
-    switch (tier) {
-      case 'free': return 'text-gray-600 bg-gray-100';
-      case 'pro': return 'text-blue-600 bg-blue-100';
-      case 'enterprise': return 'text-purple-600 bg-purple-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
-  };
-
-  const getTierIcon = (tier) => {
-    switch (tier) {
-      case 'free': return <Users className="w-4 h-4" />;
-      case 'pro': return <Star className="w-4 h-4" />;
-      case 'enterprise': return <Crown className="w-4 h-4" />;
-      default: return <Users className="w-4 h-4" />;
+      alert('Refresh failed: ' + (error.response?.data?.detail || 'Upgrade to Pro for data refresh'));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -315,1037 +291,6 @@ function App() {
     </div>
   );
 
-  const NavBar = () => (
-    <nav className="bg-slate-900 text-white shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-8">
-            <div 
-              className="text-2xl font-bold text-cyan-400 cursor-pointer flex items-center"
-              onClick={() => setCurrentView('home')}
-            >
-              <div className="w-8 h-8 bg-cyan-400 rounded mr-2 flex items-center justify-center">
-                <div className="w-4 h-4 bg-slate-900 rounded-sm"></div>
-              </div>
-              Modulus Defence
-            </div>
-            {user && (
-              <div className="hidden md:flex space-x-6">
-                <button
-                  onClick={() => setCurrentView('dashboard')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
-                    currentView === 'dashboard' ? 'bg-slate-700 text-cyan-400' : 'hover:bg-slate-700'
-                  }`}
-                >
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Dashboard
-                </button>
-                <button
-                  onClick={() => setCurrentView('opportunities')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
-                    currentView === 'opportunities' ? 'bg-slate-700 text-cyan-400' : 'hover:bg-slate-700'
-                  }`}
-                >
-                  <Search className="w-4 h-4 mr-2" />
-                  Opportunities
-                </button>
-                <button
-                  onClick={() => {
-                    if (user?.tier === 'free') {
-                      setShowUpgradeModal(true);
-                    } else {
-                      setCurrentView('procurement-act');
-                    }
-                  }}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
-                    currentView === 'procurement-act' ? 'bg-slate-700 text-cyan-400' : 'hover:bg-slate-700'
-                  }`}
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Procurement Act
-                  {user?.tier === 'free' && <Lock className="w-3 h-3 ml-1" />}
-                </button>
-                <button
-                  onClick={() => setCurrentView('alerts')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
-                    currentView === 'alerts' ? 'bg-slate-700 text-cyan-400' : 'hover:bg-slate-700'
-                  }`}
-                >
-                  <Bell className="w-4 h-4 mr-2" />
-                  Alert Settings
-                </button>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center space-x-4">
-            {user ? (
-              <>
-                <div className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center ${getTierColor(user.tier)}`}>
-                  {getTierIcon(user.tier)} 
-                  <span className="ml-1">{user.tier.toUpperCase()}</span>
-                </div>
-                <span className="text-sm text-gray-300">{user.company_name}</span>
-                <button
-                  onClick={() => setShowDemoSwitcher(true)}
-                  className="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center"
-                  title="Demo: Switch Tiers"
-                >
-                  <Crown className="w-4 h-4 mr-1" />
-                  Demo
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <div className="space-x-2">
-                <button
-                  onClick={() => setCurrentView('login')}
-                  className="text-cyan-400 hover:text-cyan-300 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => setCurrentView('register')}
-                  className="bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Get Started
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
-
-  const HomePage = () => (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-              Navigate UK Defence
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600"> Funding & Contracts</span>
-              <br />with Confidence
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto">
-              Your central, trusted resource for UK defence opportunities. Access real-time funding alerts, 
-              expert analysis, and comprehensive procurement guidance.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => setCurrentView('register')}
-                className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all transform hover:scale-105 shadow-lg"
-              >
-                Start Free Trial
-              </button>
-              <button
-                onClick={() => setCurrentView('opportunities')}
-                className="border-2 border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-slate-900 px-8 py-4 rounded-lg text-lg font-semibold transition-all"
-              >
-                Browse Opportunities
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Geometric background pattern */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-4 -right-4 w-72 h-72 bg-cyan-500/10 rounded-full"></div>
-          <div className="absolute top-1/2 -left-8 w-48 h-48 bg-blue-500/10 rounded-full"></div>
-          <div className="absolute bottom-0 right-1/3 w-96 h-96 bg-purple-500/5 rounded-full"></div>
-        </div>
-      </div>
-
-      {/* Features Section */}
-      <div className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              Why Choose Modulus Defence?
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Built specifically for UK defence SMEs, we provide the insights and tools you need to succeed in the complex defence procurement landscape.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-8 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
-              <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Zap className="w-8 h-8 text-cyan-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">Real-Time Alerts</h3>
-              <p className="text-gray-600">
-                Get instant notifications for new opportunities matching your expertise and interests. Never miss a deadline again.
-              </p>
-            </div>
-
-            <div className="text-center p-8 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Target className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">Expert Analysis</h3>
-              <p className="text-gray-600">
-                Deep-dive opportunity assessments with competitive landscape analysis and bid guidance from defence experts.
-              </p>
-            </div>
-
-            <div className="text-center p-8 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FileText className="w-8 h-8 text-purple-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">Procurement Guidance</h3>
-              <p className="text-gray-600">
-                Navigate the new Procurement Act with confidence using our comprehensive guides and compliance checklists.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Pricing Section */}
-      <div className="py-24 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              Choose Your Access Level
-            </h2>
-            <p className="text-xl text-gray-600">
-              Start free and upgrade as your business grows
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Free Tier */}
-            <div className="bg-white rounded-xl shadow-lg p-8 border-2 border-gray-200">
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">Free</h3>
-                <div className="text-4xl font-bold text-slate-900 mb-4">£0<span className="text-lg text-gray-500">/month</span></div>
-                <p className="text-gray-600">Perfect for getting started</p>
-              </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  Basic opportunity listings
-                </li>
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  48-hour delay on updates
-                </li>
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  General procurement guides
-                </li>
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  Basic search and filters
-                </li>
-              </ul>
-              <button
-                onClick={() => setCurrentView('register')}
-                className="w-full bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-semibold transition-colors"
-              >
-                Get Started Free
-              </button>
-            </div>
-
-            {/* Pro Tier */}
-            <div className="bg-white rounded-xl shadow-xl p-8 border-2 border-cyan-500 relative">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-cyan-500 text-white px-4 py-2 rounded-full text-sm font-semibold">Most Popular</span>
-              </div>
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">Pro / SME</h3>
-                <div className="text-4xl font-bold text-slate-900 mb-4">£49<span className="text-lg text-gray-500">/month</span></div>
-                <p className="text-gray-600">For growing defence SMEs</p>
-              </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  Real-time opportunity alerts
-                </li>
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  Expert opportunity analysis
-                </li>
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  Advanced Procurement Act hub
-                </li>
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  Community forum access
-                </li>
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  Monthly expert webinars
-                </li>
-              </ul>
-              <button
-                onClick={() => setCurrentView('register')}
-                className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-lg font-semibold transition-colors"
-              >
-                Start Pro Trial
-              </button>
-            </div>
-
-            {/* Enterprise Tier */}
-            <div className="bg-white rounded-xl shadow-lg p-8 border-2 border-purple-200">
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">Enterprise</h3>
-                <div className="text-4xl font-bold text-slate-900 mb-4">£199<span className="text-lg text-gray-500">/month</span></div>
-                <p className="text-gray-600">For established organizations</p>
-              </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  Multi-user licenses
-                </li>
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  Custom reporting & briefings
-                </li>
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  Priority support
-                </li>
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  Exclusive event access
-                </li>
-                <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-3">✓</span>
-                  Dedicated account manager
-                </li>
-              </ul>
-              <button
-                onClick={() => setCurrentView('register')}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition-colors"
-              >
-                Contact Sales
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const LoginPage = () => (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <BackButton onClick={() => setCurrentView('home')} text="Back to Home" />
-      </div>
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-slate-900">Welcome back</h2>
-            <p className="mt-2 text-gray-600">Sign in to your Modulus Defence account</p>
-          </div>
-          <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <input
-                id="login-email"
-                type="email"
-                required
-                defaultValue=""
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                placeholder="your.email@company.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <input
-                id="login-password"
-                type="password"
-                required
-                defaultValue=""
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-lg font-semibold transition-colors"
-          >
-            Sign In
-          </button>
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setCurrentView('register')}
-              className="text-cyan-600 hover:text-cyan-700 font-medium"
-            >
-              Don't have an account? Register here
-            </button>
-          </div>
-        </form>
-        </div>
-      </div>
-    </div>
-  );
-
-  const RegisterPage = () => (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <BackButton onClick={() => setCurrentView('home')} text="Back to Home" />
-      </div>
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-slate-900">Get started with Modulus Defence</h2>
-          <p className="mt-2 text-gray-600">Create your free account in seconds</p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-              <input
-                id="reg-fullname"
-                type="text"
-                required
-                defaultValue=""
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                placeholder="John Smith"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
-              <input
-                id="reg-company"
-                type="text"
-                required
-                defaultValue=""
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                placeholder="Your Defence Company Ltd"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <input
-                id="reg-email"
-                type="email"
-                required
-                defaultValue=""
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                placeholder="your.email@company.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <input
-                id="reg-password"
-                type="password"
-                required
-                defaultValue=""
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-lg font-semibold transition-colors"
-          >
-            Create Account
-          </button>
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setCurrentView('login')}
-              className="text-cyan-600 hover:text-cyan-700 font-medium"
-            >
-              Already have an account? Sign in here
-            </button>
-          </div>
-        </form>
-        </div>
-      </div>
-    </div>
-  );
-
-  const DashboardPage = () => (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Welcome back, {user.full_name}</h1>
-          <p className="text-gray-600 mt-2">Here's what's happening with UK defence opportunities</p>
-        </div>
-
-        {/* Stats Cards */}
-        {dashboardStats && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-              <div className="flex items-center">
-                <div className="p-3 bg-cyan-100 rounded-lg">
-                  <BarChart3 className="w-6 h-6 text-cyan-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Opportunities</p>
-                  <p className="text-2xl font-bold text-slate-900">{dashboardStats.total_opportunities}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-              <div className="flex items-center">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <Plus className="w-6 h-6 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">New This Week</p>
-                  <p className="text-2xl font-bold text-slate-900">{dashboardStats.new_this_week}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-              <div className="flex items-center">
-                <div className="p-3 bg-red-100 rounded-lg">
-                  <Clock className="w-6 h-6 text-red-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Closing Soon</p>
-                  <p className="text-2xl font-bold text-slate-900">{dashboardStats.closing_soon}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Current Tier & Upgrade */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">
-                Your Current Plan: {getTierIcon(user.tier)} {user.tier.toUpperCase()}
-              </h3>
-              <p className="text-gray-600 mb-4">
-                {user.tier === 'free' 
-                  ? 'Upgrade to Pro for real-time alerts and expert analysis'
-                  : user.tier === 'pro'
-                  ? 'You have access to all Pro features including real-time alerts'
-                  : 'You have full Enterprise access with priority support'
-                }
-              </p>
-              {dashboardStats && (
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-slate-900">Your Benefits:</h4>
-                  <ul className="space-y-1">
-                    {dashboardStats.tier_benefits.map((benefit, index) => (
-                      <li key={index} className="flex items-center text-sm text-gray-600">
-                        <span className="text-green-500 mr-2">✓</span>
-                        {benefit}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-            <div className="space-y-2">
-              {user.tier === 'free' && (
-                <button
-                  onClick={() => handleUpgrade('pro')}
-                  className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-                >
-                  Upgrade to Pro
-                </button>
-              )}
-              {user.tier === 'pro' && (
-                <button
-                  onClick={() => handleUpgrade('enterprise')}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-                >
-                  Upgrade to Enterprise
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <h3 className="text-xl font-bold text-slate-900 mb-4">Quick Actions</h3>
-            <div className="space-y-3">
-              <button
-                onClick={() => setCurrentView('opportunities')}
-                className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center">
-                  <Search className="w-5 h-5 mr-3 text-cyan-600" />
-                  <div>
-                    <p className="font-medium text-slate-900">Browse Opportunities</p>
-                    <p className="text-sm text-gray-600">Find the latest defence funding opportunities</p>
-                  </div>
-                </div>
-              </button>
-              <button
-                onClick={() => setCurrentView('alerts')}
-                className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center">
-                  <Bell className="w-5 h-5 mr-3 text-cyan-600" />
-                  <div>
-                    <p className="font-medium text-slate-900">Set Up Alerts</p>
-                    <p className="text-sm text-gray-600">Configure personalized opportunity notifications</p>
-                  </div>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <h3 className="text-xl font-bold text-slate-900 mb-4">Recent Activity</h3>
-            <div className="space-y-3">
-              <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-                <Edit className="w-5 h-5 mr-3 text-green-600" />
-                <div>
-                  <p className="font-medium text-slate-900">Account Created</p>
-                  <p className="text-sm text-gray-600">Welcome to Modulus Defence!</p>
-                </div>
-              </div>
-              <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-                <CheckCircle className="w-5 h-5 mr-3 text-blue-600" />
-                <div>
-                  <p className="font-medium text-slate-900">Profile Setup</p>
-                  <p className="text-sm text-gray-600">Your profile is ready for opportunities</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const OpportunitiesPage = () => (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {user && <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Defence Opportunities</h1>
-          <p className="text-gray-600 mt-2">
-            {user?.tier === 'free' 
-              ? 'Browse available opportunities (48-hour delay for free accounts)'
-              : 'Real-time access to all defence funding opportunities'
-            }
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Live Data Sources</h3>
-              <p className="text-gray-600">
-                {user?.tier === 'free' 
-                  ? 'Upgrade to Pro for real-time data from UK government sources'
-                  : 'Access live opportunities from multiple UK government sources'
-                }
-              </p>
-            </div>
-            <div>
-              {user?.tier !== 'free' ? (
-                <button
-                  onClick={refreshLiveData}
-                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors flex items-center"
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  Refresh Live Data
-                </button>
-              ) : (
-                <button
-                  onClick={() => handleUpgrade('pro')}
-                  className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-                >
-                  Upgrade for Live Data
-                </button>
-              )}
-            </div>
-          </div>
-          {user?.tier !== 'free' && (
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="font-semibold text-green-800">Contracts Finder</div>
-                <div className="text-green-600">Active</div>
-              </div>
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="font-semibold text-green-800">Find a Tender</div>
-                <div className="text-green-600">Active</div>
-              </div>
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="font-semibold text-green-800">DASA</div>
-                <div className="text-green-600">Active</div>
-              </div>
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="font-semibold text-green-800">Innovate UK</div>
-                <div className="text-green-600">Active</div>
-              </div>
-            </div>
-          )}
-        </div>
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
-              <input
-                id="search-input"
-                type="text"
-                defaultValue=""
-                placeholder="Search opportunities..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-              />
-            </div>
-            
-            {/* Advanced filters only for Pro/Enterprise users */}
-            {user?.tier !== 'free' ? (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Funding Body</label>
-                  <select
-                    value={selectedFilters.funding_body}
-                    onChange={(e) => handleFilterChange('funding_body', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                  >
-                    <option value="">All Funding Bodies</option>
-                    <option value="DSTL">DSTL</option>
-                    <option value="UKRI">UKRI</option>
-                    <option value="MOD">MOD</option>
-                    <option value="Innovate UK">Innovate UK</option>
-                    <option value="DASA">DASA</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tech Area</label>
-                  <select
-                    value={selectedFilters.tech_area}
-                    onChange={(e) => handleFilterChange('tech_area', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                  >
-                    <option value="">All Tech Areas</option>
-                    <option value="Artificial Intelligence">AI</option>
-                    <option value="Cybersecurity">Cybersecurity</option>
-                    <option value="Quantum Computing">Quantum</option>
-                    <option value="Robotics">Robotics</option>
-                    <option value="Maritime Defence">Maritime</option>
-                    <option value="Aerospace">Aerospace</option>
-                  </select>
-                </div>
-              </>
-            ) : (
-              // Free tier users see locked advanced filters
-              <>
-                <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Funding Body
-                    <Lock className="w-4 h-4 inline ml-1 text-gray-400" />
-                  </label>
-                  <select
-                    disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed"
-                  >
-                    <option>Upgrade to Pro for Advanced Filters</option>
-                  </select>
-                  <div 
-                    className="absolute inset-0 cursor-pointer"
-                    onClick={() => setShowUpgradeModal(true)}
-                  ></div>
-                </div>
-                <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tech Area
-                    <Lock className="w-4 h-4 inline ml-1 text-gray-400" />
-                  </label>
-                  <select
-                    disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed"
-                  >
-                    <option>Upgrade to Pro for Advanced Filters</option>
-                  </select>
-                  <div 
-                    className="absolute inset-0 cursor-pointer"
-                    onClick={() => setShowUpgradeModal(true)}
-                  ></div>
-                </div>
-              </>
-            )}
-          </div>
-          
-          {/* Additional Pro filters */}
-          {user?.tier !== 'free' && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">TRL Level</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
-                  <option value="">All TRL Levels</option>
-                  <option value="TRL 1-3">TRL 1-3 (Research)</option>
-                  <option value="TRL 4-6">TRL 4-6 (Development)</option>
-                  <option value="TRL 7-9">TRL 7-9 (Demonstration)</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">MOD Department</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
-                  <option value="">All Departments</option>
-                  <option value="Army">Army</option>
-                  <option value="Navy">Navy</option>
-                  <option value="RAF">RAF</option>
-                  <option value="DSTL">DSTL</option>
-                  <option value="DASA">DASA</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Contract Type</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
-                  <option value="">All Contract Types</option>
-                  <option value="Research">Research & Development</option>
-                  <option value="Innovation">Innovation Grant</option>
-                  <option value="Public">Public Contract</option>
-                  <option value="Strategic">Strategic Research</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Funding Range</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
-                  <option value="">All Ranges</option>
-                  <option value="0-500k">£0 - £500K</option>
-                  <option value="500k-2m">£500K - £2M</option>
-                  <option value="2m-10m">£2M - £10M</option>
-                  <option value="10m+">£10M+</option>
-                </select>
-              </div>
-            </div>
-          )}
-          
-          {user?.tier === 'free' && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-200">
-                <div className="flex items-center">
-                  <AlertCircle className="w-5 h-5 text-cyan-600 mr-2" />
-                  <div>
-                    <h4 className="font-semibold text-cyan-900">Advanced Search Available in Pro</h4>
-                    <p className="text-sm text-cyan-700">
-                      Upgrade to Pro for advanced filters including TRL levels, MOD departments, contract types, and funding ranges.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowUpgradeModal(true)}
-                    className="ml-4 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-                  >
-                    Upgrade
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Opportunities List */}
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600"></div>
-            <p className="mt-2 text-gray-600">Loading opportunities...</p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {opportunities.map((opp) => (
-              <div key={opp.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-bold text-slate-900">{opp.title}</h3>
-                      {opp.is_delayed && (
-                        <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full border border-yellow-300">
-                          {opp.delay_message || "Delayed Access: Pro/SME Members See This Instantly"}
-                        </span>
-                      )}
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getTierColor(opp.tier_required)}`}>
-                        {opp.tier_required.toUpperCase()}
-                      </span>
-                    </div>
-                    <p className="text-cyan-600 font-medium mb-2">{opp.funding_body}</p>
-                    <p className="text-gray-600 mb-4">{opp.description}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Closing Date</p>
-                    <p className="text-sm text-slate-900">
-                      {new Date(opp.closing_date).toLocaleDateString()}
-                    </p>
-                  </div>
-                  {opp.funding_amount && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Funding</p>
-                      <p className="text-sm text-slate-900">{opp.funding_amount}</p>
-                    </div>
-                  )}
-                  {opp.trl_level && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">TRL Level</p>
-                      <p className="text-sm text-slate-900">{opp.trl_level}</p>
-                    </div>
-                  )}
-                  {opp.mod_department && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Department</p>
-                      <p className="text-sm text-slate-900">{opp.mod_department}</p>
-                    </div>
-                  )}
-                </div>
-
-                {opp.tech_areas && opp.tech_areas.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-sm font-medium text-gray-500 mb-2">Technology Areas</p>
-                    <div className="flex flex-wrap gap-2">
-                      {opp.tech_areas.map((tech, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-slate-100 text-slate-700 text-sm rounded-full"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-center">
-                  <a
-                    href={opp.official_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-cyan-600 hover:text-cyan-700 font-medium text-sm flex items-center"
-                  >
-                    View Official Listing →
-                  </a>
-                  <div className="text-xs text-gray-500">
-                    Posted {new Date(opp.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {opportunities.length === 0 && !loading && (
-              <div className="text-center py-12">
-                <p className="text-gray-600">No opportunities found matching your criteria.</p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
-  const AlertsPage = () => (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Alert Preferences</h1>
-          <p className="text-gray-600 mt-2">
-            {user?.tier === 'free' 
-              ? 'Upgrade to Pro to receive real-time email alerts for matching opportunities'
-              : 'Configure your personalized opportunity alerts'
-            }
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-          {user?.tier === 'free' ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Shield className="w-8 h-8 text-cyan-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">Real-Time Alerts Available in Pro</h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                Upgrade to Pro to receive instant email notifications when new opportunities match your criteria.
-              </p>
-              <button
-                onClick={() => handleUpgrade('pro')}
-                className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-              >
-                Upgrade to Pro - £49/month
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Keywords</label>
-                <input
-                  type="text"
-                  placeholder="e.g., AI, machine learning, cybersecurity"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                />
-                <p className="text-xs text-gray-500 mt-1">Comma-separated keywords to watch for</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Technology Areas</label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {['Artificial Intelligence', 'Cybersecurity', 'Quantum Computing', 'Robotics', 'Maritime Defence', 'Aerospace'].map((tech) => (
-                    <label key={tech} className="flex items-center">
-                      <input type="checkbox" className="rounded text-cyan-600 focus:ring-cyan-500" />
-                      <span className="ml-2 text-sm text-gray-700">{tech}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Funding Bodies</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {['DSTL', 'UKRI', 'MOD', 'Innovate UK', 'Defence Equipment and Support'].map((body) => (
-                    <label key={body} className="flex items-center">
-                      <input type="checkbox" className="rounded text-cyan-600 focus:ring-cyan-500" />
-                      <span className="ml-2 text-sm text-gray-700">{body}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Funding</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
-                    <option value="">No minimum</option>
-                    <option value="100000">£100K</option>
-                    <option value="500000">£500K</option>
-                    <option value="1000000">£1M</option>
-                    <option value="5000000">£5M</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Maximum Funding</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
-                    <option value="">No maximum</option>
-                    <option value="1000000">£1M</option>
-                    <option value="5000000">£5M</option>
-                    <option value="10000000">£10M</option>
-                    <option value="50000000">£50M</option>
-                  </select>
-                </div>
-              </div>
-
-              <button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-lg font-semibold transition-colors">
-                Save Alert Preferences
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
   // Upgrade Modal Component
   const UpgradeModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1388,202 +333,1222 @@ function App() {
     </div>
   );
 
-  // Procurement Act Hub Component
-  const ProcurementActHub = () => (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
-        
-        {user?.tier === 'free' ? (
-          // Free Tier - Locked Content
-          <div className="text-center py-20">
-            <div className="w-24 h-24 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-8">
-              <Lock className="w-12 h-12 text-cyan-600" />
-            </div>
+  // Procurement Act Hub Component - COMPLETELY REBUILT
+  const ProcurementActHub = () => {
+    const [openAccordions, setOpenAccordions] = useState({});
+    
+    const toggleAccordion = (section) => {
+      setOpenAccordions(prev => ({
+        ...prev,
+        [section]: !prev[section]
+      }));
+    };
+
+    if (user?.tier === 'free') {
+      // Free Tier - Locked Content
+      return (
+        <div className="min-h-screen bg-slate-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
             
-            <h1 className="text-4xl font-bold text-slate-900 mb-4">Procurement Act Hub</h1>
-            <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto border-2 border-cyan-200">
-              <h2 className="text-2xl font-bold text-slate-900 mb-4">
-                Unlock the full Procurement Act Hub with a Pro/SME Subscription
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Gain in-depth legal interpretations and interactive compliance tools designed specifically for UK defence contracts.
-              </p>
+            <div className="text-center py-20">
+              <div className="w-24 h-24 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-8">
+                <Lock className="w-12 h-12 text-cyan-600" />
+              </div>
               
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center text-left">
-                  <div className="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center mr-4">
-                    <CheckCircle className="w-5 h-5 text-cyan-600" />
+              <h1 className="text-4xl font-bold text-slate-900 mb-4">Procurement Act Hub</h1>
+              <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto border-2 border-cyan-200">
+                <h2 className="text-2xl font-bold text-slate-900 mb-4">
+                  Unlock the full Procurement Act Hub with a Pro/SME Subscription
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  Gain in-depth legal interpretations and interactive compliance tools designed specifically for UK defence contracts.
+                </p>
+                
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center text-left">
+                    <div className="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center mr-4">
+                      <CheckCircle className="w-5 h-5 text-cyan-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-slate-900">Detailed Legal Interpretations</h4>
+                      <p className="text-sm text-gray-600">Specific guidance for defence contracts under the new Act</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-900">Detailed Legal Interpretations</h4>
-                    <p className="text-sm text-gray-600">Specific guidance for defence contracts under the new Act</p>
+                  
+                  <div className="flex items-center text-left">
+                    <div className="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center mr-4">
+                      <CheckCircle className="w-5 h-5 text-cyan-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-slate-900">Interactive Compliance Checklists</h4>
+                      <p className="text-sm text-gray-600">Step-by-step guides for procurement compliance</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center text-left">
+                    <div className="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center mr-4">
+                      <CheckCircle className="w-5 h-5 text-cyan-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-slate-900">Defence & Security Provisions</h4>
+                      <p className="text-sm text-gray-600">Deep dives into defence-specific contract requirements</p>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="flex items-center text-left">
-                  <div className="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center mr-4">
-                    <CheckCircle className="w-5 h-5 text-cyan-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-900">Interactive Compliance Checklists</h4>
-                    <p className="text-sm text-gray-600">Step-by-step guides for procurement compliance</p>
+                <button
+                  onClick={() => handleUpgrade('pro')}
+                  className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-4 rounded-lg font-semibold text-lg transition-colors"
+                >
+                  Upgrade to Pro - £49/month
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Pro/Enterprise Tier - Full Dynamic Content
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
+          
+          {/* Hero Banner */}
+          <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl p-8 mb-8 text-white">
+            <h1 className="text-4xl font-bold mb-4">Navigate the Procurement Act 2023 with Confidence</h1>
+            <p className="text-xl text-blue-100">
+              Everything defence SMEs need to know — simplified, actionable, and tailored for your business.
+            </p>
+          </div>
+
+          {/* Timeline Banner */}
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-200">
+            <h2 className="text-xl font-bold text-slate-900 mb-4 text-center">Implementation Timeline</h2>
+            <div className="relative">
+              <div className="absolute left-0 right-0 top-1/2 h-2 bg-blue-200 rounded-full"></div>
+              <div className="flex justify-between relative">
+                <div className="text-center">
+                  <div className="w-4 h-4 bg-green-500 rounded-full mx-auto mb-2 relative z-10"></div>
+                  <div className="bg-white p-3 rounded-lg shadow border">
+                    <p className="font-semibold text-sm">April 2024</p>
+                    <p className="text-xs text-gray-600">Preparation Period Begins</p>
                   </div>
                 </div>
-                
-                <div className="flex items-center text-left">
-                  <div className="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center mr-4">
-                    <CheckCircle className="w-5 h-5 text-cyan-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-900">Defence & Security Provisions</h4>
-                    <p className="text-sm text-gray-600">Deep dives into defence-specific contract requirements</p>
+                <div className="text-center">
+                  <div className="w-4 h-4 bg-blue-600 rounded-full mx-auto mb-2 relative z-10"></div>
+                  <div className="bg-white p-3 rounded-lg shadow border">
+                    <p className="font-semibold text-sm">28 Oct 2024</p>
+                    <p className="text-xs text-gray-600">Act Fully in Force – DSPCR Repealed</p>
                   </div>
                 </div>
               </div>
-              
+            </div>
+          </div>
+
+          {/* Key Changes Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[
+              {
+                icon: <Zap className="w-8 h-8 text-blue-600" />,
+                title: "Competitive Flexible Procedure",
+                description: "New streamlined procurement process with flexible stages"
+              },
+              {
+                icon: <FileText className="w-8 h-8 text-green-600" />,
+                title: "Transparency Rules",
+                description: "Enhanced disclosure requirements and contract notices"
+              },
+              {
+                icon: <Clock className="w-8 h-8 text-purple-600" />,
+                title: "Faster Payment Terms",
+                description: "Improved payment terms for SMEs and suppliers"
+              },
+              {
+                icon: <Shield className="w-8 h-8 text-red-600" />,
+                title: "National Security Exemptions",
+                description: "Special provisions for defence and security contracts"
+              }
+            ].map((item, index) => (
+              <div key={index} className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                <div className="mb-4">{item.icon}</div>
+                <h3 className="font-bold text-slate-900 mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-600">{item.description}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* SME Benefits Accordion */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-slate-900">SME Benefits Under the New Act</h2>
+            </div>
+            
+            {[
+              {
+                key: 'bidding',
+                title: 'Easier Bidding Access',
+                content: 'Simplified qualification criteria and reduced bureaucracy for SME participation in defence procurement.'
+              },
+              {
+                key: 'payments',
+                title: 'Faster Payments',
+                content: 'Mandatory payment terms improvements with clear timelines and penalties for late payment.'
+              },
+              {
+                key: 'barriers',
+                title: 'Lower Qualification Barriers',
+                content: 'Reduced pre-qualification requirements and more proportionate financial and technical criteria.'
+              },
+              {
+                key: 'compliance',
+                title: 'Simpler Compliance',
+                content: 'Streamlined compliance frameworks with clearer guidance and reduced administrative burden.'
+              }
+            ].map((section) => (
+              <div key={section.key} className="border-b border-gray-200 last:border-b-0">
+                <button
+                  onClick={() => toggleAccordion(section.key)}
+                  className="w-full p-6 text-left flex items-center justify-between hover:bg-gray-50"
+                >
+                  <h3 className="font-semibold text-slate-900">{section.title}</h3>
+                  {openAccordions[section.key] ? (
+                    <ChevronUp className="w-5 h-5 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-500" />
+                  )}
+                </button>
+                {openAccordions[section.key] && (
+                  <div className="px-6 pb-6">
+                    <p className="text-gray-600">{section.content}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Defence-Specific Notice Block */}
+          <div className="bg-red-50 border-l-4 border-red-500 p-6 mb-8 rounded-r-xl">
+            <div className="flex items-start">
+              <AlertCircle className="w-6 h-6 text-red-600 mr-3 mt-1" />
+              <div>
+                <h3 className="font-bold text-red-900 mb-2">Critical Defence Sector Update</h3>
+                <p className="text-red-800 mb-3">
+                  The Defence and Security Public Contracts Regulations (DSPCR) will be repealed on 28 October 2024. 
+                  MOD contracts will transition to the new Procurement Act framework with specific national security exemptions.
+                </p>
+                <p className="text-red-700 text-sm">
+                  Defence contractors must prepare for this transition now to ensure continued eligibility for MOD opportunities.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Checklist Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Implementation Checklist</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                'Prepare internal processes for new procedures',
+                'Register on new government procurement platform',
+                'Familiarise with Competitive Flexible Procedure',
+                'Update compliance frameworks and documentation',
+                'Review contract templates for new payment terms',
+                'Assess national security exemption implications',
+                'Train procurement team on new requirements',
+                'Establish supplier qualification processes'
+              ].map((item, index) => (
+                <label key={index} className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                  <input type="checkbox" className="rounded text-cyan-600 focus:ring-cyan-500 mr-3" />
+                  <span className="text-gray-700">{item}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Resource Library */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Resource Library</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                <Download className="w-8 h-8 text-blue-600 mr-4" />
+                <div>
+                  <h4 className="font-semibold text-slate-900">SME Compliance Guide</h4>
+                  <p className="text-sm text-gray-600">Comprehensive PDF guide for defence SMEs</p>
+                </div>
+              </div>
+              <div className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                <ExternalLink className="w-8 h-8 text-green-600 mr-4" />
+                <div>
+                  <h4 className="font-semibold text-slate-900">Crowell Legal Analysis</h4>
+                  <p className="text-sm text-gray-600">Expert legal interpretation for defence contractors</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer Section */}
+          <div className="bg-gray-100 rounded-xl p-6 text-center">
+            <h3 className="text-xl font-semibold text-slate-900 mb-2">Need help navigating the new rules?</h3>
+            <p className="text-gray-600 mb-4">
+              Our expert team can provide tailored guidance for your defence contracting needs.
+            </p>
+            <div className="space-x-4">
+              <a href="#contact" className="text-cyan-600 hover:text-cyan-700 font-medium">Contact Support</a>
+              <a href="#expert-guidance" className="text-cyan-600 hover:text-cyan-700 font-medium">Expert Guidance</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Back button component
+  const BackButton = ({ onClick, text = "Back" }) => (
+    <button
+      onClick={onClick}
+      className="flex items-center text-gray-600 hover:text-gray-800 mb-6 transition-colors"
+    >
+      <ArrowLeft className="w-4 h-4 mr-2" />
+      {text}
+    </button>
+  );
+
+  // Helper functions for styling
+  const getTierColor = (tier) => {
+    switch (tier) {
+      case 'free': return 'bg-gray-100 text-gray-800';
+      case 'pro': return 'bg-cyan-100 text-cyan-800';
+      case 'enterprise': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getTierIcon = (tier) => {
+    switch (tier) {
+      case 'free': return <Users className="w-3 h-3" />;
+      case 'pro': return <Star className="w-3 h-3" />;
+      case 'enterprise': return <Crown className="w-3 h-3" />;
+      default: return <Users className="w-3 h-3" />;
+    }
+  };
+
+  // Navigation component
+  const NavBar = () => (
+    <nav className="bg-slate-900 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex items-center">
+            <button
+              onClick={() => setCurrentView('home')}
+              className="text-2xl font-bold text-white hover:text-cyan-400 transition-colors"
+            >
+              Modulus Defence
+            </button>
+          </div>
+
+          <div className="hidden md:flex items-center space-x-8">
+            {user && (
+              <>
+                <button
+                  onClick={() => setCurrentView('dashboard')}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    currentView === 'dashboard' ? 'bg-slate-700 text-cyan-400' : 'text-gray-300 hover:bg-slate-700'
+                  }`}
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => setCurrentView('opportunities')}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
+                    currentView === 'opportunities' ? 'bg-slate-700 text-cyan-400' : 'text-gray-300 hover:bg-slate-700'
+                  }`}
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  Opportunities
+                </button>
+                <button
+                  onClick={() => {
+                    if (user?.tier === 'free') {
+                      setShowUpgradeModal(true);
+                    } else {
+                      setCurrentView('procurement-act');
+                    }
+                  }}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
+                    currentView === 'procurement-act' ? 'bg-slate-700 text-cyan-400' : 'text-gray-300 hover:bg-slate-700'
+                  }`}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Procurement Act
+                  {user?.tier === 'free' && <Lock className="w-3 h-3 ml-1" />}
+                </button>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {user ? (
+              <>
+                <div className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center ${getTierColor(user.tier)}`}>
+                  {getTierIcon(user.tier)} 
+                  <span className="ml-1">{user.tier.toUpperCase()}</span>
+                </div>
+                <span className="text-sm text-gray-300">{user.company_name}</span>
+                <button
+                  onClick={() => setShowDemoSwitcher(true)}
+                  className="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center text-white"
+                  title="Demo: Switch Tiers"
+                >
+                  <Crown className="w-4 h-4 mr-1" />
+                  Demo
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-sm font-medium transition-colors text-white"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setCurrentView('login')}
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => setCurrentView('register')}
+                  className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Get Started
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+
+  // Home page component
+  const HomePage = () => (
+    <div className="min-h-screen bg-slate-50">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center">
+            <h1 className="text-5xl font-bold mb-6">
+              Modulus Defence: Your Core for UK Defence Opportunity
+            </h1>
+            <p className="text-xl text-slate-300 mb-8 max-w-3xl mx-auto">
+              Navigate UK Defence Funding & Contracts with Confidence. Access real-time opportunities, 
+              expert insights, and procurement guidance designed specifically for defence SMEs.
+            </p>
+            <div className="space-x-4">
               <button
-                onClick={() => handleUpgrade('pro')}
-                className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-4 rounded-lg font-semibold text-lg transition-colors"
+                onClick={() => setCurrentView('register')}
+                className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors"
               >
-                Upgrade to Pro - £49/month
+                Start Free Today
+              </button>
+              <button
+                onClick={() => setCurrentView('login')}
+                className="border border-slate-300 text-white hover:bg-slate-700 px-8 py-4 rounded-lg text-lg font-semibold transition-colors"
+              >
+                Login
               </button>
             </div>
           </div>
-        ) : (
-          // Pro/Enterprise Tier - Full Content
-          <div>
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-slate-900">Procurement Act Hub</h1>
-              <p className="text-gray-600 mt-2">
-                Comprehensive guidance for navigating the UK Procurement Act 2023 in defence contracts
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+              Everything Defence SMEs Need in One Platform
+            </h2>
+            <p className="text-xl text-gray-600">
+              From opportunity discovery to procurement compliance
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-8 bg-white rounded-xl shadow-sm border border-gray-200">
+              <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Search className="w-8 h-8 text-cyan-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Real-Time Opportunities</h3>
+              <p className="text-gray-600">
+                Access the most comprehensive database of UK defence funding and contracts, 
+                updated in real-time from government sources.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Navigation Sidebar */}
-              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 h-fit">
-                <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Navigation</h3>
-                <div className="space-y-2">
-                  {[
-                    'Act Overview',
-                    'Defence & Security Provisions', 
-                    'Compliance Checklists',
-                    'Contract Types',
-                    'Bid Requirements',
-                    'IP & Data Handling',
-                    'Security Clearances',
-                    'Cyber Essentials'
-                  ].map((item) => (
-                    <button 
-                      key={item}
-                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50 hover:text-cyan-700 transition-colors text-gray-700"
-                    >
-                      {item}
-                    </button>
-                  ))}
+            <div className="text-center p-8 bg-white rounded-xl shadow-sm border border-gray-200">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FileText className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Procurement Act Guidance</h3>
+              <p className="text-gray-600">
+                Navigate the new UK Procurement Act 2023 with expert interpretations 
+                and interactive compliance tools.
+              </p>
+            </div>
+
+            <div className="text-center p-8 bg-white rounded-xl shadow-sm border border-gray-200">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Bell className="w-8 h-8 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Smart Alerts</h3>
+              <p className="text-gray-600">
+                Get instant notifications for opportunities matching your expertise, 
+                ensuring you never miss a relevant contract.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Pricing Section */}
+      <div className="bg-gray-100 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+              Choose Your Access Level
+            </h2>
+            <p className="text-xl text-gray-600">
+              Start free, upgrade when you need advanced features
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Free Tier */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">Free</h3>
+                <div className="text-4xl font-bold text-slate-900 mb-4">£0</div>
+                <p className="text-gray-600">Perfect for getting started</p>
+              </div>
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <span>Basic opportunity listings (48hr delay)</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <span>General procurement guides</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <span>Email alerts</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => setCurrentView('register')}
+                className="w-full bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-semibold transition-colors"
+              >
+                Get Started Free
+              </button>
+            </div>
+
+            {/* Pro Tier */}
+            <div className="bg-white rounded-xl shadow-lg border-2 border-cyan-500 p-8 relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-cyan-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                  Most Popular
+                </span>
+              </div>
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">Pro</h3>
+                <div className="text-4xl font-bold text-slate-900 mb-4">£49</div>
+                <p className="text-gray-600">Per month - SME focused</p>
+              </div>
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <span>Real-time opportunity access</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <span>Advanced search & filtering</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <span>Full Procurement Act Hub</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <span>Expert insights & analysis</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => setCurrentView('register')}
+                className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-lg font-semibold transition-colors"
+              >
+                Start Pro Trial
+              </button>
+            </div>
+
+            {/* Enterprise Tier */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">Enterprise</h3>
+                <div className="text-4xl font-bold text-slate-900 mb-4">£149</div>
+                <p className="text-gray-600">Per month - Team access</p>
+              </div>
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <span>Everything in Pro</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <span>Multi-user access (5 seats)</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <span>Custom reports</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <span>Priority support</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => setCurrentView('register')}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition-colors"
+              >
+                Contact Sales
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Login page component
+  const LoginPage = () => (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <input
+                type="email"
+                required
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+              />
+            </div>
+            <div>
+              <input
+                type="password"
+                required
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+              />
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
+            >
+              Sign in
+            </button>
+          </div>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => setCurrentView('register')}
+              className="text-cyan-600 hover:text-cyan-500"
+            >
+              Don't have an account? Sign up
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
+  // Register page component
+  const RegisterPage = () => (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Create your account
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
+          <div className="space-y-4">
+            <input
+              type="text"
+              required
+              value={registerFullName}
+              onChange={(e) => setRegisterFullName(e.target.value)}
+              className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+              placeholder="Full name"
+            />
+            <input
+              type="text"
+              required
+              value={registerCompanyName}
+              onChange={(e) => setRegisterCompanyName(e.target.value)}
+              className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+              placeholder="Company name"
+            />
+            <input
+              type="email"
+              required
+              value={registerEmail}
+              onChange={(e) => setRegisterEmail(e.target.value)}
+              className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+              placeholder="Email address"
+            />
+            <input
+              type="password"
+              required
+              value={registerPassword}
+              onChange={(e) => setRegisterPassword(e.target.value)}
+              className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+              placeholder="Password"
+            />
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
+            >
+              Create Account
+            </button>
+          </div>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => setCurrentView('login')}
+              className="text-cyan-600 hover:text-cyan-500"
+            >
+              Already have an account? Sign in
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
+  // Dashboard page component
+  const DashboardPage = () => (
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900">
+            Welcome back, {user?.full_name}
+          </h1>
+          <p className="text-gray-600 mt-2">
+            {user?.company_name} • {user?.tier.toUpperCase()} tier
+          </p>
+        </div>
+
+        {dashboardStats && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              <div className="flex items-center">
+                <div className="p-3 bg-cyan-100 rounded-lg">
+                  <Target className="w-6 h-6 text-cyan-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Opportunities</p>
+                  <p className="text-2xl font-bold text-slate-900">{dashboardStats.total_opportunities}</p>
                 </div>
               </div>
+            </div>
 
-              {/* Main Content */}
-              <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200">
-                  <h2 className="text-2xl font-bold text-slate-900 mb-4">Procurement Act 2023 Overview</h2>
-                  <p className="text-gray-600 mb-6">
-                    The Procurement Act 2023 represents the most significant reform of UK public procurement law in decades. 
-                    For defence contractors, understanding the new framework is crucial for successful bidding.
-                  </p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div className="p-4 bg-blue-50 rounded-lg">
-                      <h4 className="font-bold text-blue-900 mb-2">Key Changes</h4>
-                      <ul className="text-sm text-blue-800 space-y-1">
-                        <li>• Single procurement framework</li>
-                        <li>• Enhanced transparency rules</li>
-                        <li>• New competitive procedures</li>
-                        <li>• Strengthened oversight</li>
-                      </ul>
-                    </div>
-                    
-                    <div className="p-4 bg-green-50 rounded-lg">
-                      <h4 className="font-bold text-green-900 mb-2">For Defence SMEs</h4>
-                      <ul className="text-sm text-green-800 space-y-1">
-                        <li>• Improved SME access provisions</li>
-                        <li>• Clearer qualification criteria</li>
-                        <li>• Enhanced payment protections</li>
-                        <li>• Streamlined processes</li>
-                      </ul>
-                    </div>
-                  </div>
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              <div className="flex items-center">
+                <div className="p-3 bg-green-100 rounded-lg">
+                  <TrendingUp className="w-6 h-6 text-green-600" />
                 </div>
-
-                <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200">
-                  <h3 className="text-xl font-bold text-slate-900 mb-4">
-                    Defence & Security Contract Provisions
-                  </h3>
-                  
-                  <div className="space-y-6">
-                    <div className="border-l-4 border-red-500 pl-4">
-                      <h4 className="font-bold text-red-900 mb-2">Security Requirements</h4>
-                      <p className="text-gray-600 mb-3">
-                        Defence contracts often require enhanced security measures including personnel security clearance and facility security.
-                      </p>
-                      <div className="bg-red-50 p-4 rounded-lg">
-                        <h5 className="font-semibold text-red-800 mb-2">Required Clearances:</h5>
-                        <ul className="text-sm text-red-700 space-y-1">
-                          <li>• <strong>SC (Security Check):</strong> Standard for most defence work</li>
-                          <li>• <strong>DV (Developed Vetting):</strong> Required for TOP SECRET access</li>
-                          <li>• <strong>Cyber Essentials Plus:</strong> Mandatory for most MOD contracts</li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="border-l-4 border-cyan-500 pl-4">
-                      <h4 className="font-bold text-cyan-900 mb-2">IP and Data Handling</h4>
-                      <p className="text-gray-600 mb-3">
-                        Intellectual property rights and data handling requirements are critical considerations in defence procurement.
-                      </p>
-                      <div className="bg-cyan-50 p-4 rounded-lg">
-                        <h5 className="font-semibold text-cyan-800 mb-2">Key Considerations:</h5>
-                        <ul className="text-sm text-cyan-700 space-y-1">
-                          <li>• Background IP vs. Foreground IP</li>
-                          <li>• Government Purpose Rights (GPR)</li>
-                          <li>• Data classification and handling</li>
-                          <li>• Export control compliance</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">New This Week</p>
+                  <p className="text-2xl font-bold text-slate-900">{dashboardStats.new_this_week}</p>
                 </div>
+              </div>
+            </div>
 
-                <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200">
-                  <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center">
-                    <CheckCircle className="w-6 h-6 mr-2 text-green-600" />
-                    Interactive Compliance Checklist
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    {[
-                      'Review contract opportunity requirements',
-                      'Confirm eligibility and qualification criteria',
-                      'Assess security clearance requirements',
-                      'Verify Cyber Essentials Plus certification',
-                      'Prepare technical capability evidence',
-                      'Complete financial standing documentation',
-                      'Draft technical proposal response',
-                      'Conduct final compliance review'
-                    ].map((item, index) => (
-                      <label key={index} className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
-                        <input type="checkbox" className="rounded text-cyan-600 focus:ring-cyan-500 mr-3" />
-                        <span className="text-gray-700">{item}</span>
-                      </label>
-                    ))}
-                  </div>
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              <div className="flex items-center">
+                <div className="p-3 bg-red-100 rounded-lg">
+                  <Clock className="w-6 h-6 text-red-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Closing Soon</p>
+                  <p className="text-2xl font-bold text-slate-900">{dashboardStats.closing_soon}</p>
                 </div>
               </div>
             </div>
           </div>
         )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Quick Actions</h2>
+            <div className="space-y-3">
+              <button
+                onClick={() => setCurrentView('opportunities')}
+                className="w-full flex items-center p-4 bg-cyan-50 hover:bg-cyan-100 rounded-lg transition-colors text-left"
+              >
+                <Search className="w-5 h-5 text-cyan-600 mr-3" />
+                <div>
+                  <div className="font-medium text-slate-900">Browse Opportunities</div>
+                  <div className="text-sm text-gray-600">Discover new funding and contracts</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => {
+                  if (user?.tier === 'free') {
+                    setShowUpgradeModal(true);
+                  } else {
+                    setCurrentView('procurement-act');
+                  }
+                }}
+                className="w-full flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left"
+              >
+                <FileText className="w-5 h-5 text-blue-600 mr-3" />
+                <div>
+                  <div className="font-medium text-slate-900 flex items-center">
+                    Procurement Act Hub
+                    {user?.tier === 'free' && <Lock className="w-4 h-4 ml-2 text-gray-400" />}
+                  </div>
+                  <div className="text-sm text-gray-600">Navigate the new UK Procurement Act</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setCurrentView('alerts')}
+                className="w-full flex items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors text-left"
+              >
+                <Bell className="w-5 h-5 text-purple-600 mr-3" />
+                <div>
+                  <div className="font-medium text-slate-900">Configure Alerts</div>
+                  <div className="text-sm text-gray-600">Set up personalized notifications</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Your Benefits</h2>
+            <div className="space-y-3">
+              {dashboardStats?.tier_benefits.map((benefit, index) => (
+                <div key={index} className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <span className="text-gray-700">{benefit}</span>
+                </div>
+              ))}
+            </div>
+
+            {user?.tier === 'free' && (
+              <div className="mt-6 p-4 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-lg border border-cyan-200">
+                <h3 className="font-semibold text-slate-900 mb-2">Upgrade to Pro</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Get instant access to opportunities, advanced filtering, and the full Procurement Act Hub.
+                </p>
+                <button
+                  onClick={() => handleUpgrade('pro')}
+                  className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                >
+                  Upgrade Now - £49/month
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Updated Opportunities page component
+  const OpportunitiesPage = () => (
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Defence Opportunities</h1>
+            <p className="text-gray-600 mt-2">
+              {opportunities.length} opportunities found • {user?.tier.toUpperCase()} access
+            </p>
+          </div>
+          
+          {user?.tier !== 'free' && (
+            <button
+              onClick={handleRefreshData}
+              disabled={loading}
+              className="bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              {loading ? 'Refreshing...' : 'Refresh Live Data'}
+            </button>
+          )}
+        </div>
+
+        {/* Updated Filters Section (moved up, removed live data sources) */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+              <input
+                id="search-input"
+                type="text"
+                defaultValue=""
+                placeholder="Search opportunities..."
+                onChange={() => fetchOpportunities()}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              />
+            </div>
+            
+            {/* Advanced filters only for Pro/Enterprise users */}
+            {user?.tier !== 'free' ? (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Funding Body</label>
+                  <select
+                    value={selectedFilters.funding_body}
+                    onChange={(e) => handleFilterChange('funding_body', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  >
+                    <option value="">All Funding Bodies</option>
+                    <option value="DSTL">DSTL</option>
+                    <option value="UKRI">UKRI</option>
+                    <option value="MOD">MOD</option>
+                    <option value="Innovate UK">Innovate UK</option>
+                    <option value="DASA">DASA</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Industry</label>
+                  <select
+                    value={selectedFilters.industry}
+                    onChange={(e) => handleFilterChange('industry', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  >
+                    <option value="">All Industries</option>
+                    <option value="Artificial Intelligence">Artificial Intelligence</option>
+                    <option value="Cybersecurity">Cybersecurity</option>
+                    <option value="Advanced Materials & Manufacturing">Advanced Materials & Manufacturing</option>
+                    <option value="Quantum Technologies">Quantum Technologies</option>
+                    <option value="Space Technologies">Space Technologies</option>
+                    <option value="Robotics & Autonomous Systems (RAS) / Uncrewed Systems">Robotics & Autonomous Systems</option>
+                    <option value="Sensors & Signal Processing">Sensors & Signal Processing</option>
+                    <option value="Human Factors & Training Technologies">Human Factors & Training Technologies</option>
+                    <option value="Propulsion & Energy Systems">Propulsion & Energy Systems</option>
+                    <option value="Chemical, Biological, Radiological, and Nuclear (CBRN) Defence">CBRN Defence</option>
+                    <option value="Maritime Defence">Maritime Defence</option>
+                    <option value="Aerospace">Aerospace</option>
+                  </select>
+                </div>
+              </>
+            ) : (
+              // Free tier users see locked advanced filters
+              <>
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Funding Body
+                    <Lock className="w-4 h-4 inline ml-1 text-gray-400" />
+                  </label>
+                  <select
+                    disabled
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed"
+                  >
+                    <option>Upgrade to Pro for Advanced Filters</option>
+                  </select>
+                  <div 
+                    className="absolute inset-0 cursor-pointer"
+                    onClick={() => setShowUpgradeModal(true)}
+                  ></div>
+                </div>
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Industry
+                    <Lock className="w-4 h-4 inline ml-1 text-gray-400" />
+                  </label>
+                  <select
+                    disabled
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed"
+                  >
+                    <option>Upgrade to Pro for Advanced Filters</option>
+                  </select>
+                  <div 
+                    className="absolute inset-0 cursor-pointer"
+                    onClick={() => setShowUpgradeModal(true)}
+                  ></div>
+                </div>
+              </>
+            )}
+          </div>
+          
+          {/* Additional Pro filters (removed TRL and MOD department) */}
+          {user?.tier !== 'free' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-200">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Contract Type</label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                  <option value="">All Contract Types</option>
+                  <option value="Research">Research & Development</option>
+                  <option value="Innovation">Innovation Grant</option>
+                  <option value="Public">Public Contract</option>
+                  <option value="Strategic">Strategic Research</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Funding Range</label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                  <option value="">All Ranges</option>
+                  <option value="0-500k">£0 - £500K</option>
+                  <option value="500k-2m">£500K - £2M</option>
+                  <option value="2m-10m">£2M - £10M</option>
+                  <option value="10m+">£10M+</option>
+                </select>
+              </div>
+            </div>
+          )}
+          
+          {user?.tier === 'free' && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-200">
+                <div className="flex items-center">
+                  <AlertCircle className="w-5 h-5 text-cyan-600 mr-2" />
+                  <div>
+                    <h4 className="font-semibold text-cyan-900">Advanced Search Available in Pro</h4>
+                    <p className="text-sm text-cyan-700">
+                      Upgrade to Pro for advanced filters including funding bodies, industries, contract types, and funding ranges.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="ml-4 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                  >
+                    Upgrade
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Opportunities List */}
+        <div className="space-y-6">
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading opportunities...</p>
+            </div>
+          ) : opportunities.length === 0 ? (
+            <div className="text-center py-12">
+              <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No opportunities found</h3>
+              <p className="text-gray-600">Try adjusting your search criteria or filters</p>
+            </div>
+          ) : (
+            opportunities.map((opp) => (
+              <div key={opp.id} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-xl font-bold text-slate-900">{opp.title}</h3>
+                      {opp.is_delayed && (
+                        <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full border border-yellow-300">
+                          {opp.delay_message || "Delayed Access: Pro/SME Members See This Instantly"}
+                        </span>
+                      )}
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getTierColor(opp.tier_required)}`}>
+                        {opp.tier_required.toUpperCase()}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 mb-2">{opp.funding_body}</p>
+                    <p className="text-gray-700 leading-relaxed">{opp.description}</p>
+                  </div>
+                  <div className="ml-6 text-right">
+                    <div className="text-sm text-gray-500 mb-1">Closing Date</div>
+                    <div className="font-semibold text-slate-900">
+                      {new Date(opp.closing_date).toLocaleDateString()}
+                    </div>
+                    {opp.funding_amount && (
+                      <div className="mt-2">
+                        <div className="text-sm text-gray-500">Value</div>
+                        <div className="font-semibold text-green-600">{opp.funding_amount}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    {opp.tech_areas && opp.tech_areas.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {opp.tech_areas.slice(0, 3).map((area, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                          >
+                            {area}
+                          </span>
+                        ))}
+                        {opp.tech_areas.length > 3 && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                            +{opp.tech_areas.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    {opp.contract_type && (
+                      <span className="text-sm text-gray-600">
+                        {opp.contract_type}
+                      </span>
+                    )}
+                    <a
+                      href={opp.official_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center"
+                    >
+                      View Details
+                      <ExternalLink className="w-4 h-4 ml-2" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Alerts page component
+  const AlertsPage = () => (
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
+        
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900">Alert Preferences</h1>
+          <p className="text-gray-600 mt-2">
+            Configure personalized notifications for opportunities that match your interests
+          </p>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Keywords (comma-separated)
+              </label>
+              <input
+                type="text"
+                defaultValue=""
+                placeholder="e.g., AI, cybersecurity, quantum computing"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Preferred Industries
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {[
+                  'Artificial Intelligence',
+                  'Cybersecurity', 
+                  'Advanced Materials & Manufacturing',
+                  'Quantum Technologies',
+                  'Space Technologies',
+                  'Robotics & Autonomous Systems',
+                  'Sensors & Signal Processing',
+                  'Human Factors & Training Technologies',
+                  'Propulsion & Energy Systems',
+                  'CBRN Defence',
+                  'Maritime Defence',
+                  'Aerospace'
+                ].map((area) => (
+                  <label key={area} className="flex items-center">
+                    <input type="checkbox" className="rounded text-cyan-600 focus:ring-cyan-500 mr-2" />
+                    <span className="text-sm text-gray-700">{area}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Funding Bodies
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {['MOD', 'DSTL', 'DASA', 'Innovate UK', 'UKRI', 'Crown Commercial Service'].map((body) => (
+                  <label key={body} className="flex items-center">
+                    <input type="checkbox" className="rounded text-cyan-600 focus:ring-cyan-500 mr-2" />
+                    <span className="text-sm text-gray-700">{body}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Minimum Funding (£)
+                </label>
+                <input
+                  type="number"
+                  defaultValue=""
+                  placeholder="e.g., 50000"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Maximum Funding (£)
+                </label>
+                <input
+                  type="number"
+                  defaultValue=""
+                  placeholder="e.g., 2000000"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-gray-200">
+              <button className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                Save Alert Preferences
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1599,6 +1564,7 @@ function App() {
       {currentView === 'opportunities' && <OpportunitiesPage />}
       {currentView === 'alerts' && user && <AlertsPage />}
       {currentView === 'procurement-act' && user && <ProcurementActHub />}
+      
       {showUpgradeModal && <UpgradeModal />}
       {showDemoSwitcher && <DemoTierSwitcher />}
     </div>
