@@ -224,7 +224,7 @@ async def fetch_and_store_live_data():
         
     try:
         print("Starting live data refresh...")
-        live_opportunities = await data_service.aggregate_all_real_opportunities()
+        live_opportunities = await data_service.collect_all_opportunities()
         
         # Store in database with source tracking
         stored_count = 0
