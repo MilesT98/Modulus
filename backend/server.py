@@ -172,7 +172,7 @@ async def refresh_live_data(background_tasks: BackgroundTasks, current_user: dic
     if current_user["tier"] == "free":
         raise HTTPException(status_code=403, detail="Upgrade to Pro to access live data refresh")
     
-    if not COMPREHENSIVE_SERVICE_AVAILABLE:
+    if not DATA_SERVICE_AVAILABLE:
         raise HTTPException(status_code=503, detail="Data integration service not available")
     
     background_tasks.add_task(fetch_and_store_live_data)
