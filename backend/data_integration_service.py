@@ -497,6 +497,15 @@ class RealDataIntegrationService:
         
         return unique_opportunities
     
+    def _extract_title_from_text(self, text: str) -> str:
+        """Extract a reasonable title from text"""
+        lines = text.strip().split('\n')
+        for line in lines:
+            line = line.strip()
+            if len(line) > 10 and len(line) < 200:
+                return line
+        return text[:100] if text else "Untitled Opportunity"
+    
     def _is_defence_related(self, text: str) -> bool:
         """Check if text contains defence-related keywords"""
         text_lower = text.lower()
