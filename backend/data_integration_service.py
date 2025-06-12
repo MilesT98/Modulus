@@ -75,76 +75,108 @@ class RealDataIntegrationService:
     
     async def scrape_contracts_finder(self, session: aiohttp.ClientSession) -> List[Dict]:
         """
-        REAL scraping of UK Contracts Finder website
+        ENHANCED scraping of UK Contracts Finder website
         """
         opportunities = []
         
         try:
-            # Search for defence-related contracts on the actual website
-            search_params = {
-                'keywords': 'defence security military',
-                'location': '',
-                'radius': '',
-                'postcode': '',
-                'postedFrom': (datetime.now() - timedelta(days=30)).strftime('%d/%m/%Y'),
-                'postedTo': datetime.now().strftime('%d/%m/%Y'),
-                'stage': 'tender'
-            }
+            # Multiple search queries to get more comprehensive results
+            search_queries = [
+                'defence security military',
+                'cyber security',
+                'aerospace',
+                'maritime',
+                'surveillance',
+                'intelligence',
+                'weapons systems',
+                'radar',
+                'communications'
+            ]
             
-            url = self.sources['contracts_finder']['search_url']
-            
-            async with session.get(url, params=search_params, headers=self.session_headers) as response:
-                if response.status == 200:
-                    html = await response.text()
-                    soup = BeautifulSoup(html, 'html.parser')
-                    
-                    # Parse search results from the actual website
-                    contract_cards = soup.find_all('div', class_='search-result')
-                    
-                    for card in contract_cards[:10]:  # Limit to 10 results
-                        try:
-                            title_elem = card.find('h2') or card.find('h3') or card.find('a')
-                            title = title_elem.get_text(strip=True) if title_elem else 'Unknown Contract'
+            for query in search_queries:
+                search_params = {
+                    'keywords': query,
+                    'location': '',
+                    'radius': '',
+                    'postcode': '',
+                    'postedFrom': (datetime.now() - timedelta(days=60)).strftime('%d/%m/%Y'),  # Last 60 days
+                    'postedTo': datetime.now().strftime('%d/%m/%Y'),
+                    'stage': 'all'  # Include all stages
+                }
+                
+                url = self.sources['contracts_finder']['search_url']
+                
+                try:
+                    async with session.get(url, params=search_params, headers=self.session_headers) as response:
+                        if response.status == 200:
+                            html = await response.text()
+                            soup = BeautifulSoup(html, 'html.parser')
                             
-                            desc_elem = card.find('p') or card.find('div', class_='description')
-                            description = desc_elem.get_text(strip=True) if desc_elem else ''
+                            # Parse search results from the actual website
+                            contract_cards = soup.find_all(['div', 'article'], class_=re.compile(r'search|result|contract|tender'))
                             
-                            # Look for contract value
-                            value_text = card.get_text()
-                            value = self._extract_value_from_text(value_text)
+                            if not contract_cards:
+                                # Fallback: look for any div containing contract info
+                                contract_cards = soup.find_all('div', string=re.compile(r'contract|tender|award', re.I))
+                                contract_cards = [card.parent for card in contract_cards if card.parent]
                             
-                            # Look for closing date
-                            date_elem = card.find(string=re.compile(r'deadline|close|expires'))
-                            closing_date = self._extract_date_from_text(card.get_text()) if date_elem else None
-                            
-                            # Get link to full contract
-                            link_elem = card.find('a', href=True)
-                            official_link = f"{self.sources['contracts_finder']['base_url']}{link_elem['href']}" if link_elem else ''
-                            
-                            if self._is_defence_related(title + ' ' + description):
-                                opportunity = {
-                                    'id': f"cf_real_{hash(title + description)}",
-                                    'title': title,
-                                    'funding_body': 'UK Government Contract',
-                                    'description': description[:500],
-                                    'detailed_description': description,
-                                    'closing_date': closing_date or (datetime.now() + timedelta(days=30)),
-                                    'funding_amount': value,
-                                    'tech_areas': self._extract_tech_areas(description),
-                                    'mod_department': self._extract_department_from_text(title + description),
-                                    'contract_type': 'Public Contract',
-                                    'official_link': official_link,
-                                    'status': 'active',
-                                    'created_at': datetime.utcnow(),
-                                    'tier_required': 'free',
-                                    'is_delayed_for_free': False,
-                                    'source': 'contracts_finder_real'
-                                }
-                                opportunities.append(opportunity)
-                                
-                        except Exception as e:
-                            print(f"Error parsing contract card: {e}")
-                            continue
+                            for card in contract_cards[:15]:  # Limit to 15 per query
+                                try:
+                                    # Extract text content
+                                    card_text = card.get_text()
+                                    
+                                    # Look for title
+                                    title_elem = card.find(['h1', 'h2', 'h3', 'h4']) or card.find('a')
+                                    title = title_elem.get_text(strip=True) if title_elem else self._extract_title_from_text(card_text)
+                                    
+                                    if not title or len(title) < 10:
+                                        continue
+                                    
+                                    desc_elem = card.find('p') or card.find('div', class_=re.compile(r'description|summary'))
+                                    description = desc_elem.get_text(strip=True) if desc_elem else card_text[:300]
+                                    
+                                    # Look for contract value
+                                    value = self._extract_value_from_text(card_text)
+                                    
+                                    # Look for closing date
+                                    closing_date = self._extract_date_from_text(card_text)
+                                    
+                                    # Get link to full contract
+                                    link_elem = card.find('a', href=True)
+                                    official_link = f"{self.sources['contracts_finder']['base_url']}{link_elem['href']}" if link_elem and link_elem['href'].startswith('/') else (link_elem['href'] if link_elem else f"{self.sources['contracts_finder']['base_url']}")
+                                    
+                                    if self._is_defence_related(title + ' ' + description):
+                                        opportunity = {
+                                            'id': f"cf_real_{hash(title + description + query)}",
+                                            'title': title[:200],
+                                            'funding_body': 'UK Government Contract (Contracts Finder)',
+                                            'description': description[:500],
+                                            'detailed_description': description,
+                                            'closing_date': closing_date or (datetime.now() + timedelta(days=30)),
+                                            'funding_amount': value,
+                                            'tech_areas': self._extract_tech_areas(description),
+                                            'mod_department': self._extract_department_from_text(title + description),
+                                            'contract_type': 'Public Contract',
+                                            'official_link': official_link,
+                                            'status': 'active',
+                                            'created_at': datetime.utcnow(),
+                                            'tier_required': 'free',
+                                            'is_delayed_for_free': False,
+                                            'source': 'contracts_finder_real',
+                                            'search_query': query
+                                        }
+                                        opportunities.append(opportunity)
+                                        
+                                except Exception as e:
+                                    print(f"Error parsing contract card: {e}")
+                                    continue
+                        
+                        # Small delay between queries
+                        await asyncio.sleep(1)
+                        
+                except Exception as e:
+                    print(f"Error with search query '{query}': {e}")
+                    continue
                             
         except Exception as e:
             print(f"Error scraping Contracts Finder: {e}")
