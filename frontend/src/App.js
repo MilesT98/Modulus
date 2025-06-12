@@ -952,85 +952,88 @@ function App() {
   };
 
   // Register page component
-  const RegisterPage = () => (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={(e) => {
-          e.preventDefault();
-          const formData = new FormData(e.target);
-          const full_name = formData.get('full_name');
-          const company_name = formData.get('company_name');
-          const email = formData.get('email');
-          const password = formData.get('password');
-          
-          api.post('/api/auth/register', { full_name, company_name, email, password })
-            .then(response => {
-              localStorage.setItem('access_token', response.data.access_token);
-              setUser(response.data.user);
-              setCurrentView('dashboard');
-            })
-            .catch(error => {
-              alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
-            });
-        }}>
-          <div className="space-y-4">
-            <input
-              name="full_name"
-              type="text"
-              required
-              className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
-              placeholder="Full name"
-            />
-            <input
-              name="company_name"
-              type="text"
-              required
-              className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
-              placeholder="Company name"
-            />
-            <input
-              name="email"
-              type="email"
-              required
-              className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
-              placeholder="Email address"
-            />
-            <input
-              name="password"
-              type="password"
-              required
-              className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
-              placeholder="Password"
-            />
-          </div>
+  const RegisterPage = () => {
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const full_name = formData.get('full_name');
+      const company_name = formData.get('company_name');
+      const email = formData.get('email');
+      const password = formData.get('password');
+      
+      try {
+        const response = await api.post('/api/auth/register', { full_name, company_name, email, password });
+        localStorage.setItem('access_token', response.data.access_token);
+        setUser(response.data.user);
+        setCurrentView('dashboard');
+      } catch (error) {
+        alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
+      }
+    };
 
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
           <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
-            >
-              Create Account
-            </button>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              Create your account
+            </h2>
           </div>
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <input
+                name="full_name"
+                type="text"
+                required
+                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                placeholder="Full name"
+              />
+              <input
+                name="company_name"
+                type="text"
+                required
+                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                placeholder="Company name"
+              />
+              <input
+                name="email"
+                type="email"
+                required
+                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                placeholder="Email address"
+              />
+              <input
+                name="password"
+                type="password"
+                required
+                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                placeholder="Password"
+              />
+            </div>
 
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setCurrentView('login')}
-              className="text-cyan-600 hover:text-cyan-500"
-            >
-              Already have an account? Sign in
-            </button>
-          </div>
-        </form>
+            <div>
+              <button
+                type="submit"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
+              >
+                Create Account
+              </button>
+            </div>
+
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setCurrentView('login')}
+                className="text-cyan-600 hover:text-cyan-500"
+              >
+                Already have an account? Sign in
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Dashboard page component
   const DashboardPage = () => (
