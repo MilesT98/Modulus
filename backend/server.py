@@ -167,32 +167,30 @@ async def root():
 @app.post("/api/data/refresh")
 async def refresh_live_data(background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
     """
-    Refresh opportunities from live defence sources (Pro/Enterprise only)
+    Refresh opportunities from ALL defence sources (Pro/Enterprise only)
     """
     if current_user["tier"] == "free":
         raise HTTPException(status_code=403, detail="Upgrade to Pro to access live data refresh")
     
-    # Import and run defence filter
+    # Import and run ultimate defence collector
     try:
-        from defence_filter_service import DefenceOpportunityFilter
+        from ultimate_defence_collector import UltimateDefenceCollector
         
-        async def refresh_defence_data():
-            filter_service = DefenceOpportunityFilter()
-            new_opportunities = await filter_service.collect_defence_opportunities()
+        async def refresh_ultimate_defence_data():
+            collector = UltimateDefenceCollector()
+            new_opportunities = await collector.collect_all_defence_opportunities()
             
             if new_opportunities:
-                # Add new opportunities (don't clear existing)
-                for opp in new_opportunities:
-                    existing = opportunities_collection.find_one({"title": opp["title"]})
-                    if not existing:
-                        opportunities_collection.insert_one(opp)
-                        print(f"Added new defence opportunity: {opp['title']}")
+                # Replace all opportunities with fresh collection
+                opportunities_collection.delete_many({})
+                opportunities_collection.insert_many(new_opportunities)
+                print(f"Ultimate refresh: {len(new_opportunities)} defence opportunities collected")
         
-        background_tasks.add_task(refresh_defence_data)
-        return {"message": "Defence data refresh initiated", "status": "processing"}
+        background_tasks.add_task(refresh_ultimate_defence_data)
+        return {"message": "Ultimate defence data refresh initiated - collecting from ALL sources", "status": "processing"}
         
     except ImportError:
-        return {"message": "Defence data refresh service not available", "status": "error"}
+        return {"message": "Ultimate defence collector not available", "status": "error"}
 
 @app.get("/api/data/sources")
 async def get_data_sources():
