@@ -13,3 +13,7 @@
 
 🤖 PHASE 2: Browser Automation...
 📋 Collecting from Find a Tender...
+Error searching Find a Tender for 'defence': Page.fill: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("input[name=\"keywords\"]")
+
