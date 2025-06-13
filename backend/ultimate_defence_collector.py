@@ -24,14 +24,33 @@ class UltimateDefenceCollector:
             'Upgrade-Insecure-Requests': '1'
         }
         
-        # Defence filtering keywords
+        # CONTRACT-SPECIFIC keywords (high priority)
+        self.contract_keywords = [
+            'tender', 'contract', 'invitation to tender', 'itt', 'request for proposal', 'rfp',
+            'quotation', 'framework agreement', 'award notice', 'procurement',
+            'call for competition', 'supply', 'provision of', 'delivery of',
+            'maintenance contract', 'service contract', 'supply contract',
+            'works contract', 'goods contract', 'equipment supply'
+        ]
+        
+        # INNOVATION/NON-CONTRACT keywords (exclude/deprioritize)
+        self.innovation_keywords = [
+            'expression of interest', 'eoi', 'call for innovation', 'get in touch',
+            'pitch', 'accelerator', 'competition', 'challenge', 'grant',
+            'innovation call', 'themed competition', 'defence innovation',
+            'showcase', 'demonstration', 'pilot study', 'feasibility study',
+            'research call', 'innovation funding', 'startup', 'sme innovation'
+        ]
+        
+        # Defence filtering keywords (must still be defence-related)
         self.defence_keywords = [
             'defence', 'defense', 'military', 'mod', 'ministry of defence',
-            'army', 'navy', 'air force', 'raf', 'royal navy', 'dstl', 'dasa',
+            'army', 'navy', 'air force', 'raf', 'royal navy', 'dstl',
             'weapons', 'ammunition', 'security clearance', 'classified',
             'surveillance', 'intelligence', 'cybersecurity', 'radar'
         ]
         
+        # Exclusion keywords (immediate rejection)
         self.exclusion_keywords = [
             'utilities', 'water', 'gas', 'electricity', 'transport',
             'healthcare', 'education', 'social services', 'housing',
