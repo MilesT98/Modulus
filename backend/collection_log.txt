@@ -21,3 +21,7 @@ Error searching Find a Tender for 'security': Page.fill: Timeout 30000ms exceede
 Call log:
   - waiting for locator("input[name=\"keywords\"]")
 
+Error searching Find a Tender for 'military': Page.fill: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("input[name=\"keywords\"]")
+
