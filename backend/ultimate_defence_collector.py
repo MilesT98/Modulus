@@ -593,16 +593,70 @@ class UltimateDefenceCollector:
     # =================== UTILITY METHODS ===================
 
     def _is_defence_opportunity(self, title: str, description: str, source: str) -> bool:
-        """Check if opportunity is defence-related"""
+        """
+        ENHANCED: Check if opportunity is a DEFENCE CONTRACT (not just innovation call)
+        """
         text = f"{title} {description} {source}".lower()
         
-        # Immediate rejection for exclusions
+        # IMMEDIATE REJECTION for exclusions
         for exclusion in self.exclusion_keywords:
             if exclusion in text:
                 return False
         
-        # Must contain defence keywords
-        return any(keyword in text for keyword in self.defence_keywords)
+        # IMMEDIATE REJECTION for innovation/non-contract keywords
+        for innovation_word in self.innovation_keywords:
+            if innovation_word in text:
+                print(f"❌ Rejected innovation call: {title[:60]}...")
+                return False
+        
+        # Must be defence-related
+        is_defence = any(keyword in text for keyword in self.defence_keywords)
+        if not is_defence:
+            return False
+        
+        # Must have contract indicators
+        is_contract = any(keyword in text for keyword in self.contract_keywords)
+        
+        # Additional contract indicators
+        contract_indicators = [
+            'contract value', 'tender value', 'estimated value',
+            'supply of', 'provision of', 'delivery of', 'maintenance of',
+            'cpv code', 'contract notice', 'award notice',
+            'closing date', 'submission deadline', 'tender deadline',
+            'framework', 'dynamic purchasing system', 'lots'
+        ]
+        
+        has_contract_indicators = any(indicator in text for indicator in contract_indicators)
+        
+        # Score-based approach for contract likelihood
+        contract_score = 0
+        
+        if is_contract:
+            contract_score += 10
+        if has_contract_indicators:
+            contract_score += 5
+        
+        # Look for value patterns (actual contract values, not funding ranges)
+        value_patterns = [
+            r'contract value[:\s]*£[\d,]+',
+            r'estimated value[:\s]*£[\d,]+',
+            r'total value[:\s]*£[\d,]+',
+            r'£[\d,]+(?:\.\d{2})?\s*(?:per|total|contract)',
+        ]
+        
+        for pattern in value_patterns:
+            if re.search(pattern, text):
+                contract_score += 3
+        
+        # Require minimum score for acceptance
+        is_likely_contract = contract_score >= 10
+        
+        if is_likely_contract:
+            print(f"✅ Accepted contract: {title[:60]}... (Score: {contract_score})")
+        else:
+            print(f"❌ Rejected non-contract: {title[:60]}... (Score: {contract_score})")
+        
+        return is_likely_contract
 
     def _extract_tech_areas(self, text: str) -> List[str]:
         """Extract technology areas from text"""
