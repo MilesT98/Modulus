@@ -25,3 +25,31 @@ Error searching Find a Tender for 'military': Page.fill: Timeout 30000ms exceede
 Call log:
   - waiting for locator("input[name=\"keywords\"]")
 
+Error searching Find a Tender for 'MOD': Page.fill: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("input[name=\"keywords\"]")
+
+✅ Find a Tender Browser: 0 opportunities
+👑 Collecting from CCS Frameworks...
+✅ CCS Frameworks Browser: 0 opportunities
+🛡️ Collecting from Defence Sourcing Portal...
+Could not access DSP URL https://defencesourcingportal.mod.uk: Page.goto: net::ERR_NAME_NOT_RESOLVED at https://defencesourcingportal.mod.uk/
+Call log:
+  - navigating to "https://defencesourcingportal.mod.uk/", waiting until "networkidle"
+
+Could not access DSP URL https://www.contracts.mod.uk: Page.goto: Navigation to "https://www.contracts.mod.uk/" is interrupted by another navigation to "chrome-error://chromewebdata/"
+Call log:
+  - navigating to "https://www.contracts.mod.uk/", waiting until "networkidle"
+
+Could not access DSP URL https://supplier.defence.gov.uk: Page.goto: net::ERR_NAME_NOT_RESOLVED at https://supplier.defence.gov.uk/
+Call log:
+  - navigating to "https://supplier.defence.gov.uk/", waiting until "networkidle"
+
+✅ Defence Sourcing Portal: 0 opportunities
+🏭 Collecting from Prime Contractors...
+✅ Prime Contractors Browser: 0 opportunities
+
+🎯 ULTIMATE COLLECTION COMPLETE:
+   📊 Raw opportunities: 0
+   📊 Unique opportunities: 0
+Total opportunities collected: 0
