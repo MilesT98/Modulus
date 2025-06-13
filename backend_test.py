@@ -502,15 +502,24 @@ def test_opportunity_links_and_values():
     all_dates_valid = True
     now = datetime.utcnow()
     for opp in pro_opportunities:
-        closing_date = datetime.strptime(opp["closing_date"], "%Y-%m-%d %H:%M:%S")
-        if closing_date <= now:
-            print(f"❌ Closing date is not in the future: {opp['closing_date']} for {opp['title']}")
+        try:
+            # Try different date formats
+            if 'T' in opp["closing_date"]:
+                closing_date = datetime.fromisoformat(opp["closing_date"].replace('Z', '+00:00'))
+            else:
+                closing_date = datetime.strptime(opp["closing_date"], "%Y-%m-%d %H:%M:%S")
+                
+            if closing_date <= now:
+                print(f"❌ Closing date is not in the future: {opp['closing_date']} for {opp['title']}")
+                all_dates_valid = False
+            
+            # Check if closing date is within reasonable range (30-90 days)
+            days_until_closing = (closing_date - now).days
+            if days_until_closing < 30 or days_until_closing > 90:
+                print(f"⚠️ Closing date outside 30-90 day range: {days_until_closing} days for {opp['title']}")
+        except Exception as e:
+            print(f"❌ Error parsing closing date: {opp['closing_date']} - {str(e)}")
             all_dates_valid = False
-        
-        # Check if closing date is within reasonable range (30-90 days)
-        days_until_closing = (closing_date - now).days
-        if days_until_closing < 30 or days_until_closing > 90:
-            print(f"⚠️ Closing date outside 30-90 day range: {days_until_closing} days for {opp['title']}")
     
     if all_dates_valid:
         print("✅ All closing dates are in the future")
