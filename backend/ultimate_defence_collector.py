@@ -149,82 +149,82 @@ class UltimateDefenceCollector:
     # =================== PHASE 1 IMPLEMENTATIONS ===================
 
     async def _collect_contracts_finder_api(self, session: aiohttp.ClientSession) -> List[Dict]:
-        """Contracts Finder API - Maximum Coverage"""
+        """Contracts Finder - WEB SCRAPING with CONTRACT focus"""
         opportunities = []
         
-        # Contracts Finder API endpoints
-        api_base = "https://www.contractsfinder.service.gov.uk/api"
-        
-        # Defence-specific search terms for API
-        defence_searches = [
-            'defence', 'ministry of defence', 'mod', 'dstl', 'dasa',
-            'army', 'navy', 'air force', 'military equipment',
-            'security clearance', 'defence technology', 'weapons',
-            'cybersecurity', 'surveillance', 'intelligence'
+        # Contract-specific search terms (not innovation terms)
+        contract_searches = [
+            'defence equipment', 'military equipment', 'mod contract',
+            'army contract', 'navy contract', 'air force contract',
+            'defence services', 'military services', 'security services',
+            'weapons systems', 'defence technology', 'military technology',
+            'maintenance contract', 'supply contract', 'service contract'
         ]
         
-        for search_term in defence_searches:
+        for search_term in contract_searches[:8]:  # Top 8 most contract-specific terms
             try:
-                # API search with pagination
-                for page in range(1, 6):  # First 5 pages per search
-                    params = {
-                        'searchTerm': search_term,
-                        'page': page,
-                        'limit': 100,  # Maximum per page
-                        'stage': 'all'
-                    }
+                # Use web scraping instead of API (which seems unavailable)
+                search_url = f"https://www.contractsfinder.service.gov.uk/Search?searchTerm={search_term.replace(' ', '%20')}"
+                
+                async with session.get(search_url) as response:
+                    if response.status == 200:
+                        html = await response.text()
+                        soup = BeautifulSoup(html, 'html.parser')
+                        
+                        # Look for contract result elements
+                        contract_elements = soup.select('div[class*="search-result"], article[class*="contract"], div[class*="notice"]')
+                        
+                        for element in contract_elements[:10]:  # Max 10 per search
+                            try:
+                                title_elem = element.find(['h2', 'h3', 'h4']) or element.find('a')
+                                title = title_elem.get_text(strip=True) if title_elem else ''
+                                
+                                if len(title) < 10:
+                                    continue
+                                
+                                desc_elem = element.find('p') or element.find('div', class_=re.compile(r'description|summary'))
+                                description = desc_elem.get_text(strip=True) if desc_elem else title
+                                
+                                # Get contract details
+                                value_elem = element.find(string=re.compile(r'value|£', re.I))
+                                value = value_elem.strip() if value_elem else 'TBD'
+                                
+                                link_elem = element.find('a', href=True)
+                                official_link = f"https://www.contractsfinder.service.gov.uk{link_elem['href']}" if link_elem and link_elem['href'].startswith('/') else search_url
+                                
+                                # STRICT CONTRACT FILTERING
+                                if not self._is_defence_opportunity(title, description, 'Contracts Finder'):
+                                    continue
+                                
+                                opportunity = {
+                                    'id': f"cf_contract_{hash(title + search_term)}",
+                                    'title': title[:200],
+                                    'funding_body': 'UK Government (Defence Contract)',
+                                    'description': description[:500],
+                                    'detailed_description': description,
+                                    'closing_date': datetime.now() + timedelta(days=30),
+                                    'funding_amount': value,
+                                    'tech_areas': self._extract_tech_areas(title + ' ' + description),
+                                    'contract_type': 'Defence Contract',
+                                    'official_link': official_link,
+                                    'status': 'active',
+                                    'created_at': datetime.utcnow(),
+                                    'tier_required': 'free',
+                                    'source': 'contracts_finder_contracts'
+                                }
+                                
+                                opportunities.append(opportunity)
+                                
+                            except Exception as e:
+                                continue
                     
-                    api_url = f"{api_base}/notices/search"
-                    
-                    async with session.get(api_url, params=params) as response:
-                        if response.status == 200:
-                            data = await response.json()
-                            
-                            if 'notices' in data:
-                                for notice in data['notices']:
-                                    try:
-                                        title = notice.get('title', '')
-                                        description = notice.get('description', '')
-                                        
-                                        if not self._is_defence_opportunity(title, description, 'Contracts Finder'):
-                                            continue
-                                        
-                                        opportunity = {
-                                            'id': f"cf_api_{notice.get('id', hash(title))}",
-                                            'title': title[:200],
-                                            'funding_body': 'UK Government (Contracts Finder)',
-                                            'description': description[:500],
-                                            'detailed_description': description,
-                                            'closing_date': self._parse_date(notice.get('closingDate')) or (datetime.now() + timedelta(days=30)),
-                                            'funding_amount': notice.get('value', 'TBD'),
-                                            'tech_areas': self._extract_tech_areas(title + ' ' + description),
-                                            'contract_type': notice.get('noticeType', 'Government Contract'),
-                                            'official_link': notice.get('url', f"https://www.contractsfinder.service.gov.uk/notice/{notice.get('id')}"),
-                                            'status': 'active',
-                                            'created_at': datetime.utcnow(),
-                                            'tier_required': 'free',
-                                            'source': 'contracts_finder_api'
-                                        }
-                                        
-                                        opportunities.append(opportunity)
-                                        
-                                    except Exception as e:
-                                        continue
-                            
-                            # Break if no more results
-                            if len(data.get('notices', [])) < 100:
-                                break
-                        else:
-                            print(f"API error for {search_term}: {response.status}")
-                            break
-                    
-                    await asyncio.sleep(0.5)  # Rate limiting
+                    await asyncio.sleep(1)  # Rate limiting
                     
             except Exception as e:
-                print(f"Error with API search '{search_term}': {e}")
+                print(f"Error with contract search '{search_term}': {e}")
                 continue
         
-        print(f"✅ Contracts Finder API: {len(opportunities)} opportunities")
+        print(f"✅ Contracts Finder (Contract-focused): {len(opportunities)} opportunities")
         return opportunities
 
     async def _collect_dasa_direct(self, session: aiohttp.ClientSession) -> List[Dict]:
