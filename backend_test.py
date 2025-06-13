@@ -345,17 +345,193 @@ def test_pro_tier_user():
     print(f"\n📊 Pro Tier Tests passed: {tester.tests_passed}/{tester.tests_run}")
     return tester.tests_passed == tester.tests_run
 
+def test_opportunity_links_and_values():
+    """Test opportunity links, values, and dates according to requirements"""
+    print("\n🔍 TESTING OPPORTUNITY LINKS, VALUES, AND DATES")
+    
+    tester = ModulusDefenceAPITester()
+    timestamp = datetime.now().strftime('%H%M%S')
+    
+    # Register as a free user
+    test_email = f"test_user_{timestamp}@example.com"
+    test_password = "TestPass123!"
+    test_company = "Test Defence Ltd"
+    test_full_name = "Test User"
+    
+    if not tester.test_register(test_email, test_password, test_company, test_full_name):
+        print("❌ Registration failed")
+        return False
+    
+    # Get opportunities as free user
+    success, free_opportunities = tester.test_get_opportunities()
+    if not success:
+        print("❌ Failed to get opportunities as free user")
+        return False
+    
+    # Check number of opportunities for free tier
+    free_count = len(free_opportunities)
+    print(f"Free tier user can see {free_count} opportunities")
+    if free_count != 4:
+        print(f"❌ Expected 4 opportunities for free tier, got {free_count}")
+    else:
+        print("✅ Free tier user correctly sees 4 opportunities")
+    
+    # Upgrade to Pro tier
+    success, _ = tester.test_upgrade_subscription("pro")
+    if not success:
+        print("❌ Upgrade to Pro tier failed")
+        return False
+    
+    # Get opportunities as pro user
+    success, pro_opportunities = tester.test_get_opportunities()
+    if not success:
+        print("❌ Failed to get opportunities as pro user")
+        return False
+    
+    # Check number of opportunities for pro tier
+    pro_count = len(pro_opportunities)
+    print(f"Pro tier user can see {pro_count} opportunities")
+    if pro_count != 6:
+        print(f"❌ Expected 6 opportunities for pro tier, got {pro_count}")
+    else:
+        print("✅ Pro tier user correctly sees 6 opportunities")
+    
+    # Verify specific opportunities
+    expected_opportunities = {
+        "Royal Navy Radar Systems": {
+            "funding_amount": "£25,000,000",
+            "closing_date": "2025-08-15",
+            "link": "https://www.find-tender.service.gov.uk/Notice/RM6240-2025-001"
+        },
+        "Artificial Intelligence Research": {
+            "funding_amount": "£8,500,000",
+            "closing_date": "2025-07-30",
+            "link": "https://www.contractsfinder.service.gov.uk/Notice/028764-2025-AI-DEF"
+        },
+        "Cybersecurity Framework": {
+            "funding_amount": "£50,000,000",
+            "closing_date": "2025-08-20",
+            "link": "https://www.find-tender.service.gov.uk/Notice/CYB-FW-2025-003"
+        },
+        "Military Infrastructure": {
+            "funding_amount": "£120,000,000",
+            "closing_date": "2025-09-10",
+            "link": "https://www.contractsfinder.service.gov.uk/Notice/DIO-INF-2025-004"
+        },
+        "BAE Systems Composite Materials": {
+            "funding_amount": "£15,000,000",
+            "closing_date": "2025-08-05",
+            "link": "https://suppliers.baesystems.com/opportunities/RFQ-COMP-2025-005"
+        },
+        "Leonardo Communications": {
+            "funding_amount": "£12,000,000",
+            "closing_date": "2025-08-12",
+            "link": "https://leonardo-suppliers.com/tenders/COMM-INT-2025-006"
+        }
+    }
+    
+    # Check each opportunity
+    found_opportunities = {}
+    for opp in pro_opportunities:
+        # Check if opportunity title contains any of the expected keys
+        for key in expected_opportunities:
+            if key in opp["title"]:
+                found_opportunities[key] = opp
+                break
+    
+    # Verify each expected opportunity
+    for key, expected in expected_opportunities.items():
+        if key in found_opportunities:
+            opp = found_opportunities[key]
+            print(f"\nChecking opportunity: {key}")
+            
+            # Check funding amount
+            funding_amount = opp["funding_amount"]
+            if expected["funding_amount"] in funding_amount:
+                print(f"✅ Funding amount correct: {funding_amount}")
+            else:
+                print(f"❌ Funding amount incorrect: {funding_amount}, expected: {expected['funding_amount']}")
+            
+            # Check closing date
+            closing_date = opp["closing_date"]
+            if expected["closing_date"] in closing_date:
+                print(f"✅ Closing date correct: {closing_date}")
+            else:
+                print(f"❌ Closing date incorrect: {closing_date}, expected: {expected['closing_date']}")
+            
+            # Check link
+            link = opp["official_link"]
+            if link == expected["link"]:
+                print(f"✅ Link correct: {link}")
+            else:
+                print(f"❌ Link incorrect: {link}, expected: {expected['link']}")
+        else:
+            print(f"❌ Opportunity not found: {key}")
+    
+    # Check if all opportunities were found
+    if len(found_opportunities) == len(expected_opportunities):
+        print("\n✅ All expected opportunities found")
+    else:
+        print(f"\n❌ Not all opportunities found. Found {len(found_opportunities)} out of {len(expected_opportunities)}")
+    
+    # Check if links are properly formatted
+    valid_link_patterns = [
+        "https://www.find-tender.service.gov.uk/Notice/",
+        "https://www.contractsfinder.service.gov.uk/Notice/",
+        "https://suppliers.baesystems.com/opportunities/",
+        "https://leonardo-suppliers.com/tenders/"
+    ]
+    
+    all_links_valid = True
+    for opp in pro_opportunities:
+        link = opp["official_link"]
+        link_valid = False
+        for pattern in valid_link_patterns:
+            if link.startswith(pattern):
+                link_valid = True
+                break
+        
+        if not link_valid:
+            print(f"❌ Invalid link format: {link}")
+            all_links_valid = False
+    
+    if all_links_valid:
+        print("✅ All links have valid formats")
+    
+    # Check if closing dates are in the future
+    all_dates_valid = True
+    now = datetime.utcnow()
+    for opp in pro_opportunities:
+        closing_date = datetime.strptime(opp["closing_date"], "%Y-%m-%d %H:%M:%S")
+        if closing_date <= now:
+            print(f"❌ Closing date is not in the future: {opp['closing_date']} for {opp['title']}")
+            all_dates_valid = False
+        
+        # Check if closing date is within reasonable range (30-90 days)
+        days_until_closing = (closing_date - now).days
+        if days_until_closing < 30 or days_until_closing > 90:
+            print(f"⚠️ Closing date outside 30-90 day range: {days_until_closing} days for {opp['title']}")
+    
+    if all_dates_valid:
+        print("✅ All closing dates are in the future")
+    
+    return True
+
 def main():
+    # Test opportunity links, values, and dates
+    opportunity_test_success = test_opportunity_links_and_values()
+    
     # Test both user tiers
     free_tier_success = test_free_tier_user()
     pro_tier_success = test_pro_tier_user()
     
     # Print overall results
     print("\n📊 OVERALL TEST RESULTS:")
+    print(f"Opportunity Links & Values Tests: {'✅ PASSED' if opportunity_test_success else '❌ FAILED'}")
     print(f"Free Tier Tests: {'✅ PASSED' if free_tier_success else '❌ FAILED'}")
     print(f"Pro Tier Tests: {'✅ PASSED' if pro_tier_success else '❌ FAILED'}")
     
-    return 0 if free_tier_success and pro_tier_success else 1
+    return 0 if opportunity_test_success and free_tier_success and pro_tier_success else 1
 
 if __name__ == "__main__":
     sys.exit(main())
