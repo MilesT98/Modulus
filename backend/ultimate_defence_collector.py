@@ -228,38 +228,38 @@ class UltimateDefenceCollector:
         return opportunities
 
     async def _collect_dasa_direct(self, session: aiohttp.ClientSession) -> List[Dict]:
-        """DASA Direct Scraping - Competitions and Open Calls"""
+        """DASA Direct Scraping - CONTRACTS ONLY (not innovation calls)"""
         opportunities = []
         
-        dasa_urls = [
-            'https://www.gov.uk/government/organisations/defence-and-security-accelerator',
-            'https://www.gov.uk/government/collections/defence-and-security-accelerator-dasa-open-calls-for-innovation',
-            'https://www.gov.uk/government/publications?departments%5B%5D=defence-and-security-accelerator',
-            'https://www.gov.uk/search/news-and-communications?organisations%5B%5D=defence-and-security-accelerator'
+        # Focus on DASA contract opportunities, not innovation calls
+        dasa_contract_urls = [
+            'https://www.gov.uk/government/organisations/defence-and-security-accelerator/about/procurement',
+            'https://www.contractsfinder.service.gov.uk/Search?searchTerm=defence%20and%20security%20accelerator',
+            'https://www.find-tender.service.gov.uk/Search?keywords=dasa'
         ]
         
-        for url in dasa_urls:
+        for url in dasa_contract_urls:
             try:
                 async with session.get(url) as response:
                     if response.status == 200:
                         html = await response.text()
                         soup = BeautifulSoup(html, 'html.parser')
                         
-                        # Look for DASA opportunities and competitions
-                        opportunity_elements = []
+                        # Look for CONTRACT-specific elements, not innovation calls
+                        contract_elements = []
                         
-                        # Various selectors for DASA content
-                        selectors = [
-                            'a[href*="competition"]', 'a[href*="innovation"]',
-                            'a[href*="call"]', 'a[href*="funding"]',
-                            'div[class*="document"]', 'div[class*="publication"]'
+                        # Focus on contract/tender selectors
+                        contract_selectors = [
+                            'a[href*="tender"]', 'a[href*="contract"]',
+                            'div[class*="contract"]', 'div[class*="tender"]',
+                            'a[href*="procurement"]', 'div[class*="procurement"]'
                         ]
                         
-                        for selector in selectors:
+                        for selector in contract_selectors:
                             elements = soup.select(selector)
-                            opportunity_elements.extend(elements)
+                            contract_elements.extend(elements)
                         
-                        for element in opportunity_elements[:25]:
+                        for element in contract_elements[:15]:  # Reduced to focus on quality
                             try:
                                 if element.name == 'a':
                                     title = element.get_text(strip=True)
@@ -273,22 +273,29 @@ class UltimateDefenceCollector:
                                 if len(title) < 10:
                                     continue
                                 
-                                # All DASA content is defence-related by nature
+                                # Get more description context
+                                desc_elem = element.find_next('p') or element.find('p')
+                                description = desc_elem.get_text(strip=True) if desc_elem else title
+                                
+                                # STRICT CONTRACT FILTERING - even for DASA
+                                if not self._is_defence_opportunity(title, description, 'DASA Contract'):
+                                    continue
+                                
                                 opportunity = {
-                                    'id': f"dasa_direct_{hash(title + url)}",
+                                    'id': f"dasa_contract_{hash(title + url)}",
                                     'title': title[:200],
                                     'funding_body': 'Defence & Security Accelerator (DASA)',
-                                    'description': f'DASA opportunity: {title}',
-                                    'detailed_description': f'Defence and Security Accelerator opportunity: {title}',
-                                    'closing_date': datetime.now() + timedelta(days=60),
-                                    'funding_amount': '£25K - £1M',
-                                    'tech_areas': ['Defence Innovation'],
-                                    'contract_type': 'Defence Innovation Competition',
+                                    'description': description[:500],
+                                    'detailed_description': description,
+                                    'closing_date': datetime.now() + timedelta(days=45),
+                                    'funding_amount': 'TBD',
+                                    'tech_areas': self._extract_tech_areas(title + ' ' + description),
+                                    'contract_type': 'Defence Contract',
                                     'official_link': link if link.startswith('http') else f"https://www.gov.uk{link}",
                                     'status': 'active',
                                     'created_at': datetime.utcnow(),
                                     'tier_required': 'free',
-                                    'source': 'dasa_direct'
+                                    'source': 'dasa_contracts'
                                 }
                                 
                                 opportunities.append(opportunity)
@@ -299,10 +306,10 @@ class UltimateDefenceCollector:
                 await asyncio.sleep(1)
                 
             except Exception as e:
-                print(f"Error with DASA URL {url}: {e}")
+                print(f"Error with DASA contract URL {url}: {e}")
                 continue
         
-        print(f"✅ DASA Direct: {len(opportunities)} opportunities")
+        print(f"✅ DASA Contracts (filtered): {len(opportunities)} opportunities")
         return opportunities
 
     # =================== PHASE 2 BROWSER AUTOMATION ===================
