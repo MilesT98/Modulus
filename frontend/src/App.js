@@ -1059,7 +1059,7 @@ function App() {
                     <option value="all">All Opportunities</option>
                     <option value="low">High SME Fit (≥70%)</option>
                     <option value="medium">Medium SME Fit (50-70%)</option>
-                    <option value="high">Lower SME Fit (<50%)</option>
+                    <option value="high">Lower SME Fit (&lt;50%)</option>
                   </select>
                 </div>
               </div>
