@@ -72,6 +72,7 @@ function App() {
   });
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showDemoSwitcher, setShowDemoSwitcher] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
