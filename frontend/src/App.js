@@ -1432,72 +1432,119 @@ function App() {
     </div>
   );
 
-  // Updated Opportunities page component
-  const OpportunitiesPage = () => (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Defence Opportunities</h1>
-            <p className="text-gray-600 mt-2">
-              {opportunities.length} opportunities found • {user?.tier.toUpperCase()} access
-            </p>
-          </div>
-          
-          {user?.tier !== 'free' && (
-            <button
-              onClick={handleRefreshData}
-              disabled={loading}
-              className="bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              {loading ? 'Refreshing...' : 'Refresh Live Data'}
-            </button>
-          )}
-        </div>
+  // Enhanced Opportunities page with Actify Defence features
+  const OpportunitiesPage = () => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedFilters, setSelectedFilters] = useState({
+      techArea: '',
+      source: '',
+      smeRelevance: '',
+      deadline: '',
+      country: ''
+    });
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    const [aggregationStats, setAggregationStats] = useState(null);
 
-        {/* Updated Filters Section (moved up, removed live data sources) */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
-              <input
-                id="search-input"
-                name="search"
-                type="text"
-                placeholder="Search opportunities..."
-                onChange={() => {
-                  // Debounce the search
-                  clearTimeout(window.searchTimeout);
-                  window.searchTimeout = setTimeout(() => {
-                    fetchOpportunities();
-                  }, 500);
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-              />
-            </div>
-            
-            {/* Advanced filters only for Pro/Enterprise users */}
-            {user?.tier !== 'free' ? (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Funding Body</label>
-                  <select
-                    value={selectedFilters.funding_body}
-                    onChange={(e) => handleFilterChange('funding_body', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                  >
-                    <option value="">All Funding Bodies</option>
-                    <option value="DSTL">DSTL</option>
-                    <option value="UKRI">UKRI</option>
-                    <option value="MOD">MOD</option>
-                    <option value="Innovate UK">Innovate UK</option>
-                    <option value="DASA">DASA</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Industry</label>
-                  <select
+    const fetchAggregationStats = async () => {
+      if (user?.tier !== 'free') {
+        try {
+          const response = await api.get('/api/opportunities/aggregation-stats');
+          setAggregationStats(response.data);
+        } catch (error) {
+          console.error('Failed to fetch aggregation stats:', error);
+        }
+      }
+    };
+
+    useEffect(() => {
+      fetchAggregationStats();
+    }, [user]);
+
+    const filteredOpportunities = opportunities.filter(opp => {
+      const matchesSearch = searchTerm === '' || 
+        opp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        opp.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        opp.funding_body.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesTechArea = !selectedFilters.techArea || 
+        (opp.enhanced_metadata?.tech_tags || []).includes(selectedFilters.techArea);
+
+      const matchesSource = !selectedFilters.source || 
+        opp.source.toLowerCase().includes(selectedFilters.source.toLowerCase());
+
+      const matchesSmeRelevance = !selectedFilters.smeRelevance || 
+        (selectedFilters.smeRelevance === 'high' && (opp.enhanced_metadata?.sme_score || 0) >= 0.7) ||
+        (selectedFilters.smeRelevance === 'medium' && (opp.enhanced_metadata?.sme_score || 0) >= 0.5 && (opp.enhanced_metadata?.sme_score || 0) < 0.7) ||
+        (selectedFilters.smeRelevance === 'low' && (opp.enhanced_metadata?.sme_score || 0) < 0.5);
+
+      const matchesDeadline = !selectedFilters.deadline || (() => {
+        const deadline = new Date(opp.closing_date);
+        const now = new Date();
+        const daysDiff = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+        
+        return (selectedFilters.deadline === 'week' && daysDiff <= 7) ||
+               (selectedFilters.deadline === 'month' && daysDiff <= 30) ||
+               (selectedFilters.deadline === 'quarter' && daysDiff <= 90);
+      })();
+
+      const matchesCountry = !selectedFilters.country || 
+        opp.country === selectedFilters.country;
+
+      return matchesSearch && matchesTechArea && matchesSource && matchesSmeRelevance && matchesDeadline && matchesCountry;
+    });
+
+    const getTierBadgeColor = (tier) => {
+      switch (tier) {
+        case 'free': return 'bg-gray-100 text-gray-800';
+        case 'pro': return 'bg-cyan-100 text-cyan-800';
+        case 'enterprise': return 'bg-purple-100 text-purple-800';
+        default: return 'bg-gray-100 text-gray-800';
+      }
+    };
+
+    const getSourceBadgeColor = (source) => {
+      if (source.includes('TED') || source.includes('EU')) return 'bg-blue-100 text-blue-800';
+      if (source.includes('NATO') || source.includes('NSPA')) return 'bg-indigo-100 text-indigo-800';
+      if (source.includes('USA') || source.includes('SAM')) return 'bg-red-100 text-red-800';
+      if (source.includes('BAE') || source.includes('Leonardo') || source.includes('Thales')) return 'bg-green-100 text-green-800';
+      return 'bg-cyan-100 text-cyan-800';
+    };
+
+    const getSmeRelevanceColor = (score) => {
+      if (score >= 0.7) return 'text-green-600';
+      if (score >= 0.5) return 'text-yellow-600';
+      return 'text-red-600';
+    };
+
+    const getSmeRelevanceLabel = (score) => {
+      if (score >= 0.7) return 'High';
+      if (score >= 0.5) return 'Medium';
+      return 'Low';
+    };
+
+    const groupOpportunitiesByDeadline = (opportunities) => {
+      const now = new Date();
+      const thisWeek = [];
+      const next14Days = [];
+      const later = [];
+
+      opportunities.forEach(opp => {
+        const deadline = new Date(opp.closing_date);
+        const daysDiff = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+
+        if (daysDiff <= 7) {
+          thisWeek.push(opp);
+        } else if (daysDiff <= 14) {
+          next14Days.push(opp);
+        } else {
+          later.push(opp);
+        }
+      });
+
+      return { thisWeek, next14Days, later };
+    };
+
+    const groupedOpportunities = groupOpportunitiesByDeadline(filteredOpportunities);
                     value={selectedFilters.industry}
                     onChange={(e) => handleFilterChange('industry', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
