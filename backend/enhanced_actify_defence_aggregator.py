@@ -951,6 +951,19 @@ class EnhancedActifyDefenceAggregator:
         except Exception as e:
             logger.error(f"❌ Error in high priority international sources: {e}")
         
+        # Collect from Second Batch International sources
+        logger.info("🌍 Processing Second Batch International Sources...")
+        try:
+            from second_batch_international_sources import collect_second_batch_international_sources
+            second_intl_opps = await collect_second_batch_international_sources()
+            all_opportunities.extend(second_intl_opps)
+            source_stats["Second_Batch_International"] = len(second_intl_opps)
+            logger.info(f"✅ Second Batch International Sources: {len(second_intl_opps)} opportunities")
+        except ImportError:
+            logger.warning("Second batch international sources not available")
+        except Exception as e:
+            logger.error(f"❌ Error in second batch international sources: {e}")
+        
         logger.info(f"📊 Raw collection complete: {len(all_opportunities)} total opportunities")
         
         # Enhanced filtering and processing
