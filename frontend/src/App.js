@@ -846,7 +846,29 @@ function App() {
                     setIsRefreshing(true);
                     try {
                       const response = await api.post('/api/data/refresh');
-                      alert(`✅ Actify Defence Aggregation Complete!\n${response.data.message}\nOpportunities: ${response.data.opportunities_count}`);
+                      
+                      // Show detailed success message
+                      const message = `✅ Enhanced Actify Defence Aggregation Complete!
+
+📊 ${response.data.message}
+
+🌍 Sources: ${response.data.source_info}
+
+🔢 Total Opportunities: ${response.data.opportunities_count}
+
+🎯 Features Applied:
+• Advanced keyword filtering ✓
+• SME relevance scoring ✓  
+• Technology classification ✓
+• Multi-source deduplication ✓
+• Confidence scoring ✓
+
+Opportunities have been refreshed with enhanced metadata including SME scores, technology tags, and priority rankings.`;
+
+                      alert(message);
+                      
+                      // Refresh data to show new opportunities
+                      fetchOpportunities();
                       fetchDashboardStats();
                     } catch (error) {
                       alert('❌ Data refresh failed: ' + (error.response?.data?.detail || 'Unknown error'));
@@ -860,10 +882,10 @@ function App() {
                   <Zap className={`w-5 h-5 text-cyan-600 mr-3 ${isRefreshing ? 'animate-spin' : ''}`} />
                   <div>
                     <div className="font-medium text-slate-900">
-                      {isRefreshing ? 'Running Actify Defence Aggregation...' : '🧠 Actify Defence Aggregation'}
+                      {isRefreshing ? 'Running Enhanced Actify Defence Aggregation...' : '🧠 Enhanced Actify Defence Aggregation'}
                     </div>
                     <div className="text-sm text-gray-600">
-                      {isRefreshing ? 'Collecting from multiple sources...' : 'Refresh data from UK, EU, NATO sources with AI filtering'}
+                      {isRefreshing ? 'Collecting from global sources with AI filtering...' : 'Multi-source aggregation with keyword prioritization, SME scoring & tech classification'}
                     </div>
                   </div>
                 </button>
