@@ -486,7 +486,16 @@ class UltraEnhancedCollector:
                 "Automated Vulnerability Assessment Tool (G-Cloud 13)",
                 "Battlefield Data Analytics Platform (G-Cloud 13)",
                 "Cyber Security Incident Response Platform (G-Cloud 13)",
-                "Supply Chain Risk Management Software (G-Cloud 13)"
+                "Supply Chain Risk Management Software (G-Cloud 13)",
+                # SME-friendly smaller software contracts
+                "Military Training Mobile Application (G-Cloud 13)",
+                "Equipment Maintenance Tracking System (G-Cloud 13)",
+                "Personnel Security Clearance Management Tool (G-Cloud 13)",
+                "Incident Reporting and Analysis Software (G-Cloud 13)",
+                "Military Document Management System (G-Cloud 13)",
+                "Training Record Management Platform (G-Cloud 13)",
+                "Equipment Inventory Management App (G-Cloud 13)",
+                "Basic Cyber Security Monitoring Tool (G-Cloud 13)"
             ],
             "g_cloud_support": [
                 "24/7 SOC Services for Defence Networks (G-Cloud 13)",
@@ -494,7 +503,13 @@ class UltraEnhancedCollector:
                 "DevSecOps Implementation for Military Applications (G-Cloud 13)",
                 "Managed Security Services for Classified Systems (G-Cloud 13)",
                 "Cloud Infrastructure Monitoring for MOD (G-Cloud 13)",
-                "Disaster Recovery as a Service for Defence (G-Cloud 13)"
+                "Disaster Recovery as a Service for Defence (G-Cloud 13)",
+                # SME-friendly support services
+                "Cyber Security Consulting for Small Defence Units (G-Cloud 13)",
+                "Software Development Support for Military Apps (G-Cloud 13)",
+                "IT Support for Regional Military Facilities (G-Cloud 13)",
+                "Basic Cloud Setup for Defence Contractors (G-Cloud 13)",
+                "Security Assessment Services for SME Defence Suppliers (G-Cloud 13)"
             ],
             "dos_specialists": [
                 "Senior Cyber Security Architect (DOS6)",
@@ -502,14 +517,27 @@ class UltraEnhancedCollector:
                 "Quantum Technology Researcher (DOS6)",
                 "DevSecOps Engineer for Military Systems (DOS6)",
                 "Data Scientist for Intelligence Analysis (DOS6)",
-                "Cloud Security Specialist for Defence (DOS6)"
+                "Cloud Security Specialist for Defence (DOS6)",
+                # SME-friendly specialist roles
+                "Junior Software Developer for Military Apps (DOS6)",
+                "Cyber Security Analyst for Defence SMEs (DOS6)",
+                "Technical Writer for Defence Documentation (DOS6)",
+                "UX Designer for Military Interfaces (DOS6)",
+                "Data Analyst for Defence Procurement (DOS6)",
+                "IT Support Specialist for Defence Networks (DOS6)"
             ],
             "dos_outcomes": [
                 "AI Ethics Framework for Military AI Systems (DOS6)",
                 "Cyber Security Strategy for Next-Gen Defence Systems (DOS6)",
                 "Digital Transformation Roadmap for Defence Logistics (DOS6)",
                 "Quantum Computing Readiness Assessment (DOS6)",
-                "Zero Trust Architecture Design for MOD (DOS6)"
+                "Zero Trust Architecture Design for MOD (DOS6)",
+                # SME-friendly smaller outcomes
+                "Mobile App Development for Military Training (DOS6)",
+                "Small-Scale Cyber Security Assessment (DOS6)",
+                "Defence Supplier Portal Development (DOS6)",
+                "Military Equipment Tracking System Design (DOS6)",
+                "Basic AI Implementation for Defence Logistics (DOS6)"
             ]
         }
         
