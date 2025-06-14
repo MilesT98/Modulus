@@ -850,6 +850,19 @@ class EnhancedActifyDefenceAggregator:
         except Exception as e:
             logger.error(f"❌ Error in industry sources: {e}")
         
+        # Collect from Regional and Academic sources
+        logger.info("🏴󠁧󠁢󠁳󠁣󠁴󠁿🎓 Processing Regional and Academic Sources...")
+        try:
+            from regional_and_academic_sources import collect_regional_and_academic_sources
+            regional_opps = await collect_regional_and_academic_sources()
+            all_opportunities.extend(regional_opps)
+            source_stats["Regional_Academic"] = len(regional_opps)
+            logger.info(f"✅ Regional and Academic Sources: {len(regional_opps)} opportunities")
+        except ImportError:
+            logger.warning("Regional and Academic sources not available")
+        except Exception as e:
+            logger.error(f"❌ Error in regional and academic sources: {e}")
+        
         logger.info(f"📊 Raw collection complete: {len(all_opportunities)} total opportunities")
         
         # Enhanced filtering and processing
