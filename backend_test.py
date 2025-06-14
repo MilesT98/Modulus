@@ -746,14 +746,18 @@ def main():
     # Test procurement guide access
     procurement_guide_success = test_procurement_guide_access()
     
+    # Test Actify Defence Aggregation system
+    actify_defence_success = test_actify_defence_aggregation()
+    
     # Print overall results
     print("\n📊 OVERALL TEST RESULTS:")
     print(f"Opportunity Links & Values Tests: {'✅ PASSED' if opportunity_test_success else '❌ FAILED'}")
     print(f"Free Tier Tests: {'✅ PASSED' if free_tier_success else '❌ FAILED'}")
     print(f"Pro Tier Tests: {'✅ PASSED' if pro_tier_success else '❌ FAILED'}")
     print(f"UK Defence Procurement Guide Tests: {'✅ PASSED' if procurement_guide_success else '❌ FAILED'}")
+    print(f"Actify Defence Aggregation Tests: {'✅ PASSED' if actify_defence_success else '❌ FAILED'}")
     
-    return 0 if (opportunity_test_success and free_tier_success and pro_tier_success and procurement_guide_success) else 1
+    return 0 if (opportunity_test_success and free_tier_success and pro_tier_success and procurement_guide_success and actify_defence_success) else 1
 
 if __name__ == "__main__":
     sys.exit(main())
