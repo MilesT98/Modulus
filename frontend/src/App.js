@@ -22,13 +22,20 @@ import {
   Zap,
   ChevronDown,
   ChevronUp,
-  AlertCircle
+  AlertCircle,
+  Globe,
+  Award,
+  Briefcase,
+  Calendar as CalendarIcon,
+  MapPin,
+  AlertTriangle
 } from 'lucide-react';
 import './App.css';
 
 function App() {
   const [user, setUser] = useState(null);
   const [currentView, setCurrentView] = useState('home');
+  const [selectedOpportunity, setSelectedOpportunity] = useState(null);
   const [opportunities, setOpportunities] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({
     total_opportunities: 0,
@@ -40,6 +47,7 @@ function App() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showDemoSwitcher, setShowDemoSwitcher] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [linkStatus, setLinkStatus] = useState({});
 
   // API setup
   const api = axios.create({
@@ -113,6 +121,26 @@ function App() {
     }
   };
 
+  const checkLinkStatus = async (url, opportunityId) => {
+    try {
+      // Simple client-side check - in production you'd want server-side validation
+      const response = await fetch(url, { 
+        method: 'HEAD', 
+        mode: 'no-cors',
+        timeout: 5000 
+      });
+      setLinkStatus(prev => ({
+        ...prev,
+        [opportunityId]: { status: 'available', checked: new Date() }
+      }));
+    } catch (error) {
+      setLinkStatus(prev => ({
+        ...prev,
+        [opportunityId]: { status: 'unavailable', checked: new Date(), error: error.message }
+      }));
+    }
+  };
+
   useEffect(() => {
     if (user) {
       fetchOpportunities();
@@ -156,6 +184,29 @@ function App() {
     } catch (error) {
       console.error('Tier switch failed:', error);
     }
+  };
+
+  const handleOpportunityClick = (opportunity) => {
+    setSelectedOpportunity(opportunity);
+    setCurrentView('opportunity-detail');
+    
+    // Check link status when opportunity is selected
+    if (opportunity.official_link) {
+      checkLinkStatus(opportunity.official_link, opportunity.id || opportunity._id);
+    }
+  };
+
+  const handleExternalLinkClick = (url, opportunityId) => {
+    const status = linkStatus[opportunityId];
+    
+    if (status && status.status === 'unavailable') {
+      // Show fallback message for broken links
+      alert('This link appears to be unavailable. You may want to search for this opportunity directly on the funding body\'s website.');
+      return;
+    }
+    
+    // Open in new tab
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   // Demo Tier Switcher Component
@@ -246,6 +297,382 @@ function App() {
       </div>
     </div>
   );
+
+  // Opportunity Detail Page Component
+  const OpportunityDetailPage = () => {
+    if (!selectedOpportunity) {
+      return (
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <div className="text-center">
+            <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Opportunity Not Found</h2>
+            <p className="text-gray-600 mb-6">The requested opportunity could not be loaded.</p>
+            <button
+              onClick={() => setCurrentView('opportunities')}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+            >
+              Back to Opportunities
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    const opportunity = selectedOpportunity;
+    const opportunityId = opportunity.id || opportunity._id;
+    const status = linkStatus[opportunityId];
+    
+    // Check if user has access to this opportunity
+    const hasAccess = user?.tier !== 'free' || 
+                     opportunity.tier_required === 'free' || 
+                     !opportunity.is_delayed;
+
+    if (!hasAccess) {
+      return (
+        <div className="min-h-screen bg-slate-50">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <BackButton onClick={() => setCurrentView('opportunities')} text="Back to Opportunities" />
+            
+            <div className="text-center py-20">
+              <div className="w-24 h-24 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-8">
+                <Lock className="w-12 h-12 text-cyan-600" />
+              </div>
+              
+              <h1 className="text-4xl font-bold text-slate-900 mb-4">Pro Access Required</h1>
+              <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto border-2 border-cyan-200">
+                <h2 className="text-2xl font-bold text-slate-900 mb-4">
+                  Unlock Full Opportunity Details
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  This opportunity requires Pro or Enterprise access to view complete details and analysis.
+                </p>
+                
+                <button
+                  onClick={() => handleUpgrade('pro')}
+                  className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-4 rounded-lg font-semibold text-lg transition-colors"
+                >
+                  Upgrade to Pro - £49/month
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <BackButton onClick={() => setCurrentView('opportunities')} text="Back to Opportunities" />
+          
+          {/* Header Section */}
+          <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl p-8 mb-8 text-white">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex-1">
+                <div className="flex items-center mb-4">
+                  <div className={`px-3 py-1 rounded-full text-xs font-semibold mr-3 ${
+                    opportunity.tier_required === 'free' ? 'bg-gray-100 text-gray-800' :
+                    opportunity.tier_required === 'pro' ? 'bg-cyan-100 text-cyan-800' :
+                    'bg-purple-100 text-purple-800'
+                  }`}>
+                    {opportunity.tier_required?.toUpperCase() || 'FREE'}
+                  </div>
+                  {opportunity.is_delayed && (
+                    <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">
+                      DELAYED ACCESS
+                    </div>
+                  )}
+                </div>
+                <h1 className="text-3xl lg:text-4xl font-bold mb-4 leading-tight">
+                  {opportunity.title}
+                </h1>
+                <div className="flex flex-wrap items-center gap-4 text-blue-100">
+                  <div className="flex items-center">
+                    <Building className="w-5 h-5 mr-2" />
+                    <span>{opportunity.funding_body}</span>
+                  </div>
+                  {opportunity.mod_department && (
+                    <div className="flex items-center">
+                      <MapPin className="w-5 h-5 mr-2" />
+                      <span>{opportunity.mod_department}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center">
+                    <CalendarIcon className="w-5 h-5 mr-2" />
+                    <span>Closes: {new Date(opportunity.closing_date || opportunity.deadline).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Main Details */}
+            <div className="lg:col-span-2 space-y-6">
+              
+              {/* Description Section */}
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <h2 className="text-2xl font-bold text-slate-900 mb-4">Description</h2>
+                <div className="prose max-w-none">
+                  <p className="text-gray-700 leading-relaxed mb-4">
+                    {opportunity.description}
+                  </p>
+                  {opportunity.detailed_description && (
+                    <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                      <h3 className="font-semibold text-gray-900 mb-2">Additional Details</h3>
+                      <p className="text-gray-700">
+                        {opportunity.detailed_description}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Technology & Requirements */}
+              {(opportunity.tech_areas?.length > 0 || opportunity.tech_tags?.length > 0) && (
+                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                  <h2 className="text-2xl font-bold text-slate-900 mb-4">Technology Areas</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {(opportunity.tech_areas || opportunity.tech_tags || []).map((tech, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Enhanced Metadata - For Pro/Enterprise Users */}
+              {user?.tier !== 'free' && opportunity.enhanced_metadata && (
+                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                  <h2 className="text-2xl font-bold text-slate-900 mb-4">Enhanced Analysis</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {opportunity.enhanced_metadata.sme_score !== undefined && (
+                      <div className="p-4 bg-green-50 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-600">SME Relevance Score</span>
+                          <span className="text-lg font-bold text-green-600">
+                            {Math.round(opportunity.enhanced_metadata.sme_score * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full" 
+                            style={{width: `${opportunity.enhanced_metadata.sme_score * 100}%`}}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {opportunity.enhanced_metadata.confidence_score !== undefined && (
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-600">Confidence Score</span>
+                          <span className="text-lg font-bold text-blue-600">
+                            {Math.round(opportunity.enhanced_metadata.confidence_score * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-500 h-2 rounded-full" 
+                            style={{width: `${opportunity.enhanced_metadata.confidence_score * 100}%`}}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {opportunity.enhanced_metadata.keywords_matched?.length > 0 && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                      <h4 className="font-semibold text-gray-900 mb-2">Matched Keywords</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {opportunity.enhanced_metadata.keywords_matched.slice(0, 10).map((keyword, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-sm"
+                          >
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Right Column - Key Information & Actions */}
+            <div className="space-y-6">
+              
+              {/* Key Facts */}
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <h3 className="text-xl font-bold text-slate-900 mb-4">Key Facts</h3>
+                <div className="space-y-4">
+                  
+                  <div className="flex items-start">
+                    <Building className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                    <div>
+                      <div className="text-sm font-medium text-gray-500">Organization</div>
+                      <div className="text-gray-900">{opportunity.funding_body}</div>
+                    </div>
+                  </div>
+
+                  {opportunity.mod_department && (
+                    <div className="flex items-start">
+                      <MapPin className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                      <div>
+                        <div className="text-sm font-medium text-gray-500">Department</div>
+                        <div className="text-gray-900">{opportunity.mod_department}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {opportunity.contract_type && (
+                    <div className="flex items-start">
+                      <Briefcase className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                      <div>
+                        <div className="text-sm font-medium text-gray-500">Contract Type</div>
+                        <div className="text-gray-900">{opportunity.contract_type}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {opportunity.trl_level && (
+                    <div className="flex items-start">
+                      <Award className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                      <div>
+                        <div className="text-sm font-medium text-gray-500">Technology Readiness Level</div>
+                        <div className="text-gray-900">{opportunity.trl_level}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {opportunity.funding_amount && (
+                    <div className="flex items-start">
+                      <DollarSign className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                      <div>
+                        <div className="text-sm font-medium text-gray-500">Funding Range</div>
+                        <div className="text-gray-900">{opportunity.funding_amount}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-start">
+                    <CalendarIcon className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                    <div>
+                      <div className="text-sm font-medium text-gray-500">Application Deadline</div>
+                      <div className="text-gray-900 font-semibold">
+                        {new Date(opportunity.closing_date || opportunity.deadline).toLocaleDateString('en-GB', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {opportunity.date_scraped && (
+                    <div className="flex items-start">
+                      <Clock className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                      <div>
+                        <div className="text-sm font-medium text-gray-500">Last Updated</div>
+                        <div className="text-gray-900">
+                          {new Date(opportunity.date_scraped).toLocaleDateString('en-GB')}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {opportunity.reference_number && (
+                    <div className="flex items-start">
+                      <FileText className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                      <div>
+                        <div className="text-sm font-medium text-gray-500">Reference Number</div>
+                        <div className="text-gray-900 font-mono text-sm">{opportunity.reference_number}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Section */}
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <h3 className="text-xl font-bold text-slate-900 mb-4">Access Original Opportunity</h3>
+                
+                {/* Link Status Indicator */}
+                {status && (
+                  <div className={`mb-4 p-3 rounded-lg ${
+                    status.status === 'available' ? 'bg-green-50 border border-green-200' :
+                    'bg-red-50 border border-red-200'
+                  }`}>
+                    <div className="flex items-center">
+                      {status.status === 'available' ? (
+                        <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                      ) : (
+                        <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />
+                      )}
+                      <span className={`text-sm font-medium ${
+                        status.status === 'available' ? 'text-green-800' : 'text-red-800'
+                      }`}>
+                        {status.status === 'available' ? 'Link Available' : 'Link Unavailable'}
+                      </span>
+                    </div>
+                    {status.status === 'unavailable' && (
+                      <p className="text-sm text-red-700 mt-1">
+                        This link may be expired or temporarily unavailable. Try searching directly on the organization's website.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <button
+                  onClick={() => handleExternalLinkClick(opportunity.official_link, opportunityId)}
+                  className={`w-full flex items-center justify-center px-6 py-4 rounded-lg font-semibold transition-colors ${
+                    status?.status === 'unavailable' 
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-cyan-600 hover:bg-cyan-700 text-white'
+                  }`}
+                  disabled={status?.status === 'unavailable'}
+                >
+                  <ExternalLink className="w-5 h-5 mr-2" />
+                  {status?.status === 'unavailable' ? 'Link Unavailable' : 'View on Official Site'}
+                </button>
+
+                {status?.status === 'unavailable' && (
+                  <div className="mt-4 space-y-2">
+                    <button
+                      onClick={() => window.open(`https://www.google.com/search?q="${opportunity.title}" ${opportunity.funding_body}`, '_blank')}
+                      className="w-full flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+                    >
+                      <Search className="w-4 h-4 mr-2" />
+                      Search on Google
+                    </button>
+                    <button
+                      onClick={() => window.open(`https://www.contractsfinder.service.gov.uk/Search`, '_blank')}
+                      className="w-full flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+                    >
+                      <Globe className="w-4 h-4 mr-2" />
+                      Browse {opportunity.funding_body}
+                    </button>
+                  </div>
+                )}
+
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>Note:</strong> This link will open in a new tab so you can easily return to Modulus Defence.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // UK Defence Procurement Guide Component
   const ProcurementActHub = () => {
@@ -905,27 +1332,27 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
           </div>
 
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Your Benefits</h2>
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Your Tier Benefits</h2>
             <div className="space-y-3">
-              {dashboardStats?.tier_benefits.map((benefit, index) => (
-                <div key={index} className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+              {dashboardStats.tier_benefits?.map((benefit, index) => (
+                <div key={index} className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
                   <span className="text-gray-700">{benefit}</span>
                 </div>
               ))}
             </div>
-
+            
             {user?.tier === 'free' && (
-              <div className="mt-6 p-4 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-lg border border-cyan-200">
-                <h3 className="font-semibold text-slate-900 mb-2">Upgrade to Pro</h3>
-                <p className="text-sm text-gray-600 mb-3">
-                  Get real-time access, advanced filtering, and expert insights
+              <div className="mt-6 p-4 bg-cyan-50 rounded-lg border border-cyan-200">
+                <h4 className="font-semibold text-cyan-900 mb-2">Upgrade to Pro</h4>
+                <p className="text-sm text-cyan-800 mb-3">
+                  Get real-time alerts, enhanced analysis, and priority access to opportunities.
                 </p>
                 <button
                   onClick={() => handleUpgrade('pro')}
                   className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
                 >
-                  Upgrade Now
+                  Upgrade Now - £49/month
                 </button>
               </div>
             )}
@@ -935,72 +1362,26 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
     </div>
   );
 
-  // Simple Opportunities Page
+  // Opportunities Page Component
   const OpportunitiesPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [sourceFilter, setSourceFilter] = useState('all');
-    const [techFilter, setTechFilter] = useState('all');
-    const [valueFilter, setValueFilter] = useState('all');
+    const [selectedFundingBody, setSelectedFundingBody] = useState('');
     const [showFilters, setShowFilters] = useState(false);
 
-    const filteredOpportunities = opportunities.filter(opp => {
-      const matchesSearch = searchTerm === '' || 
-        opp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        opp.description.toLowerCase().includes(searchTerm.toLowerCase());
+    // Get unique funding bodies for filter dropdown
+    const fundingBodies = [...new Set(opportunities.map(opp => opp.funding_body))].sort();
+
+    // Filter opportunities based on search and filters
+    const filteredOpportunities = opportunities.filter(opportunity => {
+      const matchesSearch = !searchTerm || 
+        opportunity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        opportunity.description.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesSource = sourceFilter === 'all' || opp.source.toLowerCase().includes(sourceFilter.toLowerCase());
-      
-      const matchesTech = techFilter === 'all' || 
-        (opp.enhanced_metadata?.tech_tags && opp.enhanced_metadata.tech_tags.some(tag => 
-          tag.toLowerCase().includes(techFilter.toLowerCase())
-        ));
-      
-      const matchesValue = valueFilter === 'all' || 
-        (valueFilter === 'low' && opp.enhanced_metadata?.sme_score >= 0.7) ||
-        (valueFilter === 'medium' && opp.enhanced_metadata?.sme_score >= 0.5 && opp.enhanced_metadata?.sme_score < 0.7) ||
-        (valueFilter === 'high' && opp.enhanced_metadata?.sme_score < 0.5);
-      
-      return matchesSearch && matchesSource && matchesTech && matchesValue;
+      const matchesFundingBody = !selectedFundingBody || 
+        opportunity.funding_body === selectedFundingBody;
+
+      return matchesSearch && matchesFundingBody;
     });
-
-    // Get unique sources for filter dropdown
-    const availableSources = [...new Set(opportunities.map(opp => opp.source))];
-    
-    // Get unique tech areas for filter dropdown
-    const availableTechAreas = [...new Set(
-      opportunities.flatMap(opp => opp.enhanced_metadata?.tech_tags || [])
-    )];
-
-    const getSourceBadgeColor = (source) => {
-      if (source.includes('EU') || source.includes('TED')) return 'bg-blue-100 text-blue-800';
-      if (source.includes('NATO') || source.includes('NSPA')) return 'bg-indigo-100 text-indigo-800';
-      if (source.includes('USA') || source.includes('SAM')) return 'bg-red-100 text-red-800';
-      if (source.includes('Australia') || source.includes('AusTender')) return 'bg-green-100 text-green-800';
-      if (source.includes('BAE') || source.includes('Leonardo') || source.includes('Thales') || source.includes('Rolls-Royce')) return 'bg-purple-100 text-purple-800';
-      return 'bg-gray-100 text-gray-800'; // UK sources
-    };
-
-    const getSMEBadgeColor = (score) => {
-      if (score >= 0.7) return 'bg-green-100 text-green-800';
-      if (score >= 0.5) return 'bg-yellow-100 text-yellow-800';
-      return 'bg-red-100 text-red-800';
-    };
-
-    const getSMELabel = (score) => {
-      if (score >= 0.7) return `High SME Fit (${(score * 100).toFixed(0)}%)`;
-      if (score >= 0.5) return `Medium SME Fit (${(score * 100).toFixed(0)}%)`;
-      return `Low SME Fit (${(score * 100).toFixed(0)}%)`;
-    };
-
-    const formatDeadline = (deadline) => {
-      const deadlineDate = new Date(deadline);
-      const now = new Date();
-      const daysUntil = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
-      
-      if (daysUntil <= 7) return `🔴 ${daysUntil} days`;
-      if (daysUntil <= 14) return `🟡 ${daysUntil} days`;
-      return `🟢 ${daysUntil} days`;
-    };
 
     return (
       <div className="min-h-screen bg-slate-50">
@@ -1008,201 +1389,163 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
           <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
           
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 mb-4">⚔️ Defence Opportunities</h1>
-            <p className="text-gray-600">
-              Comprehensive defence procurement opportunities from {user?.tier !== 'free' ? 'multiple global sources' : 'UK government sources'} with AI-powered filtering and SME relevance scoring
+            <h1 className="text-3xl font-bold text-slate-900">Defence Opportunities</h1>
+            <p className="text-gray-600 mt-2">
+              Discover funding and contract opportunities from leading UK defence organizations
             </p>
           </div>
 
-          {/* Enhanced Search and Filters */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-            <div className="flex flex-col lg:flex-row gap-4 mb-4">
+          {/* Search and Filters */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search opportunities, technologies, or agencies..."
+                    placeholder="Search opportunities..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                   />
                 </div>
               </div>
-              
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
               >
-                <Filter className="w-5 h-5 mr-2" />
+                <Filter className="w-4 h-4 mr-2" />
                 Filters
                 {showFilters ? <ChevronUp className="w-4 h-4 ml-2" /> : <ChevronDown className="w-4 h-4 ml-2" />}
               </button>
             </div>
 
-            {/* Advanced Filters */}
             {showFilters && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Source</label>
-                  <select
-                    value={sourceFilter}
-                    onChange={(e) => setSourceFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                  >
-                    <option value="all">All Sources</option>
-                    {availableSources.map(source => (
-                      <option key={source} value={source}>{source}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Technology Area</label>
-                  <select
-                    value={techFilter}
-                    onChange={(e) => setTechFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                  >
-                    <option value="all">All Technologies</option>
-                    {availableTechAreas.map(tech => (
-                      <option key={tech} value={tech}>{tech}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">SME Relevance</label>
-                  <select
-                    value={valueFilter}
-                    onChange={(e) => setValueFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                  >
-                    <option value="all">All Opportunities</option>
-                    <option value="low">High SME Fit (≥70%)</option>
-                    <option value="medium">Medium SME Fit (50-70%)</option>
-                    <option value="high">Lower SME Fit (&lt;50%)</option>
-                  </select>
+              <div className="border-t border-gray-200 pt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Funding Body</label>
+                    <select
+                      value={selectedFundingBody}
+                      onChange={(e) => setSelectedFundingBody(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                    >
+                      <option value="">All Organizations</option>
+                      {fundingBodies.map(body => (
+                        <option key={body} value={body}>{body}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-slate-900">
-              {filteredOpportunities.length} opportunities found
-            </h2>
-            
-            {user?.tier !== 'free' && (
-              <div className="text-sm text-gray-600">
-                Showing real-time opportunities from UK, EU, NATO, Global Allies, and Prime Contractors
-              </div>
-            )}
+          {/* Results Summary */}
+          <div className="mb-6">
+            <p className="text-gray-600">
+              Showing {filteredOpportunities.length} of {opportunities.length} opportunities
+              {user?.tier === 'free' && (
+                <span className="ml-2 text-yellow-600 font-medium">
+                  (Pro/SME content delayed 48 hours)
+                </span>
+              )}
+            </p>
           </div>
 
-          {filteredOpportunities.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-              <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No opportunities found</h3>
-              <p className="text-gray-600">Try adjusting your search terms or filters, or refresh the data</p>
+          {/* Opportunities Grid */}
+          {loading ? (
+            <div className="text-center py-20">
+              <div className="w-8 h-8 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading opportunities...</p>
+            </div>
+          ) : filteredOpportunities.length === 0 ? (
+            <div className="text-center py-20">
+              <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No opportunities found</h3>
+              <p className="text-gray-600">Try adjusting your search criteria or check back later for new opportunities.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {filteredOpportunities.map((opportunity) => (
-                <div key={opportunity.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredOpportunities.map((opportunity, index) => (
+                <div 
+                  key={opportunity.id || opportunity._id || index} 
+                  onClick={() => handleOpportunityClick(opportunity)}
+                  className="opportunity-card hover-card cursor-pointer group bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-cyan-300 transition-all duration-200"
+                >
                   <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-3 flex-wrap">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTierColor(opportunity.tier_required)}`}>
-                          {opportunity.tier_required.toUpperCase()}
-                        </span>
-                        
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSourceBadgeColor(opportunity.source)}`}>
-                          {opportunity.source}
-                        </span>
-                        
-                        {opportunity.enhanced_metadata?.sme_score && (
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSMEBadgeColor(opportunity.enhanced_metadata.sme_score)}`}>
-                            {getSMELabel(opportunity.enhanced_metadata.sme_score)}
-                          </span>
-                        )}
-                        
-                        {opportunity.enhanced_metadata?.priority_score >= 30 && (
-                          <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
-                            🔥 High Priority
-                          </span>
-                        )}
-                      </div>
-                      
-                      <h3 className="text-lg font-bold text-slate-900 mb-2">
-                        {opportunity.title}
-                      </h3>
+                    <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      opportunity.tier_required === 'free' ? 'bg-gray-100 text-gray-800' :
+                      opportunity.tier_required === 'pro' ? 'bg-cyan-100 text-cyan-800' :
+                      'bg-purple-100 text-purple-800'
+                    }`}>
+                      {opportunity.tier_required?.toUpperCase() || 'FREE'}
                     </div>
+                    
+                    {opportunity.is_delayed && (
+                      <div className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">
+                        DELAYED
+                      </div>
+                    )}
                   </div>
 
-                  <p className="text-gray-600 text-sm mb-4">
+                  <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-cyan-600 transition-colors line-clamp-2">
+                    {opportunity.title}
+                  </h3>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Building className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="truncate">{opportunity.funding_body}</span>
+                    </div>
+                    
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span>Closes: {new Date(opportunity.closing_date || opportunity.deadline).toLocaleDateString()}</span>
+                    </div>
+
+                    {opportunity.funding_amount && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <DollarSign className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span>{opportunity.funding_amount}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="text-gray-700 text-sm mb-4 line-clamp-3">
                     {opportunity.description}
                   </p>
 
-                  {/* Technology Tags */}
-                  {opportunity.enhanced_metadata?.tech_tags && opportunity.enhanced_metadata.tech_tags.length > 0 && (
-                    <div className="mb-4">
-                      <div className="flex flex-wrap gap-1">
-                        {opportunity.enhanced_metadata.tech_tags.slice(0, 3).map((tech, index) => (
-                          <span key={index} className="px-2 py-1 bg-cyan-50 text-cyan-700 text-xs rounded-md">
-                            {tech}
+                  {/* Enhanced metadata for Pro users */}
+                  {user?.tier !== 'free' && opportunity.enhanced_metadata && (
+                    <div className="space-y-2 mb-4">
+                      {opportunity.enhanced_metadata.sme_score !== undefined && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">SME Score:</span>
+                          <span className="text-xs font-semibold text-green-600">
+                            {Math.round(opportunity.enhanced_metadata.sme_score * 100)}%
                           </span>
-                        ))}
-                        {opportunity.enhanced_metadata.tech_tags.length > 3 && (
-                          <span className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-md">
-                            +{opportunity.enhanced_metadata.tech_tags.length - 3} more
-                          </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
+                      
+                      {opportunity.enhanced_metadata.keywords_matched?.length > 0 && (
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Matched Keywords:</div>
+                          <div className="text-xs text-gray-600">
+                            {opportunity.enhanced_metadata.keywords_matched.slice(0, 5).join(', ')}
+                            {opportunity.enhanced_metadata.keywords_matched.length > 5 && '...'}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm">
-                      <Building className="w-4 h-4 text-gray-400 mr-2" />
-                      <span className="text-gray-700">{opportunity.funding_body}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-cyan-600 font-medium group-hover:text-cyan-700 transition-colors">
+                      Click to view details →
                     </div>
-                    <div className="flex items-center text-sm">
-                      <DollarSign className="w-4 h-4 text-gray-400 mr-2" />
-                      <span className="text-gray-700">{opportunity.funding_amount}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Calendar className="w-4 h-4 text-gray-400 mr-2" />
-                      <span className="text-gray-700">
-                        Closes: {new Date(opportunity.closing_date).toLocaleDateString()} ({formatDeadline(opportunity.closing_date)})
-                      </span>
-                    </div>
+                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-cyan-600 transition-colors" />
                   </div>
-
-                  {/* Keywords Matched */}
-                  {opportunity.enhanced_metadata?.keywords_matched && opportunity.enhanced_metadata.keywords_matched.length > 0 && (
-                    <div className="mb-4">
-                      <div className="text-xs text-gray-500 mb-1">Matched Keywords:</div>
-                      <div className="text-xs text-gray-600">
-                        {opportunity.enhanced_metadata.keywords_matched.slice(0, 5).join(', ')}
-                        {opportunity.enhanced_metadata.keywords_matched.length > 5 && '...'}
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => {
-                      if (opportunity.tier_required !== 'free' && user?.tier === 'free') {
-                        setShowUpgradeModal(true);
-                      } else {
-                        window.open(opportunity.official_link, '_blank');
-                      }
-                    }}
-                    className="w-full flex items-center justify-center px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    View Details
-                  </button>
                 </div>
               ))}
             </div>
@@ -1259,6 +1602,7 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
       {currentView === 'register' && <RegisterPage />}
       {currentView === 'dashboard' && user && <DashboardPage />}
       {currentView === 'opportunities' && <OpportunitiesPage />}
+      {currentView === 'opportunity-detail' && <OpportunityDetailPage />}
       {currentView === 'alerts' && user && <AlertsPage />}
       {currentView === 'procurement-act' && user && <ProcurementActHub />}
       
