@@ -124,6 +124,17 @@ class EnhancedKeywordEngine:
         'energy storage': 8, 'batteries': 8, 'power systems': 8,
         'dual-use technologies': 12, 'dual-use': 10,
         
+        # SME-Friendly Technology Keywords
+        'software development': 10, 'application development': 8, 'mobile app': 8,
+        'data analytics': 10, 'data processing': 8, 'analytics platform': 10,
+        'monitoring system': 8, 'tracking system': 8, 'detection system': 10,
+        'sensor technology': 10, 'camera system': 8, 'imaging technology': 10,
+        'communication system': 8, 'network solution': 8, 'connectivity': 6,
+        'training system': 8, 'e-learning': 6, 'virtual reality': 10, 'ar': 8,
+        'medical technology': 8, 'diagnostic equipment': 8, 'emergency response': 10,
+        'vehicle technology': 8, 'navigation system': 8, 'gps technology': 8,
+        'protection equipment': 8, 'safety system': 8, 'access control': 8,
+        
         # Strategic Value Tags
         'innovation': 12, 'sme': 15, 'small business': 12,
         'research and development': 10, 'r&d': 10, 'research': 8,
@@ -148,7 +159,14 @@ class EnhancedKeywordEngine:
         # Additional Defence Terms
         'defence': 10, 'defense': 10, 'military': 8,
         'mod': 10, 'ministry of defence': 12,
-        'nato': 8, 'alliance': 6, 'security': 6
+        'nato': 8, 'alliance': 6, 'security': 6,
+        
+        # Dual-Use Medical/Emergency Keywords
+        'trauma care': 10, 'emergency medical': 10, 'first aid': 8,
+        'patient monitoring': 8, 'medical equipment': 8, 'diagnostic': 8,
+        'telemedicine': 10, 'remote monitoring': 8, 'health monitoring': 8,
+        'emergency services': 8, 'first responder': 8, 'rescue': 8,
+        'disaster response': 10, 'crisis management': 8, 'emergency planning': 8
     }
     
     # Low-Relevance Keywords (negative scoring)
