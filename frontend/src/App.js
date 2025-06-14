@@ -916,14 +916,69 @@ function App() {
   // Simple Opportunities Page
   const OpportunitiesPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [sourceFilter, setSourceFilter] = useState('all');
+    const [techFilter, setTechFilter] = useState('all');
+    const [valueFilter, setValueFilter] = useState('all');
+    const [showFilters, setShowFilters] = useState(false);
 
     const filteredOpportunities = opportunities.filter(opp => {
       const matchesSearch = searchTerm === '' || 
         opp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         opp.description.toLowerCase().includes(searchTerm.toLowerCase());
       
-      return matchesSearch;
+      const matchesSource = sourceFilter === 'all' || opp.source.toLowerCase().includes(sourceFilter.toLowerCase());
+      
+      const matchesTech = techFilter === 'all' || 
+        (opp.enhanced_metadata?.tech_tags && opp.enhanced_metadata.tech_tags.some(tag => 
+          tag.toLowerCase().includes(techFilter.toLowerCase())
+        ));
+      
+      const matchesValue = valueFilter === 'all' || 
+        (valueFilter === 'low' && opp.enhanced_metadata?.sme_score >= 0.7) ||
+        (valueFilter === 'medium' && opp.enhanced_metadata?.sme_score >= 0.5 && opp.enhanced_metadata?.sme_score < 0.7) ||
+        (valueFilter === 'high' && opp.enhanced_metadata?.sme_score < 0.5);
+      
+      return matchesSearch && matchesSource && matchesTech && matchesValue;
     });
+
+    // Get unique sources for filter dropdown
+    const availableSources = [...new Set(opportunities.map(opp => opp.source))];
+    
+    // Get unique tech areas for filter dropdown
+    const availableTechAreas = [...new Set(
+      opportunities.flatMap(opp => opp.enhanced_metadata?.tech_tags || [])
+    )];
+
+    const getSourceBadgeColor = (source) => {
+      if (source.includes('EU') || source.includes('TED')) return 'bg-blue-100 text-blue-800';
+      if (source.includes('NATO') || source.includes('NSPA')) return 'bg-indigo-100 text-indigo-800';
+      if (source.includes('USA') || source.includes('SAM')) return 'bg-red-100 text-red-800';
+      if (source.includes('Australia') || source.includes('AusTender')) return 'bg-green-100 text-green-800';
+      if (source.includes('BAE') || source.includes('Leonardo') || source.includes('Thales') || source.includes('Rolls-Royce')) return 'bg-purple-100 text-purple-800';
+      return 'bg-gray-100 text-gray-800'; // UK sources
+    };
+
+    const getSMEBadgeColor = (score) => {
+      if (score >= 0.7) return 'bg-green-100 text-green-800';
+      if (score >= 0.5) return 'bg-yellow-100 text-yellow-800';
+      return 'bg-red-100 text-red-800';
+    };
+
+    const getSMELabel = (score) => {
+      if (score >= 0.7) return `High SME Fit (${(score * 100).toFixed(0)}%)`;
+      if (score >= 0.5) return `Medium SME Fit (${(score * 100).toFixed(0)}%)`;
+      return `Low SME Fit (${(score * 100).toFixed(0)}%)`;
+    };
+
+    const formatDeadline = (deadline) => {
+      const deadlineDate = new Date(deadline);
+      const now = new Date();
+      const daysUntil = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
+      
+      if (daysUntil <= 7) return `🔴 ${daysUntil} days`;
+      if (daysUntil <= 14) return `🟡 ${daysUntil} days`;
+      return `🟢 ${daysUntil} days`;
+    };
 
     return (
       <div className="min-h-screen bg-slate-50">
@@ -933,10 +988,11 @@ function App() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-4">🧠 Actify Defence Intelligence</h1>
             <p className="text-gray-600">
-              Comprehensive defence procurement opportunities from {user?.tier !== 'free' ? 'multiple global sources' : 'UK government sources'}
+              Comprehensive defence procurement opportunities from {user?.tier !== 'free' ? 'multiple global sources' : 'UK government sources'} with AI-powered filtering and SME relevance scoring
             </p>
           </div>
 
+          {/* Enhanced Search and Filters */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
             <div className="flex flex-col lg:flex-row gap-4 mb-4">
               <div className="flex-1">
@@ -951,20 +1007,82 @@ function App() {
                   />
                 </div>
               </div>
+              
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <Filter className="w-5 h-5 mr-2" />
+                Filters
+                {showFilters ? <ChevronUp className="w-4 h-4 ml-2" /> : <ChevronDown className="w-4 h-4 ml-2" />}
+              </button>
             </div>
+
+            {/* Advanced Filters */}
+            {showFilters && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Source</label>
+                  <select
+                    value={sourceFilter}
+                    onChange={(e) => setSourceFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  >
+                    <option value="all">All Sources</option>
+                    {availableSources.map(source => (
+                      <option key={source} value={source}>{source}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Technology Area</label>
+                  <select
+                    value={techFilter}
+                    onChange={(e) => setTechFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  >
+                    <option value="all">All Technologies</option>
+                    {availableTechAreas.map(tech => (
+                      <option key={tech} value={tech}>{tech}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">SME Relevance</label>
+                  <select
+                    value={valueFilter}
+                    onChange={(e) => setValueFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  >
+                    <option value="all">All Opportunities</option>
+                    <option value="low">High SME Fit (≥70%)</option>
+                    <option value="medium">Medium SME Fit (50-70%)</option>
+                    <option value="high">Lower SME Fit (<50%)</option>
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-slate-900">
               {filteredOpportunities.length} opportunities found
             </h2>
+            
+            {user?.tier !== 'free' && (
+              <div className="text-sm text-gray-600">
+                Showing real-time opportunities from UK, EU, NATO, Global Allies, and Prime Contractors
+              </div>
+            )}
           </div>
 
           {filteredOpportunities.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
               <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No opportunities found</h3>
-              <p className="text-gray-600">Try adjusting your search terms or refresh the data</p>
+              <p className="text-gray-600">Try adjusting your search terms or filters, or refresh the data</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -972,16 +1090,28 @@ function App() {
                 <div key={opportunity.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTierColor(opportunity.tier_required)}`}>
                           {opportunity.tier_required.toUpperCase()}
                         </span>
-                        {opportunity.source && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
-                            {opportunity.source}
+                        
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSourceBadgeColor(opportunity.source)}`}>
+                          {opportunity.source}
+                        </span>
+                        
+                        {opportunity.enhanced_metadata?.sme_score && (
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSMEBadgeColor(opportunity.enhanced_metadata.sme_score)}`}>
+                            {getSMELabel(opportunity.enhanced_metadata.sme_score)}
+                          </span>
+                        )}
+                        
+                        {opportunity.enhanced_metadata?.priority_score >= 30 && (
+                          <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
+                            🔥 High Priority
                           </span>
                         )}
                       </div>
+                      
                       <h3 className="text-lg font-bold text-slate-900 mb-2">
                         {opportunity.title}
                       </h3>
@@ -991,6 +1121,24 @@ function App() {
                   <p className="text-gray-600 text-sm mb-4">
                     {opportunity.description}
                   </p>
+
+                  {/* Technology Tags */}
+                  {opportunity.enhanced_metadata?.tech_tags && opportunity.enhanced_metadata.tech_tags.length > 0 && (
+                    <div className="mb-4">
+                      <div className="flex flex-wrap gap-1">
+                        {opportunity.enhanced_metadata.tech_tags.slice(0, 3).map((tech, index) => (
+                          <span key={index} className="px-2 py-1 bg-cyan-50 text-cyan-700 text-xs rounded-md">
+                            {tech}
+                          </span>
+                        ))}
+                        {opportunity.enhanced_metadata.tech_tags.length > 3 && (
+                          <span className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-md">
+                            +{opportunity.enhanced_metadata.tech_tags.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center text-sm">
@@ -1004,10 +1152,21 @@ function App() {
                     <div className="flex items-center text-sm">
                       <Calendar className="w-4 h-4 text-gray-400 mr-2" />
                       <span className="text-gray-700">
-                        Closes: {new Date(opportunity.closing_date).toLocaleDateString()}
+                        Closes: {new Date(opportunity.closing_date).toLocaleDateString()} ({formatDeadline(opportunity.closing_date)})
                       </span>
                     </div>
                   </div>
+
+                  {/* Keywords Matched */}
+                  {opportunity.enhanced_metadata?.keywords_matched && opportunity.enhanced_metadata.keywords_matched.length > 0 && (
+                    <div className="mb-4">
+                      <div className="text-xs text-gray-500 mb-1">Matched Keywords:</div>
+                      <div className="text-xs text-gray-600">
+                        {opportunity.enhanced_metadata.keywords_matched.slice(0, 5).join(', ')}
+                        {opportunity.enhanced_metadata.keywords_matched.length > 5 && '...'}
+                      </div>
+                    </div>
+                  )}
 
                   <button
                     onClick={() => {
