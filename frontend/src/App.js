@@ -1884,16 +1884,6 @@ function App() {
     }
   };
 
-  // Helper functions for the OpportunitiesPage
-  const getTierColor = (tier) => {
-    switch (tier) {
-      case 'free': return 'bg-gray-100 text-gray-800';
-      case 'pro': return 'bg-cyan-100 text-cyan-800';
-      case 'enterprise': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   // Alerts page component
   const AlertsPage = () => (
     <div className="min-h-screen bg-slate-50">
