@@ -185,12 +185,17 @@ async def refresh_data(
         if current_dir not in sys.path:
             sys.path.insert(0, current_dir)
         
-        from actify_defence_aggregator import run_full_aggregation
-        
-        logger.info("🚀 Starting Actify Defence full aggregation...")
-        
-        # Run the comprehensive aggregation
-        opportunities = await run_full_aggregation()
+        # Try full aggregation first, fallback to basic if needed
+        try:
+            from actify_defence_full_aggregator import run_full_actify_aggregation
+            logger.info("🚀 Starting FULL Actify Defence aggregation (all sources)...")
+            opportunities = await run_full_actify_aggregation()
+            source_info = "Full multi-source aggregation: UK, EU, NATO, Global Allies, Prime Contractors"
+        except ImportError:
+            from actify_defence_aggregator import run_full_aggregation
+            logger.info("🚀 Starting basic Actify Defence aggregation...")
+            opportunities = await run_full_aggregation()
+            source_info = "Basic aggregation: UK sources (FTS, Contracts Finder, DASA)"
         
         if opportunities:
             # Clear existing opportunities and insert new ones
@@ -213,15 +218,24 @@ async def refresh_data(
             
             logger.info(f"✅ Inserted {len(result.inserted_ids)} opportunities from Actify Defence aggregation")
             
+            # Get source breakdown
+            sources = {}
+            for opp in opportunities:
+                source = opp.get('source', 'unknown')
+                sources[source] = sources.get(source, 0) + 1
+            
             return {
                 "status": "success",
-                "message": f"Actify Defence aggregation complete. {len(opportunities)} opportunities collected from multiple sources.",
-                "sources_scraped": ["Find a Tender Service", "Contracts Finder", "DASA"],
+                "message": f"Actify Defence aggregation complete. {len(opportunities)} opportunities collected.",
+                "source_info": source_info,
                 "opportunities_count": len(opportunities),
+                "source_breakdown": sources,
                 "timestamp": datetime.utcnow().isoformat(),
                 "filtering_applied": True,
                 "deduplication_applied": True,
-                "sme_scoring_applied": True
+                "sme_scoring_applied": True,
+                "technology_classification_applied": True,
+                "confidence_scoring_applied": True
             }
         else:
             return {
