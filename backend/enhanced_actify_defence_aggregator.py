@@ -812,14 +812,23 @@ class EnhancedActifyDefenceAggregator:
         source_stats = {}
         
         # Collect from UK sources
-        logger.info("🇬🇧 Processing UK Official Sources...")
+        logger.info("🇬🇧 Processing Enhanced UK Official Sources...")
         try:
+            # Use enhanced UK sources collector
+            from enhanced_uk_sources_v2 import collect_enhanced_uk_sources
+            uk_opps = await collect_enhanced_uk_sources()
+            all_opportunities.extend(uk_opps)
+            source_stats["UK_Enhanced"] = len(uk_opps)
+            logger.info(f"✅ Enhanced UK Sources: {len(uk_opps)} opportunities")
+        except ImportError:
+            # Fallback to original UK scraper
             uk_opps = await self.uk_scraper.scrape_all_uk_sources()
             all_opportunities.extend(uk_opps)
             source_stats["UK_Official"] = len(uk_opps)
-            logger.info(f"✅ UK Sources: {len(uk_opps)} opportunities")
+            logger.info(f"✅ UK Sources (fallback): {len(uk_opps)} opportunities")
         except Exception as e:
             logger.error(f"❌ Error in UK sources: {e}")
+            # Continue with other sources
         
         # Collect from Global sources
         logger.info("🌍 Processing Global Ally Sources...")
