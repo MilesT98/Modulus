@@ -252,11 +252,49 @@ class EnhancedKeywordEngine:
     
     @classmethod
     def is_relevant_opportunity(cls, opportunity: OpportunityData) -> bool:
-        """Determine if opportunity is relevant based on keywords"""
+        """Determine if opportunity is relevant based on keywords with SME-friendly adjustments"""
         priority_score = cls.calculate_priority_score(opportunity)
         
-        # Must have at least some positive score to be relevant
-        return priority_score >= 5
+        # SME-friendly adjustments: Lower threshold for smaller contracts
+        value = getattr(opportunity, 'value_estimate', None) or 0
+        
+        if value <= 2000000:  # SME-friendly range (≤£2M)
+            # Much lower threshold for smaller contracts - SMEs need these!
+            if priority_score >= 1:  # Very low threshold
+                return True
+            
+            # Additional SME-friendly checks for smaller contracts
+            content = f"{opportunity.title} {opportunity.summary}".lower()
+            
+            # Technology keywords that could have defence applications
+            tech_keywords = [
+                'software', 'application', 'system', 'platform', 'solution',
+                'analytics', 'data', 'monitoring', 'tracking', 'detection',
+                'communication', 'network', 'connectivity', 'wireless',
+                'training', 'simulation', 'virtual', 'augmented reality',
+                'medical equipment', 'diagnostic', 'emergency response',
+                'vehicle technology', 'navigation', 'gps', 'mapping',
+                'sensor', 'camera', 'imaging', 'scanning',
+                'protection', 'safety', 'security system', 'access control'
+            ]
+            
+            # Innovation/R&D keywords
+            innovation_keywords = [
+                'innovation', 'research', 'development', 'prototype',
+                'pilot', 'trial', 'demonstration', 'proof of concept',
+                'technology transfer', 'commercial application'
+            ]
+            
+            # If it's a small contract with tech/innovation potential, include it
+            if any(keyword in content for keyword in tech_keywords + innovation_keywords):
+                return True
+                
+        elif value <= 10000000:  # Medium SME range (£2M-£10M)
+            # Moderate threshold for medium contracts
+            return priority_score >= 3
+        else:
+            # Standard threshold for large contracts
+            return priority_score >= 5
 
 # Enhanced source scrapers with all sources from the brief
 class UKSourcesScraper:
