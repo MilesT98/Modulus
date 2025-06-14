@@ -1660,9 +1660,9 @@ function App() {
                       className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                     >
                       <option value="">All Relevance</option>
-                      <option value="high">High (≥70%)</option>
+                      <option value="high">High (70%+)</option>
                       <option value="medium">Medium (50-70%)</option>
-                      <option value="low">Low (<50%)</option>
+                      <option value="low">Low (50%)</option>
                     </select>
                   </div>
 
