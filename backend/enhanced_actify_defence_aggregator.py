@@ -1111,7 +1111,6 @@ class EnhancedActifyDefenceAggregator:
             # Convert datetime objects
             opp_dict['deadline'] = opp.deadline.isoformat()
             opp_dict['date_scraped'] = opp.date_scraped.isoformat()
-            opp_dict['submission_deadline'] = opp.submission_deadline.isoformat() if opp.submission_deadline else opp.deadline.isoformat()
             
             # Convert enum
             opp_dict['source_type'] = opp.source_type.value
