@@ -149,6 +149,15 @@ class ModulusDefenceAPITester:
             200
         )
         
+    def test_aggregation_stats(self):
+        """Test getting aggregation statistics (Pro/Enterprise only)"""
+        return self.run_test(
+            "Get Aggregation Stats",
+            "GET",
+            "opportunities/aggregation-stats",
+            200
+        )
+        
     def test_get_data_sources(self):
         """Test getting data sources information"""
         return self.run_test(
