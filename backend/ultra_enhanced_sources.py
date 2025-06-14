@@ -424,13 +424,13 @@ class UltraEnhancedCollector:
                     authority = random.choice(authorities)
                     deadline = datetime.now() + timedelta(days=random.randint(45, 150))
                     
-                    # Category-specific value ranges
+                    # Category-specific value ranges with SME focus
                     value_ranges = {
-                        "ai_technology": (2000000, 25000000),
-                        "cyber_security": (1500000, 35000000),
-                        "space_defence": (5000000, 75000000),
-                        "maritime_systems": (8000000, 150000000),
-                        "medical_trauma": (500000, 12000000)
+                        "ai_technology": (50000, 2500000),      # SME-friendly AI contracts
+                        "cyber_security": (75000, 3500000),    # SME cyber security
+                        "space_defence": (100000, 15000000),   # Some large, some SME
+                        "maritime_systems": (200000, 25000000), # Mix of sizes
+                        "medical_trauma": (25000, 1500000)     # Mostly SME-sized medical
                     }
                     
                     min_val, max_val = value_ranges.get(category, (1000000, 20000000))
