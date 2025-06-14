@@ -744,6 +744,145 @@ def test_actify_defence_aggregation():
     
     return True
 
+def test_opportunity_detail_and_links():
+    """Test opportunity detail view and external link handling"""
+    print("\n🔍 TESTING OPPORTUNITY DETAIL VIEW AND EXTERNAL LINKS")
+    
+    tester = ModulusDefenceAPITester()
+    timestamp = datetime.now().strftime('%H%M%S')
+    
+    # Register as a pro user to ensure full access
+    test_email = f"detail_test_{timestamp}@example.com"
+    test_password = "TestPass123!"
+    test_company = "Detail Test Ltd"
+    test_full_name = "Detail Test User"
+    
+    if not tester.test_register(test_email, test_password, test_company, test_full_name):
+        print("❌ Registration failed")
+        return False
+    
+    # Upgrade to Pro tier
+    success, _ = tester.test_upgrade_subscription("pro")
+    if not success:
+        print("❌ Upgrade to Pro tier failed")
+        return False
+    
+    print("✅ Successfully upgraded to Pro tier")
+    
+    # Get opportunities
+    success, opportunities = tester.test_get_opportunities()
+    if not success or not opportunities:
+        print("❌ Failed to get opportunities")
+        return False
+    
+    print(f"✅ Retrieved {len(opportunities)} opportunities")
+    
+    # Test opportunity detail view for each opportunity
+    for i, opportunity in enumerate(opportunities[:3]):  # Test first 3 opportunities
+        opportunity_id = opportunity.get('id') or opportunity.get('_id')
+        if not opportunity_id:
+            print(f"❌ Opportunity {i+1} has no ID")
+            continue
+        
+        print(f"\n🔍 Testing detail view for opportunity: {opportunity.get('title', 'Unknown')}")
+        
+        # Get opportunity detail
+        success, detail = tester.test_get_specific_opportunity(opportunity_id)
+        if not success:
+            print(f"❌ Failed to get detail for opportunity {opportunity_id}")
+            continue
+        
+        # Verify detail fields
+        required_fields = [
+            'title', 'funding_body', 'description', 'closing_date', 
+            'official_link', 'status', 'created_at', 'tier_required'
+        ]
+        
+        missing_fields = [field for field in required_fields if field not in detail]
+        if missing_fields:
+            print(f"❌ Missing required fields in detail: {', '.join(missing_fields)}")
+        else:
+            print("✅ All required fields present in detail view")
+        
+        # Check for enhanced fields
+        enhanced_fields = [
+            'detailed_description', 'funding_amount', 'tech_areas', 
+            'mod_department', 'trl_level', 'contract_type'
+        ]
+        
+        present_enhanced = [field for field in enhanced_fields if field in detail and detail[field]]
+        if present_enhanced:
+            print(f"✅ Enhanced fields present: {', '.join(present_enhanced)}")
+        else:
+            print("⚠️ No enhanced fields present in detail")
+        
+        # Test external link checking
+        if 'official_link' in detail and detail['official_link']:
+            print(f"🔍 Testing link checking for: {detail['official_link']}")
+            
+            success, link_check = tester.test_check_opportunity_link(opportunity_id)
+            if success:
+                print(f"✅ Link check successful: {link_check.get('status', 'unknown')}")
+                
+                # Verify link check response
+                if 'status' in link_check:
+                    print(f"✅ Link status: {link_check['status']}")
+                    
+                    if link_check['status'] == 'available':
+                        print("✅ Link is accessible")
+                    elif link_check['status'] in ['redirect', 'unavailable', 'timeout', 'connection_error']:
+                        print(f"⚠️ Link has issues: {link_check.get('message', 'No message')}")
+                    else:
+                        print(f"❓ Unknown link status: {link_check['status']}")
+                else:
+                    print("❌ No status in link check response")
+            else:
+                print("❌ Link check failed")
+        else:
+            print("❌ No official link in opportunity detail")
+    
+    # Test tier-based access control
+    print("\n🔍 Testing tier-based access control for opportunity details")
+    
+    # Create a Pro tier opportunity
+    success, pro_opp = tester.test_create_opportunity(tier_required="pro")
+    if not success or 'id' not in pro_opp:
+        print("❌ Failed to create Pro tier opportunity")
+        return False
+    
+    pro_opp_id = pro_opp['id']
+    print(f"✅ Created Pro tier opportunity: {pro_opp_id}")
+    
+    # Verify Pro user can access it
+    success, _ = tester.test_get_specific_opportunity(pro_opp_id)
+    if not success:
+        print("❌ Pro user couldn't access Pro tier opportunity")
+        return False
+    
+    print("✅ Pro user can access Pro tier opportunity")
+    
+    # Register as a free user
+    test_email_free = f"free_detail_{timestamp}@example.com"
+    
+    if not tester.test_register(test_email_free, test_password, test_company, test_full_name):
+        print("❌ Registration failed for free user")
+        return False
+    
+    print("✅ Successfully registered as free user")
+    
+    # Try to access Pro tier opportunity as free user
+    success, response = tester.test_get_specific_opportunity(pro_opp_id)
+    
+    # This should either fail with 403 or return with is_delayed=true
+    if not success:
+        print("✅ Free user correctly denied access to new Pro tier opportunity")
+    elif response.get('is_delayed'):
+        print("✅ Free user sees delayed access message for Pro tier opportunity")
+    else:
+        print("❌ Free user incorrectly given full access to Pro tier opportunity")
+    
+    return True
+
 def main():
     # Test opportunity links, values, and dates
     opportunity_test_success = test_opportunity_links_and_values()
@@ -751,6 +890,9 @@ def main():
     # Test both user tiers
     free_tier_success = test_free_tier_user()
     pro_tier_success = test_pro_tier_user()
+    
+    # Test opportunity detail view and external links
+    detail_links_success = test_opportunity_detail_and_links()
     
     # Test procurement guide access
     procurement_guide_success = test_procurement_guide_access()
