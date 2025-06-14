@@ -1008,7 +1008,7 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
           <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
           
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 mb-4">🧠 Actify Defence Intelligence</h1>
+            <h1 className="text-3xl font-bold text-slate-900 mb-4">⚔️ Defence Opportunities</h1>
             <p className="text-gray-600">
               Comprehensive defence procurement opportunities from {user?.tier !== 'free' ? 'multiple global sources' : 'UK government sources'} with AI-powered filtering and SME relevance scoring
             </p>
