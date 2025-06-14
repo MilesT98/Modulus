@@ -14,8 +14,8 @@ Free tier user can see 6 opportunities
 
 🔍 Testing Get Opportunities (filters: {})...
 ✅ Passed - Status: 200
-Pro tier user can see 7 opportunities
-❌ Expected 6 opportunities for pro tier, got 7
+Pro tier user can see 9 opportunities
+❌ Expected 6 opportunities for pro tier, got 9
 ❌ Opportunity not found: Royal Navy Radar Systems
 ❌ Opportunity not found: Artificial Intelligence Research
 ❌ Opportunity not found: Cybersecurity Framework
@@ -31,7 +31,11 @@ Pro tier user can see 7 opportunities
 ❌ Invalid link format: https://www.gov.uk/government/collections/apply-for-funding
 ❌ Invalid link format: https://www.gov.uk/government/news/dtep-funding-for-sci-the-cheri-on-the-cake
 ❌ Invalid link format: https://example.com/test
+❌ Invalid link format: https://example.com/test
+❌ Invalid link format: https://example.com/test
 ⚠️ Closing date outside 30-90 day range: 29 days for Test Opportunity 140602
+⚠️ Closing date outside 30-90 day range: 29 days for Test Opportunity 140812
+⚠️ Closing date outside 30-90 day range: 29 days for Test Opportunity 141402
 ✅ All closing dates are in the future
 
 🔍 TESTING FREE TIER USER JOURNEY
@@ -81,88 +85,3 @@ Response: {'detail': 'Data refresh requires Pro or Enterprise subscription'}
 ✅ Advanced filtering works for Pro users: found 0 opportunities
 
 🔍 Testing Refresh Live Data...
-✅ Passed - Status: 200
-✅ Pro tier user can refresh live data
-
-🔍 Testing Get Data Sources...
-✅ Passed - Status: 200
-✅ Pro tier user can access data sources: 4 sources available
-
-🔍 Testing Create Opportunity (tier: pro)...
-✅ Passed - Status: 200
-✅ Pro tier user created a Pro opportunity: b778ab11-8837-447f-80ed-548f86088a6c
-
-🔍 Testing Get Specific Opportunity (ID: b778ab11-8837-447f-80ed-548f86088a6c)...
-✅ Passed - Status: 200
-
-📊 Pro Tier Tests passed: 9/9
-
-🔍 TESTING UK DEFENCE PROCUREMENT GUIDE ACCESS
-
-🔍 Testing User Registration...
-✅ Passed - Status: 200
-✅ Successfully registered a free tier user for guide testing
-
-🔍 Testing Get Current User...
-✅ Passed - Status: 200
-✅ User is correctly on free tier
-✅ Free user would see locked content with upgrade prompt (verified in UI test)
-
-🔍 Testing User Registration...
-✅ Passed - Status: 200
-
-🔍 Testing Upgrade to pro...
-✅ Passed - Status: 200
-✅ Successfully upgraded to Pro tier
-
-🔍 Testing Get Current User...
-✅ Passed - Status: 200
-✅ User is correctly on Pro tier
-✅ Pro user would see full guide content (verified in UI test)
-
-🔍 TESTING ACTIFY DEFENCE AGGREGATION SYSTEM
-
-🔍 Testing User Registration...
-✅ Passed - Status: 200
-
-🔍 Testing Upgrade to pro...
-✅ Passed - Status: 200
-✅ Successfully upgraded to Pro tier
-
-🔍 Testing Refresh Live Data...
-✅ Passed - Status: 200
-✅ Actify Defence Aggregation completed successfully
-❌ Unexpected aggregation status: warning
-❌ No opportunities count in response
-❌ No sources information in response
-❌ Filtering was not applied
-❌ Deduplication was not applied
-❌ SME scoring was not applied
-
-🔍 Testing Get Aggregation Stats...
-✅ Passed - Status: 200
-✅ Successfully retrieved aggregation statistics
-✅ Total opportunities in system: 8
-✅ Source breakdown available:
-  - DASA: 6 opportunities
-  - None: 2 opportunities
-✅ Technology areas breakdown available:
-  - Space Technologies: 1 opportunities
-✅ SME relevance breakdown available:
-  - High relevance: 0 opportunities
-  - Medium relevance: 4 opportunities
-  - Low relevance: 2 opportunities
-
-🔍 Testing Get Opportunities (filters: {})...
-✅ Passed - Status: 200
-✅ Retrieved 8 opportunities after aggregation
-✅ Opportunities have source badges
-✅ Opportunities have technology area tags
-✅ Opportunities have SME relevance scores
-
-📊 OVERALL TEST RESULTS:
-Opportunity Links & Values Tests: ✅ PASSED
-Free Tier Tests: ❌ FAILED
-Pro Tier Tests: ✅ PASSED
-UK Defence Procurement Guide Tests: ✅ PASSED
-Actify Defence Aggregation Tests: ✅ PASSED
