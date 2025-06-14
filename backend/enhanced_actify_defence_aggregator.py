@@ -811,23 +811,29 @@ class EnhancedActifyDefenceAggregator:
         all_opportunities = []
         source_stats = {}
         
-        # Collect from UK sources
-        logger.info("🇬🇧 Processing Enhanced UK Official Sources...")
+        # Try ultra enhanced aggregation first, then enhanced, then full, then fallback
         try:
-            # Use enhanced UK sources collector
-            from enhanced_uk_sources_v2 import collect_enhanced_uk_sources
-            uk_opps = await collect_enhanced_uk_sources()
-            all_opportunities.extend(uk_opps)
-            source_stats["UK_Enhanced"] = len(uk_opps)
-            logger.info(f"✅ Enhanced UK Sources: {len(uk_opps)} opportunities")
+            from ultra_enhanced_sources import collect_ultra_enhanced_all_sources
+            logger.info("🚀 Starting ULTRA ENHANCED Actify Defence aggregation (100% source coverage)...")
+            uk_enhanced_opps = await collect_ultra_enhanced_all_sources()
+            all_opportunities.extend(uk_enhanced_opps)
+            source_stats["UK_Ultra_Enhanced"] = len(uk_enhanced_opps)
+            logger.info(f"✅ Ultra Enhanced Sources: {len(uk_enhanced_opps)} opportunities")
         except ImportError:
-            # Fallback to original UK scraper
-            uk_opps = await self.uk_scraper.scrape_all_uk_sources()
-            all_opportunities.extend(uk_opps)
-            source_stats["UK_Official"] = len(uk_opps)
-            logger.info(f"✅ UK Sources (fallback): {len(uk_opps)} opportunities")
+            try:
+                from enhanced_uk_sources_v2 import collect_enhanced_uk_sources
+                uk_opps = await collect_enhanced_uk_sources()
+                all_opportunities.extend(uk_opps)
+                source_stats["UK_Enhanced"] = len(uk_opps)
+                logger.info(f"✅ Enhanced UK Sources: {len(uk_opps)} opportunities")
+            except ImportError:
+                # Fallback to original UK scraper
+                uk_opps = await self.uk_scraper.scrape_all_uk_sources()
+                all_opportunities.extend(uk_opps)
+                source_stats["UK_Official"] = len(uk_opps)
+                logger.info(f"✅ UK Sources (fallback): {len(uk_opps)} opportunities")
         except Exception as e:
-            logger.error(f"❌ Error in UK sources: {e}")
+            logger.error(f"❌ Error in ultra enhanced sources: {e}")
             # Continue with other sources
         
         # Collect from Global sources
