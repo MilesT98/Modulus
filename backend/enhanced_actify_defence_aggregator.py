@@ -863,6 +863,19 @@ class EnhancedActifyDefenceAggregator:
         except Exception as e:
             logger.error(f"❌ Error in regional and academic sources: {e}")
         
+        # Collect from Priority Additional sources
+        logger.info("🔥 Processing Priority Additional Sources...")
+        try:
+            from priority_additional_sources import collect_priority_additional_sources
+            priority_opps = await collect_priority_additional_sources()
+            all_opportunities.extend(priority_opps)
+            source_stats["Priority_Additional"] = len(priority_opps)
+            logger.info(f"✅ Priority Additional Sources: {len(priority_opps)} opportunities")
+        except ImportError:
+            logger.warning("Priority additional sources not available")
+        except Exception as e:
+            logger.error(f"❌ Error in priority additional sources: {e}")
+        
         logger.info(f"📊 Raw collection complete: {len(all_opportunities)} total opportunities")
         
         # Enhanced filtering and processing
