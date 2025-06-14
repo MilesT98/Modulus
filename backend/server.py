@@ -177,6 +177,14 @@ async def refresh_data(
         raise HTTPException(status_code=403, detail="Data refresh requires Pro or Enterprise subscription")
     
     try:
+        import sys
+        import os
+        
+        # Add current directory to Python path
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        if current_dir not in sys.path:
+            sys.path.insert(0, current_dir)
+        
         from actify_defence_aggregator import run_full_aggregation
         
         logger.info("🚀 Starting Actify Defence full aggregation...")
