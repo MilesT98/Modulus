@@ -704,7 +704,16 @@ class UltraEnhancedCollector:
                 "Medical Imaging AI Enhancement Platform",
                 "Point-of-Care Testing Device Procurement",
                 "Advanced Life Support Equipment Upgrade",
-                "Medical Device Cybersecurity Enhancement Programme"
+                "Medical Device Cybersecurity Enhancement Programme",
+                # SME-friendly smaller medical contracts
+                "Mobile Medical Apps for Emergency Responders",
+                "Basic Patient Monitoring Software",
+                "Medical Equipment Maintenance Tracking System",
+                "Simple Diagnostic Tool Development",
+                "Medical Data Analytics Platform",
+                "Healthcare IoT Sensor Development",
+                "Medical Training Simulation Software",
+                "Patient Record Management System"
             ],
             "emergency_response": [
                 "Mass Casualty Event Response Equipment",
@@ -713,7 +722,14 @@ class UltraEnhancedCollector:
                 "Emergency Department Workflow Management Platform",
                 "Ambulance Technology Upgrade Programme",
                 "Emergency Response Coordination Software",
-                "Crisis Communication Platform for Healthcare"
+                "Crisis Communication Platform for Healthcare",
+                # SME emergency response opportunities
+                "Emergency Response Mobile Application",
+                "Basic First Aid Training Software",
+                "Emergency Equipment Tracking System",
+                "Simple Crisis Communication Tool",
+                "Emergency Vehicle GPS Tracking",
+                "Basic Emergency Planning Software"
             ],
             "digital_health": [
                 "AI-Powered Medical Decision Support System",
