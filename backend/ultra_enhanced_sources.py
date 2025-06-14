@@ -553,14 +553,22 @@ class UltraEnhancedCollector:
                     buyer = random.choice(buyers)
                     deadline = datetime.now() + timedelta(days=random.randint(30, 90))
                     
-                    # Category-specific details
+                    # Category-specific details with SME focus
                     if "g_cloud" in category:
                         framework = "G-Cloud 13"
-                        value_range = (100000, 5000000)
+                        # More realistic SME-friendly values for G-Cloud
+                        if any(term in opp_title.lower() for term in ['mobile app', 'tracking', 'management tool', 'basic']):
+                            value_range = (15000, 150000)  # Small software projects
+                        else:
+                            value_range = (50000, 800000)  # Larger but still SME-friendly
                         proc_type = "Framework Agreement"
                     else:
                         framework = "DOS6"
-                        value_range = (50000, 2000000)
+                        # SME-friendly specialist/outcome values
+                        if any(term in opp_title.lower() for term in ['junior', 'small-scale', 'basic', 'mobile app']):
+                            value_range = (10000, 100000)  # Small projects
+                        else:
+                            value_range = (25000, 350000)  # Medium SME projects
                         proc_type = "Specialist Services"
                     
                     value_estimate = float(random.randint(*value_range))
