@@ -761,12 +761,12 @@ class UltraEnhancedCollector:
                     organization = random.choice(nhs_organizations)
                     deadline = datetime.now() + timedelta(days=random.randint(45, 120))
                     
-                    # Category-specific value ranges
+                    # Category-specific value ranges with more SME-friendly options
                     value_ranges = {
-                        "medical_devices": (2000000, 25000000),
-                        "emergency_response": (5000000, 35000000),
-                        "digital_health": (3000000, 20000000),
-                        "biotechnology": (1000000, 15000000)
+                        "medical_devices": (20000, 3000000),    # Wide range including small apps
+                        "emergency_response": (30000, 8000000), # Mix of small and large
+                        "digital_health": (15000, 2000000),     # Mostly SME-friendly
+                        "biotechnology": (50000, 5000000)       # Research + development mix
                     }
                     
                     min_val, max_val = value_ranges.get(category, (1000000, 20000000))
