@@ -130,3 +130,39 @@ Response: {'detail': 'Data refresh requires Pro or Enterprise subscription'}
 ✅ Successfully upgraded to Pro tier
 
 🔍 Testing Refresh Live Data...
+✅ Passed - Status: 200
+✅ Actify Defence Aggregation completed successfully
+❌ Unexpected aggregation status: warning
+❌ No opportunities count in response
+❌ No sources information in response
+❌ Filtering was not applied
+❌ Deduplication was not applied
+❌ SME scoring was not applied
+
+🔍 Testing Get Aggregation Stats...
+✅ Passed - Status: 200
+✅ Successfully retrieved aggregation statistics
+✅ Total opportunities in system: 8
+✅ Source breakdown available:
+  - DASA: 6 opportunities
+  - None: 2 opportunities
+✅ Technology areas breakdown available:
+  - Space Technologies: 1 opportunities
+✅ SME relevance breakdown available:
+  - High relevance: 0 opportunities
+  - Medium relevance: 4 opportunities
+  - Low relevance: 2 opportunities
+
+🔍 Testing Get Opportunities (filters: {})...
+✅ Passed - Status: 200
+✅ Retrieved 8 opportunities after aggregation
+✅ Opportunities have source badges
+✅ Opportunities have technology area tags
+✅ Opportunities have SME relevance scores
+
+📊 OVERALL TEST RESULTS:
+Opportunity Links & Values Tests: ✅ PASSED
+Free Tier Tests: ❌ FAILED
+Pro Tier Tests: ✅ PASSED
+UK Defence Procurement Guide Tests: ✅ PASSED
+Actify Defence Aggregation Tests: ✅ PASSED
