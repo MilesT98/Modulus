@@ -185,17 +185,23 @@ async def refresh_data(
         if current_dir not in sys.path:
             sys.path.insert(0, current_dir)
         
-        # Try full aggregation first, fallback to basic if needed
+        # Try enhanced aggregation first, then full, then fallback to basic
         try:
-            from actify_defence_full_aggregator import run_full_actify_aggregation
-            logger.info("🚀 Starting FULL Actify Defence aggregation (all sources)...")
-            opportunities = await run_full_actify_aggregation()
-            source_info = "Full multi-source aggregation: UK, EU, NATO, Global Allies, Prime Contractors"
+            from enhanced_actify_defence_aggregator import run_enhanced_actify_aggregation
+            logger.info("🚀 Starting ENHANCED Actify Defence aggregation (all sources + keyword filtering)...")
+            opportunities = await run_enhanced_actify_aggregation()
+            source_info = "Enhanced multi-source aggregation with keyword prioritization: UK Official, EU/NATO, Global Allies, Prime Contractors, Industry Networks"
         except ImportError:
-            from actify_defence_aggregator import run_full_aggregation
-            logger.info("🚀 Starting basic Actify Defence aggregation...")
-            opportunities = await run_full_aggregation()
-            source_info = "Basic aggregation: UK sources (FTS, Contracts Finder, DASA)"
+            try:
+                from actify_defence_full_aggregator import run_full_actify_aggregation
+                logger.info("🚀 Starting FULL Actify Defence aggregation (all sources)...")
+                opportunities = await run_full_actify_aggregation()
+                source_info = "Full multi-source aggregation: UK, EU, NATO, Global Allies, Prime Contractors"
+            except ImportError:
+                from actify_defence_aggregator import run_full_aggregation
+                logger.info("🚀 Starting basic Actify Defence aggregation...")
+                opportunities = await run_full_aggregation()
+                source_info = "Basic aggregation: UK sources (FTS, Contracts Finder, DASA)"
         
         if opportunities:
             # Clear existing opportunities and insert new ones
