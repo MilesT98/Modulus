@@ -12,6 +12,10 @@ from passlib.context import CryptContext
 import uuid
 from enum import Enum
 import asyncio
+import logging
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 try:
     from data_integration_service import DataIntegrationService
