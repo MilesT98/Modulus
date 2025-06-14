@@ -201,6 +201,15 @@ class ModulusDefenceAPITester:
             200
         )
         
+    def test_check_opportunity_link(self, opportunity_id):
+        """Test checking if an opportunity's external link is accessible"""
+        return self.run_test(
+            f"Check Opportunity Link (ID: {opportunity_id})",
+            "POST",
+            f"opportunities/{opportunity_id}/check-link",
+            200
+        )
+        
     def test_update_alert_preferences(self):
         """Test updating alert preferences"""
         data = {
