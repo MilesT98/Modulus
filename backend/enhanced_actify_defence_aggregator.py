@@ -938,6 +938,19 @@ class EnhancedActifyDefenceAggregator:
         except Exception as e:
             logger.error(f"❌ Error in priority additional sources: {e}")
         
+        # Collect from High Priority International sources
+        logger.info("🌍 Processing High Priority International Sources...")
+        try:
+            from high_priority_international_sources import collect_high_priority_international_sources
+            intl_opps = await collect_high_priority_international_sources()
+            all_opportunities.extend(intl_opps)
+            source_stats["High_Priority_International"] = len(intl_opps)
+            logger.info(f"✅ High Priority International Sources: {len(intl_opps)} opportunities")
+        except ImportError:
+            logger.warning("High priority international sources not available")
+        except Exception as e:
+            logger.error(f"❌ Error in high priority international sources: {e}")
+        
         logger.info(f"📊 Raw collection complete: {len(all_opportunities)} total opportunities")
         
         # Enhanced filtering and processing
