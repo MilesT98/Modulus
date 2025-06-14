@@ -905,10 +905,11 @@ def main():
     print(f"Opportunity Links & Values Tests: {'✅ PASSED' if opportunity_test_success else '❌ FAILED'}")
     print(f"Free Tier Tests: {'✅ PASSED' if free_tier_success else '❌ FAILED'}")
     print(f"Pro Tier Tests: {'✅ PASSED' if pro_tier_success else '❌ FAILED'}")
+    print(f"Opportunity Detail & Links Tests: {'✅ PASSED' if detail_links_success else '❌ FAILED'}")
     print(f"UK Defence Procurement Guide Tests: {'✅ PASSED' if procurement_guide_success else '❌ FAILED'}")
     print(f"Actify Defence Aggregation Tests: {'✅ PASSED' if actify_defence_success else '❌ FAILED'}")
     
-    return 0 if (opportunity_test_success and free_tier_success and pro_tier_success and procurement_guide_success and actify_defence_success) else 1
+    return 0 if (opportunity_test_success and free_tier_success and pro_tier_success and detail_links_success and procurement_guide_success and actify_defence_success) else 1
 
 if __name__ == "__main__":
     sys.exit(main())
