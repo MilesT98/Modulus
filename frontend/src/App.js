@@ -1883,152 +1883,16 @@ function App() {
       );
     }
   };
-                  ></div>
-                </div>
-              </>
-            )}
-          </div>
-          
-          {/* Additional Pro filters (removed TRL and MOD department) */}
-          {user?.tier !== 'free' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-200">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Contract Type</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
-                  <option value="">All Contract Types</option>
-                  <option value="Research">Research & Development</option>
-                  <option value="Innovation">Innovation Grant</option>
-                  <option value="Public">Public Contract</option>
-                  <option value="Strategic">Strategic Research</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Funding Range</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
-                  <option value="">All Ranges</option>
-                  <option value="0-500k">£0 - £500K</option>
-                  <option value="500k-2m">£500K - £2M</option>
-                  <option value="2m-10m">£2M - £10M</option>
-                  <option value="10m+">£10M+</option>
-                </select>
-              </div>
-            </div>
-          )}
-          
-          {user?.tier === 'free' && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-200">
-                <div className="flex items-center">
-                  <AlertCircle className="w-5 h-5 text-cyan-600 mr-2" />
-                  <div>
-                    <h4 className="font-semibold text-cyan-900">Advanced Search Available in Pro</h4>
-                    <p className="text-sm text-cyan-700">
-                      Upgrade to Pro for advanced filters including funding bodies, industries, contract types, and funding ranges.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowUpgradeModal(true)}
-                    className="ml-4 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-                  >
-                    Upgrade
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
 
-        {/* Opportunities List */}
-        <div className="space-y-6">
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading opportunities...</p>
-            </div>
-          ) : opportunities.length === 0 ? (
-            <div className="text-center py-12">
-              <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No opportunities found</h3>
-              <p className="text-gray-600">Try adjusting your search criteria or filters</p>
-            </div>
-          ) : (
-            opportunities.map((opp) => (
-              <div key={opp.id} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-bold text-slate-900">{opp.title}</h3>
-                      {opp.is_delayed && (
-                        <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full border border-yellow-300">
-                          {opp.delay_message || "Delayed Access: Pro/SME Members See This Instantly"}
-                        </span>
-                      )}
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getTierColor(opp.tier_required)}`}>
-                        {opp.tier_required.toUpperCase()}
-                      </span>
-                    </div>
-                    <p className="text-gray-600 mb-2">{opp.funding_body}</p>
-                    <p className="text-gray-700 leading-relaxed">{opp.description}</p>
-                  </div>
-                  <div className="ml-6 text-right">
-                    <div className="text-sm text-gray-500 mb-1">Closing Date</div>
-                    <div className="font-semibold text-slate-900">
-                      {new Date(opp.closing_date).toLocaleDateString()}
-                    </div>
-                    {opp.funding_amount && (
-                      <div className="mt-2">
-                        <div className="text-sm text-gray-500">Value</div>
-                        <div className="font-semibold text-green-600">{opp.funding_amount}</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    {opp.tech_areas && opp.tech_areas.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {opp.tech_areas.slice(0, 3).map((area, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                          >
-                            {area}
-                          </span>
-                        ))}
-                        {opp.tech_areas.length > 3 && (
-                          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                            +{opp.tech_areas.length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    {opp.contract_type && (
-                      <span className="text-sm text-gray-600">
-                        {opp.contract_type}
-                      </span>
-                    )}
-                    <a
-                      href={opp.official_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center"
-                    >
-                      View Details
-                      <ExternalLink className="w-4 h-4 ml-2" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  // Helper functions for the OpportunitiesPage
+  const getTierColor = (tier) => {
+    switch (tier) {
+      case 'free': return 'bg-gray-100 text-gray-800';
+      case 'pro': return 'bg-cyan-100 text-cyan-800';
+      case 'enterprise': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   // Alerts page component
   const AlertsPage = () => (
