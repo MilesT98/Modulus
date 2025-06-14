@@ -169,32 +169,111 @@ async def root():
     return {"message": "Modulus Defence API is running"}
 
 @app.post("/api/data/refresh")
-async def refresh_live_data(background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
-    """
-    Refresh opportunities from ALL defence sources (Pro/Enterprise only)
-    """
-    if current_user["tier"] == "free":
-        raise HTTPException(status_code=403, detail="Upgrade to Pro to access live data refresh")
+async def refresh_data(
+    current_user: dict = Depends(get_current_user)
+):
+    """Refresh opportunities data using Actify Defence Aggregation (Pro/Enterprise only)"""
+    if current_user['tier'] == 'free':
+        raise HTTPException(status_code=403, detail="Data refresh requires Pro or Enterprise subscription")
     
-    # Import and run ultimate defence collector
     try:
-        from ultimate_defence_collector import UltimateDefenceCollector
+        from actify_defence_aggregator import run_full_aggregation
         
-        async def refresh_ultimate_defence_data():
-            collector = UltimateDefenceCollector()
-            new_opportunities = await collector.collect_all_defence_opportunities()
+        logger.info("🚀 Starting Actify Defence full aggregation...")
+        
+        # Run the comprehensive aggregation
+        opportunities = await run_full_aggregation()
+        
+        if opportunities:
+            # Clear existing opportunities and insert new ones
+            opportunities_collection.delete_many({})
             
-            if new_opportunities:
-                # Replace all opportunities with fresh collection
-                opportunities_collection.delete_many({})
-                opportunities_collection.insert_many(new_opportunities)
-                print(f"Ultimate refresh: {len(new_opportunities)} defence opportunities collected")
+            # Convert to proper format for database
+            db_opportunities = []
+            for opp in opportunities:
+                # Ensure proper datetime conversion
+                if isinstance(opp['deadline'], str):
+                    opp['deadline'] = datetime.fromisoformat(opp['deadline'].replace('Z', '+00:00'))
+                if isinstance(opp['date_scraped'], str):
+                    opp['date_scraped'] = datetime.fromisoformat(opp['date_scraped'].replace('Z', '+00:00'))
+                if isinstance(opp['created_at'], str):
+                    opp['created_at'] = datetime.fromisoformat(opp['created_at'].replace('Z', '+00:00'))
+                
+                db_opportunities.append(opp)
+            
+            result = opportunities_collection.insert_many(db_opportunities)
+            
+            logger.info(f"✅ Inserted {len(result.inserted_ids)} opportunities from Actify Defence aggregation")
+            
+            return {
+                "status": "success",
+                "message": f"Actify Defence aggregation complete. {len(opportunities)} opportunities collected from multiple sources.",
+                "sources_scraped": ["Find a Tender Service", "Contracts Finder", "DASA"],
+                "opportunities_count": len(opportunities),
+                "timestamp": datetime.utcnow().isoformat(),
+                "filtering_applied": True,
+                "deduplication_applied": True,
+                "sme_scoring_applied": True
+            }
+        else:
+            return {
+                "status": "warning", 
+                "message": "Aggregation completed but no opportunities met the filtering criteria.",
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            
+    except Exception as e:
+        logger.error(f"Error during Actify Defence aggregation: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to refresh data: {str(e)}")
+
+@app.get("/api/opportunities/aggregation-stats")
+async def get_aggregation_stats(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get statistics about the aggregation system (Pro/Enterprise only)"""
+    if current_user['tier'] == 'free':
+        raise HTTPException(status_code=403, detail="Aggregation statistics require Pro or Enterprise subscription")
+    
+    try:
+        # Get opportunity statistics
+        total_opportunities = opportunities_collection.count_documents({})
         
-        background_tasks.add_task(refresh_ultimate_defence_data)
-        return {"message": "Ultimate defence data refresh initiated - collecting from ALL sources", "status": "processing"}
+        # Count by source
+        pipeline = [
+            {"$group": {"_id": "$source", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        source_stats = list(opportunities_collection.aggregate(pipeline))
         
-    except ImportError:
-        return {"message": "Ultimate defence collector not available", "status": "error"}
+        # Count by technology area
+        tech_pipeline = [
+            {"$unwind": "$tech_tags"},
+            {"$group": {"_id": "$tech_tags", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 10}
+        ]
+        tech_stats = list(opportunities_collection.aggregate(tech_pipeline))
+        
+        # SME score distribution
+        sme_high = opportunities_collection.count_documents({"sme_score": {"$gte": 0.7}})
+        sme_medium = opportunities_collection.count_documents({"sme_score": {"$gte": 0.5, "$lt": 0.7}})
+        sme_low = opportunities_collection.count_documents({"sme_score": {"$lt": 0.5}})
+        
+        return {
+            "total_opportunities": total_opportunities,
+            "source_breakdown": source_stats,
+            "technology_areas": tech_stats,
+            "sme_relevance": {
+                "high_relevance": sme_high,
+                "medium_relevance": sme_medium,
+                "low_relevance": sme_low
+            },
+            "last_updated": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting aggregation stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get aggregation statistics")
 
 @app.get("/api/data/sources")
 async def get_data_sources():
