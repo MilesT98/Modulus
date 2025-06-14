@@ -1545,59 +1545,344 @@ function App() {
     };
 
     const groupedOpportunities = groupOpportunitiesByDeadline(filteredOpportunities);
-                    value={selectedFilters.industry}
-                    onChange={(e) => handleFilterChange('industry', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                  >
-                    <option value="">All Industries</option>
-                    <option value="Artificial Intelligence">Artificial Intelligence</option>
-                    <option value="Cybersecurity">Cybersecurity</option>
-                    <option value="Advanced Materials & Manufacturing">Advanced Materials & Manufacturing</option>
-                    <option value="Quantum Technologies">Quantum Technologies</option>
-                    <option value="Space Technologies">Space Technologies</option>
-                    <option value="Robotics & Autonomous Systems (RAS) / Uncrewed Systems">Robotics & Autonomous Systems</option>
-                    <option value="Sensors & Signal Processing">Sensors & Signal Processing</option>
-                    <option value="Human Factors & Training Technologies">Human Factors & Training Technologies</option>
-                    <option value="Propulsion & Energy Systems">Propulsion & Energy Systems</option>
-                    <option value="Chemical, Biological, Radiological, and Nuclear (CBRN) Defence">CBRN Defence</option>
-                    <option value="Maritime Defence">Maritime Defence</option>
-                    <option value="Aerospace">Aerospace</option>
-                  </select>
+
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
+          
+          {/* Enhanced Header with Actify Defence branding */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-slate-900 mb-2">
+                  🧠 Actify Defence Intelligence
+                </h1>
+                <p className="text-gray-600">
+                  Comprehensive defence procurement opportunities from {user?.tier !== 'free' ? 'multiple global sources' : 'UK government sources'}
+                </p>
+              </div>
+              
+              {user?.tier !== 'free' && aggregationStats && (
+                <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                  <div className="text-sm text-gray-600">Last Updated</div>
+                  <div className="text-lg font-bold text-slate-900">
+                    {new Date(aggregationStats.last_updated).toLocaleDateString()}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {aggregationStats.total_opportunities} opportunities
+                  </div>
                 </div>
-              </>
-            ) : (
-              // Free tier users see locked advanced filters
-              <>
+              )}
+            </div>
+          </div>
+
+          {/* Enhanced Search and Filters */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+            <div className="flex flex-col lg:flex-row gap-4 mb-4">
+              <div className="flex-1">
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Funding Body
-                    <Lock className="w-4 h-4 inline ml-1 text-gray-400" />
-                  </label>
-                  <select
-                    disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed"
-                  >
-                    <option>Upgrade to Pro for Advanced Filters</option>
-                  </select>
-                  <div 
-                    className="absolute inset-0 cursor-pointer"
-                    onClick={() => setShowUpgradeModal(true)}
-                  ></div>
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Search opportunities, technologies, or agencies..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  />
                 </div>
-                <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Industry
-                    <Lock className="w-4 h-4 inline ml-1 text-gray-400" />
-                  </label>
-                  <select
-                    disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed"
+              </div>
+              
+              <button
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className="px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors flex items-center"
+              >
+                <Filter className="w-5 h-5 mr-2" />
+                Advanced Filters
+              </button>
+            </div>
+
+            {/* Advanced Filters Panel */}
+            {showAdvancedFilters && (
+              <div className="border-t pt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                  {/* Technology Area Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Technology Area</label>
+                    <select
+                      value={selectedFilters.techArea}
+                      onChange={(e) => setSelectedFilters({...selectedFilters, techArea: e.target.value})}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                    >
+                      <option value="">All Technologies</option>
+                      <option value="Artificial Intelligence & Machine Learning">AI & ML</option>
+                      <option value="Cybersecurity">Cybersecurity</option>
+                      <option value="UAV/UAS & Autonomous Systems">UAV/UAS</option>
+                      <option value="Space Technologies">Space</option>
+                      <option value="Quantum Technologies">Quantum</option>
+                      <option value="Electronic Warfare">Electronic Warfare</option>
+                      <option value="C4ISR & Communications">C4ISR</option>
+                      <option value="Maritime Defence">Maritime</option>
+                    </select>
+                  </div>
+
+                  {/* Source Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Source</label>
+                    <select
+                      value={selectedFilters.source}
+                      onChange={(e) => setSelectedFilters({...selectedFilters, source: e.target.value})}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                    >
+                      <option value="">All Sources</option>
+                      <option value="DASA">DASA</option>
+                      <option value="Find a Tender">Find a Tender</option>
+                      <option value="Contracts Finder">Contracts Finder</option>
+                      {user?.tier !== 'free' && (
+                        <>
+                          <option value="TED">TED (EU)</option>
+                          <option value="NSPA">NSPA (NATO)</option>
+                          <option value="SAM">SAM.gov (USA)</option>
+                          <option value="BAE">BAE Systems</option>
+                          <option value="Leonardo">Leonardo</option>
+                          <option value="Thales">Thales</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+
+                  {/* SME Relevance Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">SME Relevance</label>
+                    <select
+                      value={selectedFilters.smeRelevance}
+                      onChange={(e) => setSelectedFilters({...selectedFilters, smeRelevance: e.target.value})}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                    >
+                      <option value="">All Relevance</option>
+                      <option value="high">High (≥70%)</option>
+                      <option value="medium">Medium (50-70%)</option>
+                      <option value="low">Low (<50%)</option>
+                    </select>
+                  </div>
+
+                  {/* Deadline Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Deadline</label>
+                    <select
+                      value={selectedFilters.deadline}
+                      onChange={(e) => setSelectedFilters({...selectedFilters, deadline: e.target.value})}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                    >
+                      <option value="">All Deadlines</option>
+                      <option value="week">This Week</option>
+                      <option value="month">Next 30 Days</option>
+                      <option value="quarter">Next 90 Days</option>
+                    </select>
+                  </div>
+
+                  {/* Country Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                    <select
+                      value={selectedFilters.country}
+                      onChange={(e) => setSelectedFilters({...selectedFilters, country: e.target.value})}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                    >
+                      <option value="">All Countries</option>
+                      <option value="UK">United Kingdom</option>
+                      {user?.tier !== 'free' && (
+                        <>
+                          <option value="EU">European Union</option>
+                          <option value="NATO">NATO</option>
+                          <option value="USA">United States</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Clear Filters */}
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={() => setSelectedFilters({techArea: '', source: '', smeRelevance: '', deadline: '', country: ''})}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
                   >
-                    <option>Upgrade to Pro for Advanced Filters</option>
-                  </select>
-                  <div 
-                    className="absolute inset-0 cursor-pointer"
-                    onClick={() => setShowUpgradeModal(true)}
+                    Clear All Filters
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Results Summary */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="text-lg font-semibold text-slate-900">
+                {filteredOpportunities.length} opportunities found
+              </div>
+              
+              {user?.tier !== 'free' && aggregationStats && (
+                <div className="flex items-center space-x-4 text-sm text-gray-600">
+                  <span>Sources: {aggregationStats.source_breakdown?.length || 0}</span>
+                  <span>•</span>
+                  <span>High SME Relevance: {aggregationStats.sme_relevance?.high_relevance || 0}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Grouped Opportunities Display */}
+          {filteredOpportunities.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+              <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No opportunities found</h3>
+              <p className="text-gray-600">Try adjusting your search terms or filters</p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {/* This Week */}
+              {groupedOpportunities.thisWeek.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900 mb-4 flex items-center">
+                    <Clock className="w-6 h-6 text-red-600 mr-2" />
+                    Closing This Week ({groupedOpportunities.thisWeek.length})
+                  </h2>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {groupedOpportunities.thisWeek.map((opportunity) => (
+                      <OpportunityCard key={opportunity.id} opportunity={opportunity} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Next 14 Days */}
+              {groupedOpportunities.next14Days.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900 mb-4 flex items-center">
+                    <Calendar className="w-6 h-6 text-yellow-600 mr-2" />
+                    Next 14 Days ({groupedOpportunities.next14Days.length})
+                  </h2>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {groupedOpportunities.next14Days.map((opportunity) => (
+                      <OpportunityCard key={opportunity.id} opportunity={opportunity} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Later */}
+              {groupedOpportunities.later.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900 mb-4 flex items-center">
+                    <Calendar className="w-6 h-6 text-green-600 mr-2" />
+                    Later ({groupedOpportunities.later.length})
+                  </h2>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {groupedOpportunities.later.map((opportunity) => (
+                      <OpportunityCard key={opportunity.id} opportunity={opportunity} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+
+    // Enhanced Opportunity Card Component
+    function OpportunityCard({ opportunity }) {
+      const metadata = opportunity.enhanced_metadata || {};
+      const smeScore = metadata.sme_score || 0;
+      const techTags = metadata.tech_tags || [];
+      
+      return (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          {/* Header with source badge and SME score */}
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSourceBadgeColor(opportunity.source)}`}>
+                  {opportunity.source}
+                </span>
+                
+                {user?.tier !== 'free' && (
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSmeRelevanceColor(smeScore)} bg-gray-100`}>
+                    SME: {getSmeRelevanceLabel(smeScore)} ({Math.round(smeScore * 100)}%)
+                  </span>
+                )}
+
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTierBadgeColor(opportunity.tier_required)}`}>
+                  {opportunity.tier_required.toUpperCase()}
+                </span>
+              </div>
+              
+              <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-2">
+                {opportunity.title}
+              </h3>
+            </div>
+          </div>
+
+          {/* Technology tags */}
+          {techTags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {techTags.slice(0, 3).map((tag, index) => (
+                <span key={index} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
+                  {tag}
+                </span>
+              ))}
+              {techTags.length > 3 && (
+                <span className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-md">
+                  +{techTags.length - 3} more
+                </span>
+              )}
+            </div>
+          )}
+
+          <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+            {opportunity.description}
+          </p>
+
+          {/* Opportunity details */}
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center text-sm">
+              <Building className="w-4 h-4 text-gray-400 mr-2" />
+              <span className="text-gray-700">{opportunity.funding_body}</span>
+            </div>
+            
+            <div className="flex items-center text-sm">
+              <DollarSign className="w-4 h-4 text-gray-400 mr-2" />
+              <span className="text-gray-700">{opportunity.funding_amount}</span>
+            </div>
+            
+            <div className="flex items-center text-sm">
+              <Calendar className="w-4 h-4 text-gray-400 mr-2" />
+              <span className="text-gray-700">
+                Closes: {new Date(opportunity.closing_date).toLocaleDateString()}
+              </span>
+            </div>
+
+            {metadata.trl && (
+              <div className="flex items-center text-sm">
+                <Zap className="w-4 h-4 text-gray-400 mr-2" />
+                <span className="text-gray-700">TRL: {metadata.trl}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Action button */}
+          <button
+            onClick={() => window.open(opportunity.official_link, '_blank')}
+            className="w-full flex items-center justify-center px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            View Details
+          </button>
+        </div>
+      );
+    }
+  };
                   ></div>
                 </div>
               </>
