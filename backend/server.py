@@ -557,21 +557,114 @@ async def get_opportunity(
     opportunity_id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    opportunity = opportunities_collection.find_one({"id": opportunity_id})
+    # Try to find by both id and _id fields
+    opportunity = opportunities_collection.find_one({
+        "$or": [
+            {"id": opportunity_id},
+            {"_id": opportunity_id}
+        ]
+    })
+    
     if not opportunity:
         raise HTTPException(status_code=404, detail="Opportunity not found")
     
-    # Check tier access
+    # Check tier access with enhanced logic for free users
     user_tier = current_user["tier"]
     required_tier = opportunity.get("tier_required", UserTier.FREE)
     
     if user_tier == UserTier.FREE and required_tier in [UserTier.PRO, UserTier.ENTERPRISE]:
-        raise HTTPException(status_code=403, detail="Upgrade to Pro to access this opportunity")
+        # For free users, check if opportunity is older than 48 hours
+        current_time = datetime.utcnow()
+        opp_created = opportunity.get("created_at", current_time)
+        hours_since_creation = (current_time - opp_created).total_seconds() / 3600
+        
+        if hours_since_creation < 48:
+            raise HTTPException(status_code=403, detail="Upgrade to Pro to access this opportunity immediately")
+        else:
+            # Mark as delayed access
+            opportunity["is_delayed"] = True
+            opportunity["delay_message"] = "Delayed Access: Pro/SME Members See This Instantly"
+    else:
+        opportunity["is_delayed"] = False
     
     # Convert ObjectId to string
     opportunity["_id"] = str(opportunity["_id"])
     
     return opportunity
+
+@app.post("/api/opportunities/{opportunity_id}/check-link")
+async def check_opportunity_link(
+    opportunity_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Check if the opportunity's external link is accessible"""
+    import requests
+    from urllib.parse import urlparse
+    
+    # Get the opportunity
+    opportunity = opportunities_collection.find_one({
+        "$or": [
+            {"id": opportunity_id},
+            {"_id": opportunity_id}
+        ]
+    })
+    
+    if not opportunity:
+        raise HTTPException(status_code=404, detail="Opportunity not found")
+    
+    official_link = opportunity.get("official_link")
+    if not official_link:
+        return {"status": "no_link", "message": "No official link available"}
+    
+    try:
+        # Validate URL format
+        parsed_url = urlparse(official_link)
+        if not parsed_url.scheme or not parsed_url.netloc:
+            return {"status": "invalid_url", "message": "Invalid URL format"}
+        
+        # Make a HEAD request to check if the link is accessible
+        response = requests.head(official_link, timeout=10, allow_redirects=True)
+        
+        if response.status_code == 200:
+            return {
+                "status": "available",
+                "message": "Link is accessible",
+                "final_url": response.url,
+                "checked_at": datetime.utcnow().isoformat()
+            }
+        elif response.status_code in [301, 302, 303, 307, 308]:
+            return {
+                "status": "redirect",
+                "message": "Link redirects to another page",
+                "final_url": response.url,
+                "checked_at": datetime.utcnow().isoformat()
+            }
+        else:
+            return {
+                "status": "unavailable",
+                "message": f"Link returned status code {response.status_code}",
+                "status_code": response.status_code,
+                "checked_at": datetime.utcnow().isoformat()
+            }
+            
+    except requests.exceptions.Timeout:
+        return {
+            "status": "timeout",
+            "message": "Link check timed out",
+            "checked_at": datetime.utcnow().isoformat()
+        }
+    except requests.exceptions.ConnectionError:
+        return {
+            "status": "connection_error",
+            "message": "Could not connect to the link",
+            "checked_at": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Error checking link: {str(e)}",
+            "checked_at": datetime.utcnow().isoformat()
+        }
 
 @app.put("/api/users/alert-preferences")
 async def update_alert_preferences(
