@@ -1135,7 +1135,7 @@ class EnhancedActifyDefenceAggregator:
                 'priority_score': opp.priority_score,
                 'tech_tags': opp.tech_tags,
                 'keywords_matched': opp.keywords_matched,
-                'security_clearance_required': opp.security_clearance_required
+                'security_clearance_required': getattr(opp, 'security_clearance_required', False)
             }
             
             result.append(opp_dict)
