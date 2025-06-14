@@ -302,13 +302,13 @@ function App() {
                 <Lock className="w-12 h-12 text-cyan-600" />
               </div>
               
-              <h1 className="text-4xl font-bold text-slate-900 mb-4">Procurement Act Hub</h1>
+              <h1 className="text-4xl font-bold text-slate-900 mb-4">UK Defence Procurement Guide</h1>
               <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto border-2 border-cyan-200">
                 <h2 className="text-2xl font-bold text-slate-900 mb-4">
-                  Unlock the full Procurement Act Hub with a Pro/SME Subscription
+                  Unlock the Complete Defence Procurement Guide
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  Gain in-depth legal interpretations and interactive compliance tools designed specifically for UK defence contracts.
+                  Get comprehensive guidance on MOD procurement, from registration to contract delivery, plus expert consultancy support.
                 </p>
                 
                 <div className="space-y-4 mb-8">
@@ -317,8 +317,8 @@ function App() {
                       <CheckCircle className="w-5 h-5 text-cyan-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900">Detailed Legal Interpretations</h4>
-                      <p className="text-sm text-gray-600">Specific guidance for defence contracts under the new Act</p>
+                      <h4 className="font-semibold text-slate-900">Complete Registration Guide</h4>
+                      <p className="text-sm text-gray-600">Step-by-step guidance for DSP, DASA, and framework registrations</p>
                     </div>
                   </div>
                   
@@ -327,8 +327,8 @@ function App() {
                       <CheckCircle className="w-5 h-5 text-cyan-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900">Interactive Compliance Checklists</h4>
-                      <p className="text-sm text-gray-600">Step-by-step guides for procurement compliance</p>
+                      <h4 className="font-semibold text-slate-900">Bidding Process Mastery</h4>
+                      <p className="text-sm text-gray-600">Expert guidance on ITT/RFP responses and proposal development</p>
                     </div>
                   </div>
                   
@@ -337,8 +337,8 @@ function App() {
                       <CheckCircle className="w-5 h-5 text-cyan-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900">Defence & Security Provisions</h4>
-                      <p className="text-sm text-gray-600">Deep dives into defence-specific contract requirements</p>
+                      <h4 className="font-semibold text-slate-900">Consultancy Support</h4>
+                      <p className="text-sm text-gray-600">Direct access to procurement experts and strategic advisory</p>
                     </div>
                   </div>
                 </div>
@@ -356,7 +356,7 @@ function App() {
       );
     }
 
-    // Pro/Enterprise Tier - Full Dynamic Content
+    // Pro/Enterprise Tier - Full UK Defence Procurement Guide
     return (
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -364,186 +364,423 @@ function App() {
           
           {/* Hero Banner */}
           <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl p-8 mb-8 text-white">
-            <h1 className="text-4xl font-bold mb-4">Navigate the Procurement Act 2023 with Confidence</h1>
+            <h1 className="text-4xl font-bold mb-4">UK Defence Procurement Guide for SMEs</h1>
             <p className="text-xl text-blue-100">
-              Everything defence SMEs need to know — simplified, actionable, and tailored for your business.
+              Complete roadmap from initial registration to successful contract delivery with the Ministry of Defence
             </p>
           </div>
 
-          {/* Timeline Banner */}
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-200">
-            <h2 className="text-xl font-bold text-slate-900 mb-4 text-center">Implementation Timeline</h2>
-            <div className="relative">
-              <div className="absolute left-0 right-0 top-1/2 h-2 bg-blue-200 rounded-full"></div>
-              <div className="flex justify-between relative">
-                <div className="text-center">
-                  <div className="w-4 h-4 bg-green-500 rounded-full mx-auto mb-2 relative z-10"></div>
-                  <div className="bg-white p-3 rounded-lg shadow border">
-                    <p className="font-semibold text-sm">April 2024</p>
-                    <p className="text-xs text-gray-600">Preparation Period Begins</p>
-                  </div>
+          {/* Introduction Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+            <h2 className="text-3xl font-bold text-slate-900 mb-6">Introduction to UK Defence Procurement</h2>
+            <div className="prose max-w-none">
+              <p className="text-gray-700 mb-4">
+                The UK Ministry of Defence (MOD) is one of the largest procurement organizations in Europe, investing billions annually in defense contracts. 
+                For UK Small and Medium-sized Enterprises (SMEs), engaging with MOD procurement offers significant growth opportunities and a chance to contribute to national security.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div className="bg-green-50 p-6 rounded-lg border border-green-200">
+                  <h3 className="text-xl font-bold text-green-900 mb-4">Why Engage with MOD Procurement?</h3>
+                  <ul className="space-y-2 text-green-800">
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                      <span><strong>£20+ billion annually</strong> with commitment to 2.5% of GDP by 2027</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                      <span><strong>Government backing</strong> for increased SME participation</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                      <span><strong>Innovation demand</strong> in AI, autonomous systems, cybersecurity</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                      <span><strong>Long-term stability</strong> and expansion potential</span>
+                    </li>
+                  </ul>
                 </div>
-                <div className="text-center">
-                  <div className="w-4 h-4 bg-blue-600 rounded-full mx-auto mb-2 relative z-10"></div>
-                  <div className="bg-white p-3 rounded-lg shadow border">
-                    <p className="font-semibold text-sm">28 Oct 2024</p>
-                    <p className="text-xs text-gray-600">Act Fully in Force – DSPCR Repealed</p>
-                  </div>
+                <div className="bg-cyan-50 p-6 rounded-lg border border-cyan-200">
+                  <h3 className="text-xl font-bold text-cyan-900 mb-4">How We Can Help You Here:</h3>
+                  <ul className="space-y-2 text-cyan-800">
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-cyan-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                      <span><strong>Market Entry Strategy Sessions</strong> - Assess MOD market fit for your capabilities</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-cyan-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                      <span><strong>"Why Us for MOD?" Development</strong> - Articulate your unique defence sector value</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Key Changes Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {[
-              {
-                icon: <Zap className="w-8 h-8 text-blue-600" />,
-                title: "Competitive Flexible Procedure",
-                description: "New streamlined procurement process with flexible stages"
-              },
-              {
-                icon: <FileText className="w-8 h-8 text-green-600" />,
-                title: "Transparency Rules",
-                description: "Enhanced disclosure requirements and contract notices"
-              },
-              {
-                icon: <Clock className="w-8 h-8 text-purple-600" />,
-                title: "Faster Payment Terms",
-                description: "Improved payment terms for SMEs and suppliers"
-              },
-              {
-                icon: <Shield className="w-8 h-8 text-red-600" />,
-                title: "National Security Exemptions",
-                description: "Special provisions for defence and security contracts"
-              }
-            ].map((item, index) => (
-              <div key={index} className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                <div className="mb-4">{item.icon}</div>
-                <h3 className="font-bold text-slate-900 mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-600">{item.description}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* SME Benefits Accordion */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-slate-900">SME Benefits Under the New Act</h2>
-            </div>
-            
-            {[
-              {
-                key: 'bidding',
-                title: 'Easier Bidding Access',
-                content: 'Simplified qualification criteria and reduced bureaucracy for SME participation in defence procurement.'
-              },
-              {
-                key: 'payments',
-                title: 'Faster Payments',
-                content: 'Mandatory payment terms improvements with clear timelines and penalties for late payment.'
-              },
-              {
-                key: 'barriers',
-                title: 'Lower Qualification Barriers',
-                content: 'Reduced pre-qualification requirements and more proportionate financial and technical criteria.'
-              },
-              {
-                key: 'compliance',
-                title: 'Simpler Compliance',
-                content: 'Streamlined compliance frameworks with clearer guidance and reduced administrative burden.'
-              }
-            ].map((section) => (
-              <div key={section.key} className="border-b border-gray-200 last:border-b-0">
-                <button
-                  onClick={() => toggleAccordion(section.key)}
-                  className="w-full p-6 text-left flex items-center justify-between hover:bg-gray-50"
-                >
-                  <h3 className="font-semibold text-slate-900">{section.title}</h3>
-                  {openAccordions[section.key] ? (
-                    <ChevronUp className="w-5 h-5 text-gray-500" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-500" />
-                  )}
-                </button>
-                {openAccordions[section.key] && (
-                  <div className="px-6 pb-6">
-                    <p className="text-gray-600">{section.content}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Defence-Specific Notice Block */}
-          <div className="bg-red-50 border-l-4 border-red-500 p-6 mb-8 rounded-r-xl">
-            <div className="flex items-start">
-              <AlertCircle className="w-6 h-6 text-red-600 mr-3 mt-1" />
-              <div>
-                <h3 className="font-bold text-red-900 mb-2">Critical Defence Sector Update</h3>
-                <p className="text-red-800 mb-3">
-                  The Defence and Security Public Contracts Regulations (DSPCR) will be repealed on 28 October 2024. 
-                  MOD contracts will transition to the new Procurement Act framework with specific national security exemptions.
-                </p>
-                <p className="text-red-700 text-sm">
-                  Defence contractors must prepare for this transition now to ensure continued eligibility for MOD opportunities.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Checklist Section */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Implementation Checklist</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Key Organizations Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+            <h2 className="text-3xl font-bold text-slate-900 mb-6">Key Organizations and Roles</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                'Prepare internal processes for new procedures',
-                'Register on new government procurement platform',
-                'Familiarise with Competitive Flexible Procedure',
-                'Update compliance frameworks and documentation',
-                'Review contract templates for new payment terms',
-                'Assess national security exemption implications',
-                'Train procurement team on new requirements',
-                'Establish supplier qualification processes'
-              ].map((item, index) => (
-                <label key={index} className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
-                  <input type="checkbox" className="rounded text-cyan-600 focus:ring-cyan-500 mr-3" />
-                  <span className="text-gray-700">{item}</span>
-                </label>
+                {
+                  title: "Ministry of Defence (MOD)",
+                  description: "Overarching government department responsible for defense policy and procurement"
+                },
+                {
+                  title: "Defence Equipment & Support (DE&S)",
+                  description: "MOD's procurement arm, managing complex projects to buy, manage, and maintain equipment"
+                },
+                {
+                  title: "Defence Science and Technology Laboratory (Dstl)",
+                  description: "Provides MOD with science and technology advice, actively seeking innovative SME solutions"
+                },
+                {
+                  title: "Defence Infrastructure Organisation (DIO)",
+                  description: "Manages MOD's vast estate and infrastructure requirements"
+                },
+                {
+                  title: "Defence and Security Accelerator (DASA)",
+                  description: "Key entry point for SMEs with innovative dual-use technologies"
+                },
+                {
+                  title: "Crown Commercial Service (CCS)",
+                  description: "Largest UK public procurement organization, operating frameworks MOD utilizes"
+                }
+              ].map((org, index) => (
+                <div key={index} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <h3 className="font-bold text-slate-900 mb-2">{org.title}</h3>
+                  <p className="text-sm text-gray-600">{org.description}</p>
+                </div>
               ))}
             </div>
-          </div>
-
-          {/* Resource Library */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Resource Library</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                <Download className="w-8 h-8 text-blue-600 mr-4" />
+            <div className="mt-6 p-6 bg-cyan-50 rounded-lg border border-cyan-200">
+              <h3 className="text-xl font-bold text-cyan-900 mb-3">How We Can Help You Here:</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-semibold text-slate-900">SME Compliance Guide</h4>
-                  <p className="text-sm text-gray-600">Comprehensive PDF guide for defence SMEs</p>
+                  <h4 className="font-semibold text-cyan-800">Targeted Stakeholder Engagement Planning</h4>
+                  <p className="text-sm text-cyan-700">Guide you on who to approach within MOD and related agencies</p>
                 </div>
-              </div>
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                <ExternalLink className="w-8 h-8 text-green-600 mr-4" />
                 <div>
-                  <h4 className="font-semibold text-slate-900">Crowell Legal Analysis</h4>
-                  <p className="text-sm text-gray-600">Expert legal interpretation for defence contractors</p>
+                  <h4 className="font-semibold text-cyan-800">Prime Contractor Partnership Strategies</h4>
+                  <p className="text-sm text-cyan-700">Identify relevant primes and develop compelling approaches</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Footer Section */}
-          <div className="bg-gray-100 rounded-xl p-6 text-center">
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">Need help navigating the new rules?</h3>
-            <p className="text-gray-600 mb-4">
-              Our expert team can provide tailored guidance for your defence contracting needs.
+          {/* Getting Started Section - Collapsible */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+            <button
+              onClick={() => toggleAccordion('gettingStarted')}
+              className="w-full p-8 text-left flex items-center justify-between hover:bg-gray-50"
+            >
+              <h2 className="text-3xl font-bold text-slate-900">3. Getting Started: Registration and Pre-Qualification</h2>
+              {openAccordions['gettingStarted'] ? (
+                <ChevronUp className="w-6 h-6 text-gray-500" />
+              ) : (
+                <ChevronDown className="w-6 h-6 text-gray-500" />
+              )}
+            </button>
+            {openAccordions['gettingStarted'] && (
+              <div className="px-8 pb-8">
+                <h3 className="text-2xl font-bold text-slate-900 mb-6">Essential Registrations</h3>
+                <div className="space-y-6">
+                  {[
+                    {
+                      title: "Defence Sourcing Portal (DSP)",
+                      url: "https://contracts.mod.uk/",
+                      description: "MOD's official e-sourcing platform and primary hub for contract opportunities",
+                      benefits: ["View live contract opportunities", "Tailor notifications by category", "Participate in sourcing events"]
+                    },
+                    {
+                      title: "Contracts Finder",
+                      description: "Government portal for contracts worth over £10,000 from all central government departments"
+                    },
+                    {
+                      title: "Find a Tender Service (FTS)",
+                      description: "High-value contracts (typically above £139,688) advertised here"
+                    },
+                    {
+                      title: "Helios SME Portal",
+                      description: "Enhances SME visibility to buyers across defence, aerospace, and security sectors"
+                    },
+                    {
+                      title: "R-Cloud (Dstl)",
+                      description: "For science and technology solutions, matches capabilities with Dstl requirements"
+                    }
+                  ].map((portal, index) => (
+                    <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                      <h4 className="font-bold text-slate-900 mb-2">{portal.title}</h4>
+                      <p className="text-gray-700 mb-2">{portal.description}</p>
+                      {portal.benefits && (
+                        <ul className="text-sm text-gray-600 list-disc list-inside">
+                          {portal.benefits.map((benefit, idx) => (
+                            <li key={idx}>{benefit}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="mt-8 p-6 bg-orange-50 rounded-lg border border-orange-200">
+                  <h3 className="text-xl font-bold text-orange-900 mb-4">Pre-Qualification Requirements</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="font-semibold text-orange-800 mb-2">Key Certifications:</h4>
+                      <ul className="text-sm text-orange-700 space-y-1">
+                        <li>• Cyber Essentials Certification (mandatory)</li>
+                        <li>• ISO 9001 & AS9100 Certifications</li>
+                        <li>• Financial health demonstration</li>
+                        <li>• Security clearances (NSV process)</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-orange-800 mb-2">How We Help:</h4>
+                      <ul className="text-sm text-orange-700 space-y-1">
+                        <li>• Registration assistance & profile optimization</li>
+                        <li>• Compliance & certification roadmap</li>
+                        <li>• Security clearance guidance (NSV)</li>
+                        <li>• PQQ/SQ review & optimization</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Finding Opportunities Section - Collapsible */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+            <button
+              onClick={() => toggleAccordion('findingOpportunities')}
+              className="w-full p-8 text-left flex items-center justify-between hover:bg-gray-50"
+            >
+              <h2 className="text-3xl font-bold text-slate-900">4. Finding Opportunities</h2>
+              {openAccordions['findingOpportunities'] ? (
+                <ChevronUp className="w-6 h-6 text-gray-500" />
+              ) : (
+                <ChevronDown className="w-6 h-6 text-gray-500" />
+              )}
+            </button>
+            {openAccordions['findingOpportunities'] && (
+              <div className="px-8 pb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 mb-4">Framework Agreements & DPS</h3>
+                    <div className="space-y-4">
+                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <h4 className="font-semibold text-blue-900">Frameworks</h4>
+                        <p className="text-blue-800 text-sm">Long-term agreements with pre-qualified suppliers. Examples: CCS frameworks, DE&S Frameworks, TS3, G-Cloud</p>
+                      </div>
+                      <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                        <h4 className="font-semibold text-green-900">Dynamic Purchasing Systems</h4>
+                        <p className="text-green-800 text-sm">Flexible systems where suppliers can join anytime. Procurement Act 2023 introduces Dynamic Markets</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 mb-4">DASA Opportunities</h3>
+                    <div className="space-y-3">
+                      <div className="p-3 border border-gray-200 rounded">
+                        <h4 className="font-semibold text-slate-900">Open Call for Innovation</h4>
+                        <p className="text-sm text-gray-600">Broad mechanism for disruptive concepts</p>
+                      </div>
+                      <div className="p-3 border border-gray-200 rounded">
+                        <h4 className="font-semibold text-slate-900">Themed Competitions</h4>
+                        <p className="text-sm text-gray-600">Specific challenges with targeted funding</p>
+                      </div>
+                      <div className="p-3 border border-gray-200 rounded">
+                        <h4 className="font-semibold text-slate-900">Innovation Loans</h4>
+                        <p className="text-sm text-gray-600">Funding for commercializing mature innovations</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-8 p-6 bg-cyan-50 rounded-lg border border-cyan-200">
+                  <h3 className="text-xl font-bold text-cyan-900 mb-3">How We Can Help You Here:</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="font-semibold text-cyan-800">Real-time Contract Access</h4>
+                      <p className="text-sm text-cyan-700">Our dedicated supplier portal provides access to all defence contracts in real time</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-cyan-800">DASA Application Support</h4>
+                      <p className="text-sm text-cyan-700">Guidance for Open Calls, themed competitions, and innovation loan applications</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Bidding Process Section - Collapsible */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+            <button
+              onClick={() => toggleAccordion('biddingProcess')}
+              className="w-full p-8 text-left flex items-center justify-between hover:bg-gray-50"
+            >
+              <h2 className="text-3xl font-bold text-slate-900">5. Bidding Process</h2>
+              {openAccordions['biddingProcess'] ? (
+                <ChevronUp className="w-6 h-6 text-gray-500" />
+              ) : (
+                <ChevronDown className="w-6 h-6 text-gray-500" />
+              )}
+            </button>
+            {openAccordions['biddingProcess'] && (
+              <div className="px-8 pb-8">
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
+                  {[
+                    { step: 1, title: "Download Tender Documents", desc: "Access ITT/RFP documents and read thoroughly" },
+                    { step: 2, title: "Develop Proposal", desc: "Ensure compliance and articulate value proposition" },
+                    { step: 3, title: "Complete SAQ", desc: "Supplier Assurance Questionnaire using Octavian tool" },
+                    { step: 4, title: "Submit Bid", desc: "Submit through DSP by deadline with correct formats" },
+                    { step: 5, title: "Evaluation", desc: "MOD evaluates against pre-agreed criteria" },
+                    { step: 6, title: "Feedback", desc: "Seek feedback regardless of outcome for improvement" }
+                  ].map((item, index) => (
+                    <div key={index} className="text-center">
+                      <div className="w-12 h-12 bg-cyan-600 text-white rounded-full flex items-center justify-center mx-auto mb-3 font-bold">
+                        {item.step}
+                      </div>
+                      <h4 className="font-semibold text-slate-900 mb-2">{item.title}</h4>
+                      <p className="text-xs text-gray-600">{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="mt-8 p-6 bg-cyan-50 rounded-lg border border-cyan-200">
+                  <h3 className="text-xl font-bold text-cyan-900 mb-3">How We Can Help You Here:</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="font-semibold text-cyan-800">Bid/No-Bid Decision Making</h4>
+                      <p className="text-sm text-cyan-700">Assess whether a tender is worth the investment</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-cyan-800">Proposal Development & Review</h4>
+                      <p className="text-sm text-cyan-700">Comprehensive support in drafting and refining proposals</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-cyan-800">SAQ Completion Guidance</h4>
+                      <p className="text-sm text-cyan-700">Ensure cyber security compliance is accurately represented</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-cyan-800">Feedback Analysis</h4>
+                      <p className="text-sm text-cyan-700">Interpret MOD feedback for future improvement</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Remaining sections as collapsible content */}
+          {/* Support and Resources */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+            <button
+              onClick={() => toggleAccordion('support')}
+              className="w-full p-8 text-left flex items-center justify-between hover:bg-gray-50"
+            >
+              <h2 className="text-3xl font-bold text-slate-900">7. Support and Resources for SMEs</h2>
+              {openAccordions['support'] ? (
+                <ChevronUp className="w-6 h-6 text-gray-500" />
+              ) : (
+                <ChevronDown className="w-6 h-6 text-gray-500" />
+              )}
+            </button>
+            {openAccordions['support'] && (
+              <div className="px-8 pb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[
+                    "MOD SME Helpdesk",
+                    "Defence and Security Accelerator (DASA)",
+                    "Defence Technology Exploitation Programme (DTEP)",
+                    "Knowledge in Defence (KiD)",
+                    "SME Export Toolkit",
+                    "Trade Associations (ADS Group, Make UK Defence, techUK)",
+                    "Defence Suppliers Forum (DSF)",
+                    "Defence Procurement LinkedIn channel",
+                    "Bid Writing Support"
+                  ].map((resource, index) => (
+                    <div key={index} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                      <h4 className="font-semibold text-slate-900">{resource}</h4>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Common Challenges */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+            <button
+              onClick={() => toggleAccordion('challenges')}
+              className="w-full p-8 text-left flex items-center justify-between hover:bg-gray-50"
+            >
+              <h2 className="text-3xl font-bold text-slate-900">8. Common Challenges and Tips for SMEs</h2>
+              {openAccordions['challenges'] ? (
+                <ChevronUp className="w-6 h-6 text-gray-500" />
+              ) : (
+                <ChevronDown className="w-6 h-6 text-gray-500" />
+              )}
+            </button>
+            {openAccordions['challenges'] && (
+              <div className="px-8 pb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 mb-4">Key Challenges</h3>
+                    <div className="space-y-4">
+                      {[
+                        "Complexity of MOD Procurement",
+                        "Compliance and Security Requirements", 
+                        "Early Engagement Timing",
+                        "Building Relationships",
+                        "Proving Track Record",
+                        "Resource Constraints"
+                      ].map((challenge, index) => (
+                        <div key={index} className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <h4 className="font-semibold text-red-900">{challenge}</h4>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 mb-4">How We Help</h3>
+                    <div className="space-y-4">
+                      {[
+                        "Strategic Advisory & Complexity Management",
+                        "Risk Management Workshops",
+                        "Relationship Building Guidance", 
+                        "Growth & Scaling Advisory",
+                        "Innovation Positioning",
+                        "Resource Optimization"
+                      ].map((solution, index) => (
+                        <div key={index} className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <h4 className="font-semibold text-green-900">{solution}</h4>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Call-to-Action Footer */}
+          <div className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl p-8 text-white text-center">
+            <h3 className="text-2xl font-bold mb-4">Ready to Navigate MOD Procurement?</h3>
+            <p className="text-xl text-cyan-100 mb-6">
+              Our expert team can provide tailored guidance for your defence contracting journey.
             </p>
             <div className="space-x-4">
-              <a href="#contact" className="text-cyan-600 hover:text-cyan-700 font-medium">Contact Support</a>
-              <a href="#expert-guidance" className="text-cyan-600 hover:text-cyan-700 font-medium">Expert Guidance</a>
+              <button className="bg-white text-cyan-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                Book Strategy Session
+              </button>
+              <button className="border border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-cyan-600 transition-colors">
+                Contact Expert Team
+              </button>
             </div>
           </div>
         </div>
