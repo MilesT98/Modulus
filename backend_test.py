@@ -593,6 +593,148 @@ def test_procurement_guide_access():
     
     return True
 
+def test_actify_defence_aggregation():
+    """Test the Actify Defence Aggregation system"""
+    print("\n🔍 TESTING ACTIFY DEFENCE AGGREGATION SYSTEM")
+    
+    tester = ModulusDefenceAPITester()
+    timestamp = datetime.now().strftime('%H%M%S')
+    
+    # Register as a pro user
+    test_email = f"actify_test_{timestamp}@example.com"
+    test_password = "TestPass123!"
+    test_company = "Actify Test Ltd"
+    test_full_name = "Actify Test User"
+    
+    if not tester.test_register(test_email, test_password, test_company, test_full_name):
+        print("❌ Registration failed")
+        return False
+    
+    # Upgrade to Pro tier
+    success, _ = tester.test_upgrade_subscription("pro")
+    if not success:
+        print("❌ Upgrade to Pro tier failed")
+        return False
+    
+    print("✅ Successfully upgraded to Pro tier")
+    
+    # Test data refresh (Actify Defence Aggregation)
+    success, refresh_data = tester.test_refresh_live_data()
+    if not success:
+        print("❌ Actify Defence Aggregation failed")
+        return False
+    
+    print("✅ Actify Defence Aggregation completed successfully")
+    
+    # Verify refresh response data
+    if 'status' in refresh_data and refresh_data['status'] == 'success':
+        print(f"✅ Aggregation status: {refresh_data['status']}")
+    else:
+        print(f"❌ Unexpected aggregation status: {refresh_data.get('status', 'unknown')}")
+    
+    if 'opportunities_count' in refresh_data:
+        print(f"✅ Opportunities collected: {refresh_data['opportunities_count']}")
+    else:
+        print("❌ No opportunities count in response")
+    
+    if 'sources_scraped' in refresh_data:
+        print(f"✅ Sources scraped: {', '.join(refresh_data['sources_scraped'])}")
+    else:
+        print("❌ No sources information in response")
+    
+    # Check if filtering, deduplication, and SME scoring were applied
+    if refresh_data.get('filtering_applied'):
+        print("✅ Filtering was applied")
+    else:
+        print("❌ Filtering was not applied")
+    
+    if refresh_data.get('deduplication_applied'):
+        print("✅ Deduplication was applied")
+    else:
+        print("❌ Deduplication was not applied")
+    
+    if refresh_data.get('sme_scoring_applied'):
+        print("✅ SME scoring was applied")
+    else:
+        print("❌ SME scoring was not applied")
+    
+    # Test aggregation statistics
+    success, stats_data = tester.test_aggregation_stats()
+    if not success:
+        print("❌ Failed to get aggregation statistics")
+        return False
+    
+    print("✅ Successfully retrieved aggregation statistics")
+    
+    # Verify statistics data
+    if 'total_opportunities' in stats_data:
+        print(f"✅ Total opportunities in system: {stats_data['total_opportunities']}")
+    else:
+        print("❌ No total opportunities count in statistics")
+    
+    if 'source_breakdown' in stats_data:
+        print("✅ Source breakdown available:")
+        for source in stats_data['source_breakdown']:
+            print(f"  - {source.get('_id', 'Unknown')}: {source.get('count', 0)} opportunities")
+    else:
+        print("❌ No source breakdown in statistics")
+    
+    if 'technology_areas' in stats_data:
+        print("✅ Technology areas breakdown available:")
+        for tech in stats_data['technology_areas']:
+            print(f"  - {tech.get('_id', 'Unknown')}: {tech.get('count', 0)} opportunities")
+    else:
+        print("❌ No technology areas breakdown in statistics")
+    
+    if 'sme_relevance' in stats_data:
+        print("✅ SME relevance breakdown available:")
+        sme = stats_data['sme_relevance']
+        print(f"  - High relevance: {sme.get('high_relevance', 0)} opportunities")
+        print(f"  - Medium relevance: {sme.get('medium_relevance', 0)} opportunities")
+        print(f"  - Low relevance: {sme.get('low_relevance', 0)} opportunities")
+    else:
+        print("❌ No SME relevance breakdown in statistics")
+    
+    # Get opportunities after aggregation
+    success, opportunities = tester.test_get_opportunities()
+    if not success:
+        print("❌ Failed to get opportunities after aggregation")
+        return False
+    
+    print(f"✅ Retrieved {len(opportunities)} opportunities after aggregation")
+    
+    # Check for source badges and technology tags
+    has_source_badges = False
+    has_tech_tags = False
+    has_sme_scores = False
+    
+    for opp in opportunities:
+        if 'source' in opp and opp['source']:
+            has_source_badges = True
+        
+        if 'tech_tags' in opp and opp['tech_tags']:
+            has_tech_tags = True
+        
+        if 'sme_score' in opp and opp['sme_score'] is not None:
+            has_sme_scores = True
+    
+    if has_source_badges:
+        print("✅ Opportunities have source badges")
+    else:
+        print("❌ Opportunities do not have source badges")
+    
+    if has_tech_tags:
+        print("✅ Opportunities have technology area tags")
+    else:
+        print("❌ Opportunities do not have technology area tags")
+    
+    if has_sme_scores:
+        print("✅ Opportunities have SME relevance scores")
+    else:
+        print("❌ Opportunities do not have SME relevance scores")
+    
+    return True
+
 def main():
     # Test opportunity links, values, and dates
     opportunity_test_success = test_opportunity_links_and_values()
