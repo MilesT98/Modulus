@@ -1,0 +1,132 @@
+
+🔍 TESTING OPPORTUNITY LINKS, VALUES, AND DATES
+
+🔍 Testing User Registration...
+✅ Passed - Status: 200
+
+🔍 Testing Get Opportunities (filters: {})...
+✅ Passed - Status: 200
+Free tier user can see 6 opportunities
+❌ Expected 4 opportunities for free tier, got 6
+
+🔍 Testing Upgrade to pro...
+✅ Passed - Status: 200
+
+🔍 Testing Get Opportunities (filters: {})...
+✅ Passed - Status: 200
+Pro tier user can see 7 opportunities
+❌ Expected 6 opportunities for pro tier, got 7
+❌ Opportunity not found: Royal Navy Radar Systems
+❌ Opportunity not found: Artificial Intelligence Research
+❌ Opportunity not found: Cybersecurity Framework
+❌ Opportunity not found: Military Infrastructure
+❌ Opportunity not found: BAE Systems Composite Materials
+❌ Opportunity not found: Leonardo Communications
+
+❌ Not all opportunities found. Found 0 out of 6
+❌ Invalid link format: https://www.gov.uk/government/publications/competition-defence-innovation-loans
+❌ Invalid link format: https://www.gov.uk/government/publications/competitioninnovation-in-support-of-operations-phase-2-cycle-5
+❌ Invalid link format: https://www.gov.uk/government/news/dasa-innovation-funding-delivers-nearly-1-billion-boost-to-uk-economy
+❌ Invalid link format: https://www.gov.uk/government/news/fast-times-fast-tech-dasa-launches-new-phase-of-fast-paced-themed-competition
+❌ Invalid link format: https://www.gov.uk/government/collections/apply-for-funding
+❌ Invalid link format: https://www.gov.uk/government/news/dtep-funding-for-sci-the-cheri-on-the-cake
+❌ Invalid link format: https://example.com/test
+⚠️ Closing date outside 30-90 day range: 29 days for Test Opportunity 140602
+✅ All closing dates are in the future
+
+🔍 TESTING FREE TIER USER JOURNEY
+
+🔍 Testing User Registration...
+✅ Passed - Status: 200
+✅ Successfully registered a free tier user
+
+🔍 Testing Get Current User...
+✅ Passed - Status: 200
+✅ User is correctly on free tier
+
+🔍 Testing Get Opportunities (filters: {})...
+✅ Passed - Status: 200
+⚠️ No delayed Pro opportunities found, but this might be expected
+
+🔍 Testing Refresh Live Data...
+❌ Failed - Expected 200, got 403
+Response: {'detail': 'Data refresh requires Pro or Enterprise subscription'}
+✅ Correctly prevented free tier user from refreshing live data
+
+🔍 Testing Get Dashboard Stats...
+✅ Passed - Status: 200
+✅ Dashboard stats for free tier: 6 opportunities
+
+📊 Free Tier Tests passed: 4/5
+
+🔍 TESTING PRO TIER USER JOURNEY
+
+🔍 Testing User Registration...
+✅ Passed - Status: 200
+
+🔍 Testing Upgrade to pro...
+✅ Passed - Status: 200
+✅ Successfully upgraded to Pro tier
+
+🔍 Testing Get Current User...
+✅ Passed - Status: 200
+✅ User is correctly on Pro tier
+
+🔍 Testing Get Opportunities (filters: {})...
+✅ Passed - Status: 200
+✅ Pro opportunities are not delayed for Pro users
+
+🔍 Testing Get Opportunities (filters: {'tech_area': 'Cybersecurity'})...
+✅ Passed - Status: 200
+✅ Advanced filtering works for Pro users: found 0 opportunities
+
+🔍 Testing Refresh Live Data...
+✅ Passed - Status: 200
+✅ Pro tier user can refresh live data
+
+🔍 Testing Get Data Sources...
+✅ Passed - Status: 200
+✅ Pro tier user can access data sources: 4 sources available
+
+🔍 Testing Create Opportunity (tier: pro)...
+✅ Passed - Status: 200
+✅ Pro tier user created a Pro opportunity: b778ab11-8837-447f-80ed-548f86088a6c
+
+🔍 Testing Get Specific Opportunity (ID: b778ab11-8837-447f-80ed-548f86088a6c)...
+✅ Passed - Status: 200
+
+📊 Pro Tier Tests passed: 9/9
+
+🔍 TESTING UK DEFENCE PROCUREMENT GUIDE ACCESS
+
+🔍 Testing User Registration...
+✅ Passed - Status: 200
+✅ Successfully registered a free tier user for guide testing
+
+🔍 Testing Get Current User...
+✅ Passed - Status: 200
+✅ User is correctly on free tier
+✅ Free user would see locked content with upgrade prompt (verified in UI test)
+
+🔍 Testing User Registration...
+✅ Passed - Status: 200
+
+🔍 Testing Upgrade to pro...
+✅ Passed - Status: 200
+✅ Successfully upgraded to Pro tier
+
+🔍 Testing Get Current User...
+✅ Passed - Status: 200
+✅ User is correctly on Pro tier
+✅ Pro user would see full guide content (verified in UI test)
+
+🔍 TESTING ACTIFY DEFENCE AGGREGATION SYSTEM
+
+🔍 Testing User Registration...
+✅ Passed - Status: 200
+
+🔍 Testing Upgrade to pro...
+✅ Passed - Status: 200
+✅ Successfully upgraded to Pro tier
+
+🔍 Testing Refresh Live Data...
