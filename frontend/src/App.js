@@ -1352,13 +1352,40 @@ function App() {
               >
                 <FileText className="w-5 h-5 text-blue-600 mr-3" />
                 <div>
-                  <div className="font-medium text-slate-900 flex items-center">
-                    Procurement Act Hub
-                    {user?.tier === 'free' && <Lock className="w-4 h-4 ml-2 text-gray-400" />}
-                  </div>
-                  <div className="text-sm text-gray-600">Navigate the new UK Procurement Act</div>
+                  <div className="font-medium text-slate-900">UK Defence Procurement Guide</div>
+                  <div className="text-sm text-gray-600">Complete guide to MOD procurement</div>
                 </div>
               </button>
+
+              {user?.tier !== 'free' && (
+                <button
+                  onClick={async () => {
+                    setIsRefreshing(true);
+                    try {
+                      const response = await api.post('/api/data/refresh');
+                      alert(`✅ Actify Defence Aggregation Complete!\n${response.data.message}\nOpportunities: ${response.data.opportunities_count}`);
+                      // Refresh dashboard stats
+                      fetchDashboardStats();
+                    } catch (error) {
+                      alert('❌ Data refresh failed: ' + (error.response?.data?.detail || 'Unknown error'));
+                    } finally {
+                      setIsRefreshing(false);
+                    }
+                  }}
+                  disabled={isRefreshing}
+                  className="w-full flex items-center p-4 bg-gradient-to-r from-cyan-50 to-blue-50 hover:from-cyan-100 hover:to-blue-100 rounded-lg transition-colors text-left border-2 border-cyan-200"
+                >
+                  <Zap className={`w-5 h-5 text-cyan-600 mr-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  <div>
+                    <div className="font-medium text-slate-900">
+                      {isRefreshing ? 'Running Actify Defence Aggregation...' : '🧠 Actify Defence Aggregation'}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {isRefreshing ? 'Collecting from multiple sources...' : 'Refresh data from UK, EU, NATO sources with AI filtering'}
+                    </div>
+                  </div>
+                </button>
+              )}
 
               <button
                 onClick={() => setCurrentView('alerts')}
