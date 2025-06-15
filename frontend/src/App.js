@@ -1917,11 +1917,18 @@ All funding provider links have been verified and updated to ensure they work pr
                   Opportunities
                 </button>
                 <button
-                  onClick={() => setCurrentView('funding-opportunities')}
+                  onClick={() => {
+                    if (user?.tier === 'free') {
+                      setShowUpgradeModal(true);
+                    } else {
+                      setCurrentView('funding-opportunities');
+                    }
+                  }}
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center"
                 >
                   <DollarSign className="w-4 h-4 mr-2" />
                   Funding
+                  {user?.tier === 'free' && <Lock className="w-3 h-3 ml-1" />}
                 </button>
                 <button
                   onClick={() => {
