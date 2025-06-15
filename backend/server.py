@@ -940,7 +940,13 @@ async def initialize_funding_opportunities():
     if funding_opportunities_collection.count_documents({}) == 0:
         print("🔄 Initializing funding opportunities database...")
         
-        # Initial funding opportunities data
+        # Helper function to ensure URLs have proper protocol
+        def ensure_https(url):
+            if not url.startswith(('http://', 'https://')):
+                return f'https://{url}' if not url.startswith('www.') else f'https://{url}'
+            return url
+        
+        # Initial funding opportunities data with properly formatted URLs
         initial_funding_data = [
             {
                 "id": str(uuid.uuid4()),
@@ -969,6 +975,20 @@ async def initialize_funding_opportunities():
                 "updated_at": datetime.utcnow(),
                 "last_verified": datetime.utcnow(),
                 "additional_info": {"focus_areas": ["cybersecurity", "AI", "big data"]}
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "name": "Lockheed Martin Ventures",
+                "category": "Defence & Security VC",
+                "investment_focus": "Accelerating next-generation technologies strategically important to aerospace and defence, helping customers stay ahead of emerging threats.",
+                "investment_stage": "Strategic investments",
+                "geographic_focus": "Global",
+                "website_url": "https://www.lockheedmartin.com/en-us/who-we-are/business-areas/ventures.html",
+                "status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_verified": datetime.utcnow(),
+                "additional_info": {"focus_areas": ["aerospace", "defence technology"]}
             },
             {
                 "id": str(uuid.uuid4()),
@@ -1011,11 +1031,39 @@ async def initialize_funding_opportunities():
                 "updated_at": datetime.utcnow(),
                 "last_verified": datetime.utcnow(),
                 "additional_info": {"type": "enabler", "partners": "multiple"}
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "name": "RTX Ventures (Raytheon Technologies)",
+                "category": "Defence & Security VC",
+                "investment_focus": "Investing in early-stage companies that will transform aerospace and defense across areas like autonomy & sensing, compute, advanced manufacturing, space, data, analytics & code, and propulsion.",
+                "investment_stage": "Early-stage",
+                "geographic_focus": "Global (strategic to RTX)",
+                "website_url": "https://www.rtx.com/who-we-are/ventures",
+                "status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_verified": datetime.utcnow(),
+                "additional_info": {"focus_areas": ["aerospace", "defense", "autonomy"]}
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "name": "MMC Ventures",
+                "category": "Deep Tech & Dual-Use VC",
+                "investment_focus": "AI and data-driven companies, including enterprise AI, fintech, data-driven health, data infrastructure, and cloud.",
+                "investment_stage": "Series A specialist",
+                "geographic_focus": "Europe",
+                "website_url": "https://mmc.vc/about-us/",
+                "status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_verified": datetime.utcnow(),
+                "additional_info": {"focus_areas": ["AI", "data infrastructure"]}
             }
         ]
         
         funding_opportunities_collection.insert_many(initial_funding_data)
-        print(f"✅ Initialized {len(initial_funding_data)} funding opportunities")
+        print(f"✅ Initialized {len(initial_funding_data)} funding opportunities with working URLs")
     else:
         count = funding_opportunities_collection.count_documents({"status": "active"})
         print(f"📊 Database contains {count} active funding opportunities")
