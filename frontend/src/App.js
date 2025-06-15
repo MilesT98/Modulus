@@ -146,20 +146,26 @@ function App() {
       // If URL parsing fails, ignore
     }
     
-    // Provider-specific fallbacks
+    // Provider-specific fallbacks with known working alternatives
     const providerFallbacks = {
-      'Shield Capital': ['https://shieldcap.com/', 'https://shieldcap.com/portfolio'],
-      'Paladin Capital': ['https://www.paladincapgroup.com/', 'https://www.paladincapgroup.com/portfolio'],
-      'Lockheed Martin': ['https://www.lockheedmartin.com/en-us/who-we-are/business-areas/ventures.html', 'https://www.lockheedmartin.com/'],
-      'RTX Ventures': ['https://www.rtx.com/who-we-are/ventures', 'https://www.rtx.com/'],
-      'Thales': ['https://www.thalesgroup.com/en/markets/defence', 'https://www.thalesgroup.com/'],
-      'Octopus Ventures': ['https://octopusventures.com/', 'https://octopusventures.com/sectors'],
-      'British Business Bank': ['https://www.british-business-bank.co.uk/', 'https://www.british-business-bank.co.uk/finance-hub'],
-      'MMC Ventures': ['https://mmc.vc/', 'https://mmc.vc/portfolio'],
-      'Amadeus Capital': ['https://amadeuscapital.com/', 'https://amadeuscapital.com/portfolio']
+      'Shield Capital': ['https://shieldcap.com/', 'https://www.crunchbase.com/organization/shield-capital'],
+      'Paladin Capital': ['https://www.paladincapgroup.com/', 'https://www.crunchbase.com/organization/paladin-capital-group'],
+      'Lockheed Martin': ['https://www.lockheedmartin.com/', 'https://www.lockheedmartin.com/en-us/capabilities/research-labs/advanced-technology-laboratories.html'],
+      'RTX Ventures': ['https://www.rtx.com/', 'https://www.crunchbase.com/organization/rtx-ventures'],
+      'Thales': ['https://www.thalesgroup.com/', 'https://www.thalesgroup.com/en/markets/defence'],
+      'Octopus Ventures': ['https://www.crunchbase.com/organization/octopus-investments', 'https://www.linkedin.com/company/octopus-ventures/'],
+      'British Business Bank': ['https://www.british-business-bank.co.uk/', 'https://www.gov.uk/government/organisations/british-business-bank'],
+      'MMC Ventures': ['https://www.crunchbase.com/organization/mmc-ventures', 'https://www.linkedin.com/company/mmc-ventures/'],
+      'Amadeus Capital': ['https://amadeuscapital.com/', 'https://www.crunchbase.com/organization/amadeus-capital-partners'],
+      'Playfair Capital': ['https://playfair.vc/', 'https://www.crunchbase.com/organization/playfair-capital'],
+      'Cambridge Enterprise': ['https://www.enterprise.cam.ac.uk/', 'https://www.crunchbase.com/organization/cambridge-enterprise'],
+      'Oxford Science': ['https://oxfordscienceenterprises.com/', 'https://www.crunchbase.com/organization/oxford-sciences-innovation'],
+      'Northern Powerhouse': ['https://npif.co.uk/', 'https://www.gov.uk/guidance/northern-powerhouse-investment-fund'],
+      'Techstars': ['https://www.techstars.com/', 'https://www.techstars.com/accelerators'],
+      'Seedrs': ['https://www.seedrs.com/', 'https://www.seedrs.com/learn']
     };
     
-    // Find matching provider
+    // Find matching provider and add fallbacks
     for (const [provider, urls] of Object.entries(providerFallbacks)) {
       if (providerName.toLowerCase().includes(provider.toLowerCase()) || 
           provider.toLowerCase().includes(providerName.toLowerCase())) {
