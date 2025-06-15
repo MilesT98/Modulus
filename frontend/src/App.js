@@ -38,6 +38,7 @@ function App() {
   const [currentView, setCurrentView] = useState('home');
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
   const [opportunities, setOpportunities] = useState([]);
+  const [fundingProviders, setFundingProviders] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({
     total_opportunities: 0,
     new_this_week: 0,
