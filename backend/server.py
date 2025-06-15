@@ -515,7 +515,7 @@ async def get_opportunities(
     # Get opportunities
     opportunities = list(opportunities_collection.find(query))
     
-    # Filter based on user tier and apply 48-hour delay for free users
+    # Apply new subscription model filtering
     user_tier = current_user["tier"]
     filtered_opportunities = []
     current_time = datetime.utcnow()
@@ -524,28 +524,39 @@ async def get_opportunities(
         # Convert ObjectId to string for JSON serialization
         opp["_id"] = str(opp["_id"])
         
-        # Check tier access
+        # Check tier access based on new model
         if user_tier == UserTier.FREE:
-            # For free users, apply 48-hour delay on all Pro/Enterprise opportunities
-            if opp.get("tier_required") in [UserTier.PRO, UserTier.ENTERPRISE]:
-                # Check if opportunity is older than 48 hours
-                opp_created = opp.get("created_at", current_time)
-                hours_since_creation = (current_time - opp_created).total_seconds() / 3600
-                
-                if hours_since_creation < 48:
-                    continue  # Skip opportunities less than 48 hours old
-                else:
-                    # Show delayed opportunity with clear marking
-                    opp["is_delayed"] = True
-                    opp["delay_message"] = "Delayed Access: Pro/SME Members See This Instantly"
-            else:
-                # Free tier opportunities shown immediately
-                opp["is_delayed"] = False
+            # Free users: Weekly updates only
+            # Check if opportunity was created in the last week (7 days)
+            opp_created = opp.get("created_at", current_time)
+            days_since_creation = (current_time - opp_created).total_seconds() / (24 * 3600)
+            
+            # Only show opportunities older than 7 days (weekly updates)
+            if days_since_creation >= 7:
+                opp["is_delayed"] = True
+                opp["delay_message"] = "Weekly Updates: Pro Members Get Hourly Updates"
+                filtered_opportunities.append(opp)
         else:
-            # Pro/Enterprise users see everything immediately
+            # Pro users: Full access with hourly updates
             opp["is_delayed"] = False
+            filtered_opportunities.append(opp)
+    
+    # Free users: Limit to 1/3 of available opportunities
+    if user_tier == UserTier.FREE and filtered_opportunities:
+        # Sort by creation date to ensure consistent selection
+        filtered_opportunities.sort(key=lambda x: x.get("created_at", current_time))
         
-        filtered_opportunities.append(opp)
+        # Take only 1/3 of opportunities (rounded up)
+        one_third = len(filtered_opportunities) // 3
+        if one_third == 0 and filtered_opportunities:
+            one_third = 1  # Ensure at least 1 opportunity if any exist
+        
+        filtered_opportunities = filtered_opportunities[:one_third]
+        
+        # Add limitation message to each opportunity
+        for opp in filtered_opportunities:
+            opp["access_limited"] = True
+            opp["limitation_message"] = f"Limited Access: Showing {len(filtered_opportunities)} of {len(opportunities)} opportunities. Upgrade to Pro for full access."
     
     return filtered_opportunities
 
