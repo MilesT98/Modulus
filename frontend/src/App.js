@@ -403,12 +403,45 @@ function App() {
 
   // Funding Opportunities Page Component
   const FundingOpportunitiesPage = () => {
+    // Phase 1: Enhanced search state for funding
     const [selectedCategory, setSelectedCategory] = useState('all');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedStage, setSelectedStage] = useState('');
+    const [selectedGeography, setSelectedGeography] = useState('');
+    const [sortBy, setSortBy] = useState('name_asc');
     const [fundingProviders, setFundingProviders] = useState([]);
     const [fundingStats, setFundingStats] = useState({});
     const [isLoadingFunding, setIsLoadingFunding] = useState(false);
     const [isRefreshingFunding, setIsRefreshingFunding] = useState(false);
     const [lastRefresh, setLastRefresh] = useState(null);
+
+    // Phase 1: Investment stage options
+    const stageOptions = [
+      { value: '', label: 'All Investment Stages' },
+      { value: 'pre-seed', label: 'Pre-seed' },
+      { value: 'seed', label: 'Seed' },
+      { value: 'series-a', label: 'Series A' },
+      { value: 'series-b+', label: 'Series B+' },
+      { value: 'growth', label: 'Growth' },
+      { value: 'research', label: 'Research Grants' }
+    ];
+
+    // Phase 1: Geographic focus options
+    const geographyOptions = [
+      { value: '', label: 'All Geographies' },
+      { value: 'uk-only', label: 'UK Only' },
+      { value: 'uk-eu', label: 'UK + EU' },
+      { value: 'global', label: 'Global' },
+      { value: 'regional', label: 'Regional (Scotland, Wales, NI)' }
+    ];
+
+    // Phase 1: Smart sorting options for funding
+    const fundingSortOptions = [
+      { value: 'name_asc', label: 'Name (A-Z)' },
+      { value: 'category_asc', label: 'Category' },
+      { value: 'updated_desc', label: 'Recently Updated' },
+      { value: 'relevance_desc', label: 'Best Match for SMEs' }
+    ];
 
     // Fetch funding opportunities from API
     const fetchFundingOpportunities = async () => {
