@@ -2919,12 +2919,70 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
                     {opportunity.description}
                   </p>
 
+                  {/* Phase 3: AI-Powered Insights */}
+                  <div className="space-y-3 mb-4">
+                    {/* Success Probability & Competition Indicators */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-green-50 rounded-lg p-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-green-700">Success Probability</span>
+                          <span className="text-sm font-bold text-green-800">
+                            {Math.round(calculateSuccessProbability(opportunity) * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-green-200 rounded-full h-1.5 mt-1">
+                          <div 
+                            className="bg-green-600 h-1.5 rounded-full transition-all duration-300" 
+                            style={{width: `${calculateSuccessProbability(opportunity) * 100}%`}}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-blue-50 rounded-lg p-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-blue-700">Competition Level</span>
+                          <span className="text-sm font-bold text-blue-800">
+                            {calculateCompetitionLevel(opportunity) < 0.4 ? 'Low' : 
+                             calculateCompetitionLevel(opportunity) < 0.7 ? 'Medium' : 'High'}
+                          </span>
+                        </div>
+                        <div className="w-full bg-blue-200 rounded-full h-1.5 mt-1">
+                          <div 
+                            className={`h-1.5 rounded-full transition-all duration-300 ${
+                              calculateCompetitionLevel(opportunity) < 0.4 ? 'bg-green-500' :
+                              calculateCompetitionLevel(opportunity) < 0.7 ? 'bg-yellow-500' : 'bg-red-500'
+                            }`}
+                            style={{width: `${calculateCompetitionLevel(opportunity) * 100}%`}}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* AI Match Insights */}
+                    {(() => {
+                      const insights = generateMatchExplanation(opportunity);
+                      return insights.length > 0 && (
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-3 border border-purple-100">
+                          <div className="text-xs font-semibold text-purple-700 mb-1">🤖 AI Insights</div>
+                          <div className="space-y-1">
+                            {insights.map((insight, idx) => (
+                              <div key={idx} className="text-xs text-purple-600 flex items-start">
+                                <span className="mr-1">•</span>
+                                <span>{insight}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
                   {/* Enhanced metadata for Pro users */}
                   {user?.tier !== 'free' && opportunity.enhanced_metadata && (
                     <div className="space-y-2 mb-4">
                       {opportunity.enhanced_metadata.sme_score !== undefined && (
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-500">SME Score:</span>
+                          <span className="text-xs text-gray-500">Enhanced SME Score:</span>
                           <span className="text-xs font-semibold text-green-600">
                             {Math.round(opportunity.enhanced_metadata.sme_score * 100)}%
                           </span>
