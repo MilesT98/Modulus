@@ -1315,13 +1315,13 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     new_this_week = max(8, total_opportunities // 3)
     closing_soon = max(4, total_opportunities // 5)
     
-    # Enhanced tier benefits
+    # Updated tier benefits for new model
     tier_benefits = {
         UserTier.FREE: [
-            "Basic UK opportunity listings",
-            "48-hour delay on premium content", 
-            "General procurement guides",
-            f"Access to {accessible_opportunities} opportunities"
+            "Access to 1/3 of current contract opportunities",
+            "Sunday refresh cycle", 
+            "Basic opportunity search",
+            "Limited dashboard access"
         ],
         UserTier.PRO: [
             "Full access to ALL contract opportunities",
