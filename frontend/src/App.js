@@ -2989,8 +2989,51 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
                 </div>
               </div>
               
-              {/* Phase 1: Smart Sorting */}
+              {/* Phase 2: Search Management Actions */}
               <div className="flex gap-2">
+                {/* Save Search Button */}
+                <button
+                  onClick={() => setShowSaveSearch(true)}
+                  className="flex items-center px-3 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors"
+                  title="Save Current Search"
+                >
+                  <Star className="w-4 h-4 mr-1" />
+                  Save
+                </button>
+                
+                {/* Load Saved Searches */}
+                <button
+                  onClick={() => setShowSavedSearches(true)}
+                  className="flex items-center px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+                  title="Load Saved Search"
+                >
+                  <FileText className="w-4 h-4 mr-1" />
+                  Load ({savedSearches.length})
+                </button>
+                
+                {/* Export Results */}
+                <div className="relative group">
+                  <button className="flex items-center px-3 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors">
+                    <ExternalLink className="w-4 h-4 mr-1" />
+                    Export
+                  </button>
+                  <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                    <button
+                      onClick={() => exportResults('csv')}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 rounded-t-lg"
+                    >
+                      📊 Export as CSV
+                    </button>
+                    <button
+                      onClick={() => exportResults('json')}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 rounded-b-lg"
+                    >
+                      📋 Export as JSON
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Smart Sorting */}
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
