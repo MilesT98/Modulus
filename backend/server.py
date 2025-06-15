@@ -278,6 +278,178 @@ async def refresh_data(
         logger.error(f"Error during Actify Defence aggregation: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to refresh data: {str(e)}")
 
+@app.post("/api/data/comprehensive-refresh")
+async def comprehensive_data_refresh(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Comprehensive data refresh targeting 100% UK defence opportunities coverage
+    Collects from all available sources including missing primary portals
+    """
+    if current_user["tier"] == UserTier.FREE:
+        raise HTTPException(status_code=403, detail="Comprehensive refresh requires Pro subscription")
+    
+    try:
+        logger.info("🚀 Starting comprehensive UK defence opportunities refresh...")
+        
+        # Import and run comprehensive aggregator
+        from comprehensive_defence_aggregator import run_comprehensive_aggregation
+        new_opportunities = await run_comprehensive_aggregation()
+        
+        if not new_opportunities:
+            logger.warning("No opportunities collected from comprehensive sources")
+            return {
+                "status": "warning",
+                "message": "Comprehensive aggregation completed but no new opportunities found",
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        
+        # Store new opportunities in database (append, don't replace)
+        stored_count = 0
+        existing_count = 0
+        
+        for opp in new_opportunities:
+            # Check if opportunity already exists (by title + funding body)
+            existing = opportunities_collection.find_one({
+                "title": opp["title"],
+                "funding_body": opp["funding_body"]
+            })
+            
+            if not existing:
+                # Add required metadata
+                opp["created_at"] = datetime.utcnow()
+                opp["updated_at"] = datetime.utcnow()
+                opp["status"] = OpportunityStatus.ACTIVE
+                
+                # Ensure proper datetime objects
+                if isinstance(opp.get("closing_date"), str):
+                    try:
+                        opp["closing_date"] = datetime.fromisoformat(opp["closing_date"])
+                    except:
+                        opp["closing_date"] = datetime.utcnow() + timedelta(days=30)
+                elif not isinstance(opp.get("closing_date"), datetime):
+                    opp["closing_date"] = datetime.utcnow() + timedelta(days=30)
+                
+                opportunities_collection.insert_one(opp)
+                stored_count += 1
+            else:
+                existing_count += 1
+        
+        # Get updated totals
+        total_after_refresh = opportunities_collection.count_documents({"status": OpportunityStatus.ACTIVE})
+        
+        # Get source breakdown
+        sources = {}
+        for opp in new_opportunities:
+            source = opp.get('source', 'unknown')
+            sources[source] = sources.get(source, 0) + 1
+        
+        logger.info(f"✅ Comprehensive refresh complete: {stored_count} new, {existing_count} existing")
+        
+        return {
+            "status": "success",
+            "message": f"Comprehensive UK Defence Aggregation Complete - Targeting 100% Coverage",
+            "new_opportunities": stored_count,
+            "existing_opportunities": existing_count,
+            "total_opportunities": total_after_refresh,
+            "sources_covered": [
+                "Defence Sourcing Portal (DSP)",
+                "Crown Commercial Service",
+                "Enhanced Contracts Finder",
+                "Service-Specific Portals (Navy/Army/RAF)",
+                "Regional Defence Clusters"
+            ],
+            "source_breakdown": sources,
+            "coverage_improvement": f"+{stored_count} opportunities from previously missed sources",
+            "next_refresh": "Automatic refresh every hour for Pro users",
+            "timestamp": datetime.utcnow().isoformat(),
+            "comprehensive_sources": True,
+            "target_coverage": "100% UK Defence Opportunities"
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Comprehensive refresh failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Comprehensive refresh failed: {str(e)}")
+
+@app.post("/api/search/semantic")
+async def semantic_search_opportunities(
+    search_request: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Enhanced semantic search with natural language processing and AI-powered recommendations
+    """
+    try:
+        query = search_request.get("query", "")
+        filters = search_request.get("filters", {})
+        
+        # Get all opportunities
+        all_opportunities = list(opportunities_collection.find({"status": OpportunityStatus.ACTIVE}))
+        
+        # Convert ObjectId to string for each opportunity
+        for opp in all_opportunities:
+            opp["_id"] = str(opp["_id"])
+        
+        # Apply tier-based filtering
+        if current_user["tier"] == UserTier.FREE:
+            # Free users get 1/3 of opportunities (Sunday refresh model)
+            all_opportunities.sort(key=lambda x: x.get("created_at", datetime.utcnow()))
+            one_third = max(1, len(all_opportunities) // 3)
+            all_opportunities = all_opportunities[:one_third]
+        
+        # Import enhanced search system
+        from enhanced_search_system import EnhancedDefenceSearch
+        search_engine = EnhancedDefenceSearch()
+        
+        # Perform semantic search
+        results = search_engine.semantic_search(all_opportunities, query, filters)
+        
+        # Get search analytics
+        analytics = search_engine.analyze_search_performance(all_opportunities, query)
+        
+        return {
+            "opportunities": results[:50],  # Limit to 50 results for performance
+            "total_results": len(results),
+            "total_available": len(all_opportunities),
+            "query": query,
+            "analytics": analytics,
+            "suggestions": search_engine.get_search_suggestions(query, all_opportunities) if len(query) >= 2 else [],
+            "search_quality": "enhanced_semantic" if query else "filtered_browse",
+            "user_tier": current_user["tier"],
+            "search_timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Semantic search failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
+@app.get("/api/search/suggestions")
+async def get_search_suggestions(
+    q: str = "",
+    current_user: dict = Depends(get_current_user)
+):
+    """Get intelligent search suggestions based on partial query"""
+    try:
+        from enhanced_search_system import EnhancedDefenceSearch
+        search_engine = EnhancedDefenceSearch()
+        
+        # Get sample opportunities for suggestions
+        sample_opportunities = list(opportunities_collection.find({"status": OpportunityStatus.ACTIVE}).limit(100))
+        for opp in sample_opportunities:
+            opp["_id"] = str(opp["_id"])
+        
+        suggestions = search_engine.get_search_suggestions(q, sample_opportunities)
+        
+        return {
+            "suggestions": suggestions,
+            "query": q,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Search suggestions failed: {e}")
+        return {"suggestions": [], "query": q}
+
 @app.get("/api/opportunities/aggregation-stats")
 async def get_aggregation_stats(
     current_user: dict = Depends(get_current_user)
