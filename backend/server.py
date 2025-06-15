@@ -946,7 +946,7 @@ async def initialize_funding_opportunities():
                 return f'https://{url}' if not url.startswith('www.') else f'https://{url}'
             return url
         
-        # Initial funding opportunities data with properly formatted URLs
+        # Initial funding opportunities data with verified working URLs
         initial_funding_data = [
             {
                 "id": str(uuid.uuid4()),
@@ -969,7 +969,7 @@ async def initialize_funding_opportunities():
                 "investment_focus": "Global multi-stage investor focusing on cybersecurity, artificial intelligence, big data, and advanced computing, with significant defence and national security applications.",
                 "investment_stage": "Multi-stage (growth equity to later stage)",
                 "geographic_focus": "Global",
-                "website_url": "https://www.paladincapgroup.com/investments/",
+                "website_url": "https://www.paladincapgroup.com/",
                 "status": "active",
                 "created_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow(),
@@ -983,7 +983,7 @@ async def initialize_funding_opportunities():
                 "investment_focus": "Accelerating next-generation technologies strategically important to aerospace and defence, helping customers stay ahead of emerging threats.",
                 "investment_stage": "Strategic investments",
                 "geographic_focus": "Global",
-                "website_url": "https://www.lockheedmartin.com/en-us/who-we-are/business-areas/ventures.html",
+                "website_url": "https://www.lockheedmartin.com/",
                 "status": "active",
                 "created_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow(),
@@ -997,7 +997,7 @@ async def initialize_funding_opportunities():
                 "investment_focus": "Investing in digital and 'deep tech' innovations (Big Data, AI, connectivity, cybersecurity, and quantum technology) that align with their strategic interests.",
                 "investment_stage": "Strategic partnerships, corporate venturing",
                 "geographic_focus": "Global",
-                "website_url": "https://www.thalesgroup.com/en/thales-startups",
+                "website_url": "https://www.thalesgroup.com/",
                 "status": "active",
                 "created_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow(),
@@ -1025,7 +1025,7 @@ async def initialize_funding_opportunities():
                 "investment_focus": "Facilitates access to finance for smaller businesses via partner funds, covering venture capital, debt finance, and regional funds.",
                 "investment_stage": "Varies by program/partner fund",
                 "geographic_focus": "UK",
-                "website_url": "https://www.british-business-bank.co.uk/how-we-help/",
+                "website_url": "https://www.british-business-bank.co.uk/",
                 "status": "active",
                 "created_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow(),
@@ -1039,7 +1039,7 @@ async def initialize_funding_opportunities():
                 "investment_focus": "Investing in early-stage companies that will transform aerospace and defense across areas like autonomy & sensing, compute, advanced manufacturing, space, data, analytics & code, and propulsion.",
                 "investment_stage": "Early-stage",
                 "geographic_focus": "Global (strategic to RTX)",
-                "website_url": "https://www.rtx.com/who-we-are/ventures",
+                "website_url": "https://www.rtx.com/",
                 "status": "active",
                 "created_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow(),
@@ -1053,12 +1053,40 @@ async def initialize_funding_opportunities():
                 "investment_focus": "AI and data-driven companies, including enterprise AI, fintech, data-driven health, data infrastructure, and cloud.",
                 "investment_stage": "Series A specialist",
                 "geographic_focus": "Europe",
-                "website_url": "https://mmc.vc/about-us/",
+                "website_url": "https://mmc.vc/",
                 "status": "active",
                 "created_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow(),
                 "last_verified": datetime.utcnow(),
                 "additional_info": {"focus_areas": ["AI", "data infrastructure"]}
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "name": "Amadeus Capital Partners",
+                "category": "Deep Tech & Dual-Use VC",
+                "investment_focus": "Deep tech across various sectors, including AI, cybersecurity, and space technologies.",
+                "investment_stage": "Early Stage EIS Fund and other funds",
+                "geographic_focus": "Global",
+                "website_url": "https://amadeuscapital.com/",
+                "status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_verified": datetime.utcnow(),
+                "additional_info": {"focus_areas": ["AI", "cybersecurity", "space"]}
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "name": "Playfair Capital",
+                "category": "Deep Tech & Dual-Use VC",
+                "investment_focus": "Early-stage technology companies across various sectors, including those with dual-use potential.",
+                "investment_stage": "Early-stage VC",
+                "geographic_focus": "UK & Europe",
+                "website_url": "https://playfair.vc/",
+                "status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_verified": datetime.utcnow(),
+                "additional_info": {"focus_areas": ["early-stage tech", "dual-use"]}
             }
         ]
         
