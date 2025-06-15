@@ -1,4 +1,3 @@
-
 import requests
 import sys
 import time
@@ -678,8 +677,8 @@ def test_actify_defence_aggregation():
     else:
         print("❌ No opportunities count in response")
     
-    if 'sources_scraped' in refresh_data:
-        print(f"✅ Sources scraped: {', '.join(refresh_data['sources_scraped'])}")
+    if 'source_breakdown' in refresh_data:
+        print(f"✅ Sources scraped: {', '.join(refresh_data['source_breakdown'].keys())}")
     else:
         print("❌ No sources information in response")
     
@@ -915,6 +914,152 @@ def test_opportunity_detail_and_links():
     
     return True
 
+def test_funding_opportunities():
+    """Test the funding opportunities system with continuous data updates"""
+    print("\n🔍 TESTING FUNDING OPPORTUNITIES SYSTEM")
+    
+    tester = ModulusDefenceAPITester()
+    timestamp = datetime.now().strftime('%H%M%S')
+    
+    # Register as a free user first
+    test_email_free = f"free_funding_{timestamp}@example.com"
+    test_password = "TestPass123!"
+    test_company = "Funding Test Ltd"
+    test_full_name = "Funding Test User"
+    
+    if not tester.test_register(test_email_free, test_password, test_company, test_full_name):
+        print("❌ Registration failed for free user")
+        return False
+    
+    print("✅ Successfully registered as free user")
+    
+    # Get funding opportunities as free user
+    success, free_funding = tester.test_get_funding_opportunities()
+    if not success:
+        print("❌ Failed to get funding opportunities as free user")
+        return False
+    
+    print(f"✅ Free user can see {len(free_funding)} funding opportunities")
+    
+    # Try to refresh funding data as free user (should fail)
+    success, _ = tester.test_refresh_funding_opportunities()
+    if not success:
+        print("✅ Free user correctly denied access to refresh funding data")
+    else:
+        print("❌ Free user incorrectly allowed to refresh funding data")
+    
+    # Get funding stats as free user
+    success, free_stats = tester.test_get_funding_stats()
+    if success:
+        print(f"✅ Free user can access funding stats: {free_stats.get('total_funding_sources', 0)} sources")
+    else:
+        print("❌ Free user couldn't access funding stats")
+    
+    # Test category filtering as free user
+    categories = [
+        "Defence & Security VC",
+        "Corporate VC & Innovation",
+        "Deep Tech & Dual-Use VC",
+        "Government-Backed Schemes"
+    ]
+    
+    for category in categories:
+        success, filtered = tester.test_get_funding_opportunities(category)
+        if success:
+            print(f"✅ Free user can filter by category '{category}': {len(filtered)} results")
+        else:
+            print(f"❌ Free user couldn't filter by category '{category}'")
+    
+    # Now register as a pro user
+    test_email_pro = f"pro_funding_{timestamp}@example.com"
+    
+    if not tester.test_register(test_email_pro, test_password, test_company, test_full_name):
+        print("❌ Registration failed for pro user")
+        return False
+    
+    # Upgrade to Pro tier
+    success, _ = tester.test_upgrade_subscription("pro")
+    if not success:
+        print("❌ Upgrade to Pro tier failed")
+        return False
+    
+    print("✅ Successfully upgraded to Pro tier")
+    
+    # Get funding opportunities as pro user
+    success, pro_funding = tester.test_get_funding_opportunities()
+    if not success:
+        print("❌ Failed to get funding opportunities as pro user")
+        return False
+    
+    print(f"✅ Pro user can see {len(pro_funding)} funding opportunities")
+    
+    # Test refresh funding data as pro user
+    success, refresh_result = tester.test_refresh_funding_opportunities()
+    if success:
+        print("✅ Pro user can refresh funding data")
+        print(f"✅ Refresh result: {refresh_result.get('message', 'No message')}")
+        
+        # Check sources checked
+        if 'sources_checked' in refresh_result:
+            print(f"✅ Sources checked: {len(refresh_result['sources_checked'])}")
+            for source in refresh_result['sources_checked'][:3]:  # Show first 3
+                print(f"  - {source}")
+        else:
+            print("❌ No sources_checked in refresh result")
+    else:
+        print("❌ Pro user couldn't refresh funding data")
+    
+    # Get funding stats as pro user
+    success, pro_stats = tester.test_get_funding_stats()
+    if success:
+        print(f"✅ Pro user can access funding stats: {pro_stats.get('total_funding_sources', 0)} sources")
+        
+        # Check category breakdown
+        if 'category_breakdown' in pro_stats:
+            print("✅ Category breakdown available:")
+            for cat in pro_stats['category_breakdown']:
+                print(f"  - {cat.get('_id', 'Unknown')}: {cat.get('count', 0)} sources")
+        else:
+            print("❌ No category breakdown in stats")
+        
+        # Check recently updated count
+        if 'recently_updated' in pro_stats:
+            print(f"✅ Recently updated sources: {pro_stats['recently_updated']}")
+        else:
+            print("❌ No recently_updated count in stats")
+    else:
+        print("❌ Pro user couldn't access funding stats")
+    
+    # Verify funding data structure
+    if pro_funding:
+        print("\n🔍 Checking funding data structure")
+        sample = pro_funding[0]
+        
+        required_fields = [
+            'name', 'category', 'investment_focus', 'investment_stage', 
+            'geographic_focus', 'website_url'
+        ]
+        
+        missing_fields = [field for field in required_fields if field not in sample]
+        if missing_fields:
+            print(f"❌ Missing required fields: {', '.join(missing_fields)}")
+        else:
+            print("✅ All required fields present in funding data")
+        
+        # Check for timestamps
+        if 'created_at' in sample and 'updated_at' in sample:
+            print("✅ Timestamps present in funding data")
+        else:
+            print("❌ Missing timestamps in funding data")
+        
+        # Check for last_verified field (important for continuous updates)
+        if 'last_verified' in sample:
+            print("✅ last_verified field present (for continuous updates)")
+        else:
+            print("❌ Missing last_verified field (needed for continuous updates)")
+    
+    return True
+
 def main():
     # Test opportunity links, values, and dates
     opportunity_test_success = test_opportunity_links_and_values()
@@ -932,6 +1077,9 @@ def main():
     # Test Actify Defence Aggregation system
     actify_defence_success = test_actify_defence_aggregation()
     
+    # Test funding opportunities system
+    funding_opportunities_success = test_funding_opportunities()
+    
     # Print overall results
     print("\n📊 OVERALL TEST RESULTS:")
     print(f"Opportunity Links & Values Tests: {'✅ PASSED' if opportunity_test_success else '❌ FAILED'}")
@@ -940,8 +1088,9 @@ def main():
     print(f"Opportunity Detail & Links Tests: {'✅ PASSED' if detail_links_success else '❌ FAILED'}")
     print(f"UK Defence Procurement Guide Tests: {'✅ PASSED' if procurement_guide_success else '❌ FAILED'}")
     print(f"Actify Defence Aggregation Tests: {'✅ PASSED' if actify_defence_success else '❌ FAILED'}")
+    print(f"Funding Opportunities Tests: {'✅ PASSED' if funding_opportunities_success else '❌ FAILED'}")
     
-    return 0 if (opportunity_test_success and free_tier_success and pro_tier_success and detail_links_success and procurement_guide_success and actify_defence_success) else 1
+    return 0 if (opportunity_test_success and free_tier_success and pro_tier_success and detail_links_success and procurement_guide_success and actify_defence_success and funding_opportunities_success) else 1
 
 if __name__ == "__main__":
     sys.exit(main())
