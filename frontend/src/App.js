@@ -677,8 +677,77 @@ function App() {
   // Funding Opportunities Page Component
   const FundingOpportunitiesPage = () => {
     const [selectedCategory, setSelectedCategory] = useState('all');
-    
-    const fundingProviders = [
+    const [fundingProviders, setFundingProviders] = useState([]);
+    const [fundingStats, setFundingStats] = useState({});
+    const [isLoadingFunding, setIsLoadingFunding] = useState(false);
+    const [isRefreshingFunding, setIsRefreshingFunding] = useState(false);
+    const [lastRefresh, setLastRefresh] = useState(null);
+
+    // Fetch funding opportunities from API
+    const fetchFundingOpportunities = async () => {
+      try {
+        setIsLoadingFunding(true);
+        const response = await api.get('/api/funding-opportunities', {
+          params: {
+            category: selectedCategory !== 'all' ? selectedCategory : undefined
+          }
+        });
+        setFundingProviders(response.data);
+      } catch (error) {
+        console.error('Failed to fetch funding opportunities:', error);
+        // Fallback to static data if API fails
+        setFundingProviders(getStaticFundingData());
+      } finally {
+        setIsLoadingFunding(false);
+      }
+    };
+
+    // Fetch funding statistics
+    const fetchFundingStats = async () => {
+      try {
+        const response = await api.get('/api/funding-opportunities/stats');
+        setFundingStats(response.data);
+        setLastRefresh(new Date(response.data.last_refresh));
+      } catch (error) {
+        console.error('Failed to fetch funding stats:', error);
+      }
+    };
+
+    // Refresh funding data
+    const handleRefreshFunding = async () => {
+      if (user?.tier === 'free') {
+        setShowUpgradeModal(true);
+        return;
+      }
+
+      try {
+        setIsRefreshingFunding(true);
+        const response = await api.post('/api/funding-opportunities/refresh');
+        
+        // Show success message
+        alert(`✅ Funding Opportunities Refresh Complete!
+
+📊 ${response.data.message}
+
+🔍 Sources Checked:
+${response.data.sources_checked.map(source => `• ${source}`).join('\n')}
+
+🕒 Last Updated: ${new Date().toLocaleString()}
+
+Real-time funding intelligence refreshed successfully.`);
+        
+        // Refresh data
+        await fetchFundingOpportunities();
+        await fetchFundingStats();
+      } catch (error) {
+        alert('❌ Funding refresh failed: ' + (error.response?.data?.detail || 'Unknown error'));
+      } finally {
+        setIsRefreshingFunding(false);
+      }
+    };
+
+    // Static fallback data (same as before but as a function)
+    const getStaticFundingData = () => [
       // 1. Dedicated Defence & Security Venture Capital (VC) Funds
       {
         category: "Defence & Security VC",
