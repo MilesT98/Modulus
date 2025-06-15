@@ -995,10 +995,80 @@ Real-time funding intelligence refreshed successfully.`);
         focus: "Equity crowdfunding platform enabling businesses to raise finance from a community of investors. Defence SMEs may find investors here, but it's less targeted.",
         stage: "Early-stage to growth",
         geographic: "UK, Europe",
-        link: "https://www.crowdcube.com/raise"
-    // Static fallback data (same as before but as a function)
+  // Funding Opportunities Page Component
+  const FundingOpportunitiesPage = () => {
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [fundingProviders, setFundingProviders] = useState([]);
+    const [fundingStats, setFundingStats] = useState({});
+    const [isLoadingFunding, setIsLoadingFunding] = useState(false);
+    const [isRefreshingFunding, setIsRefreshingFunding] = useState(false);
+    const [lastRefresh, setLastRefresh] = useState(null);
+
+    // Fetch funding opportunities from API
+    const fetchFundingOpportunities = async () => {
+      try {
+        setIsLoadingFunding(true);
+        const response = await api.get('/api/funding-opportunities', {
+          params: {
+            category: selectedCategory !== 'all' ? selectedCategory : undefined
+          }
+        });
+        setFundingProviders(response.data);
+      } catch (error) {
+        console.error('Failed to fetch funding opportunities:', error);
+        // Fallback to static data if API fails
+        setFundingProviders(getStaticFundingData());
+      } finally {
+        setIsLoadingFunding(false);
+      }
+    };
+
+    // Fetch funding statistics
+    const fetchFundingStats = async () => {
+      try {
+        const response = await api.get('/api/funding-opportunities/stats');
+        setFundingStats(response.data);
+        setLastRefresh(new Date(response.data.last_refresh));
+      } catch (error) {
+        console.error('Failed to fetch funding stats:', error);
+      }
+    };
+
+    // Refresh funding data
+    const handleRefreshFunding = async () => {
+      if (user?.tier === 'free') {
+        setShowUpgradeModal(true);
+        return;
+      }
+
+      try {
+        setIsRefreshingFunding(true);
+        const response = await api.post('/api/funding-opportunities/refresh');
+        
+        // Show success message
+        alert(`✅ Funding Opportunities Refresh Complete!
+
+📊 ${response.data.message}
+
+🔍 Sources Checked:
+${response.data.sources_checked.map(source => `• ${source}`).join('\n')}
+
+🕒 Last Updated: ${new Date().toLocaleString()}
+
+Real-time funding intelligence refreshed successfully.`);
+        
+        // Refresh data
+        await fetchFundingOpportunities();
+        await fetchFundingStats();
+      } catch (error) {
+        alert('❌ Funding refresh failed: ' + (error.response?.data?.detail || 'Unknown error'));
+      } finally {
+        setIsRefreshingFunding(false);
+      }
+    };
+
+    // Static fallback data 
     const getStaticFundingData = () => [
-      // 1. Dedicated Defence & Security Venture Capital (VC) Funds
       {
         category: "Defence & Security VC",
         name: "Shield Capital",
@@ -1007,6 +1077,109 @@ Real-time funding intelligence refreshed successfully.`);
         geographic_focus: "Primarily US, but invests globally in relevant areas",
         website_url: "https://shieldcap.com/"
       },
+      {
+        category: "Defence & Security VC",
+        name: "Paladin Capital Group", 
+        investment_focus: "Global multi-stage investor focusing on cybersecurity, artificial intelligence, big data, and advanced computing, with significant defence and national security applications.",
+        investment_stage: "Multi-stage (growth equity to later stage)",
+        geographic_focus: "Global",
+        website_url: "https://www.paladincapgroup.com/investments/"
+      },
+      {
+        category: "Corporate VC & Innovation",
+        name: "Thales Group (Thales Corporate Ventures)",
+        investment_focus: "Investing in digital and 'deep tech' innovations (Big Data, AI, connectivity, cybersecurity, and quantum technology) that align with their strategic interests.",
+        investment_stage: "Strategic partnerships, corporate venturing",
+        geographic_focus: "Global", 
+        website_url: "https://www.thalesgroup.com/en/thales-startups"
+      },
+      {
+        category: "Deep Tech & Dual-Use VC",
+        name: "Octopus Ventures",
+        investment_focus: "Broad deep tech, AI, fintech, health tech, and other sectors; dual-use potential is often a factor.",
+        investment_stage: "Pre-seed, Seed, Series A, and later-stage",
+        geographic_focus: "UK & Europe",
+        website_url: "https://octopusventures.com/"
+      },
+      {
+        category: "Government-Backed Schemes",
+        name: "British Business Bank",
+        investment_focus: "Facilitates access to finance for smaller businesses via partner funds, covering venture capital, debt finance, and regional funds.",
+        investment_stage: "Varies by program/partner fund",
+        geographic_focus: "UK",
+        website_url: "https://www.british-business-bank.co.uk/how-we-help/"
+      }
+    ];
+
+    // Load funding opportunities on component mount and when category changes
+    useEffect(() => {
+      fetchFundingOpportunities();
+      fetchFundingStats();
+    }, [selectedCategory]);
+
+    // Auto-refresh every 5 minutes for Pro users
+    useEffect(() => {
+      if (user?.tier !== 'free') {
+        const interval = setInterval(() => {
+          fetchFundingOpportunities();
+          fetchFundingStats();
+        }, 5 * 60 * 1000); // 5 minutes
+
+        return () => clearInterval(interval);
+      }
+    }, [user]);
+
+    const categories = [
+      { value: 'all', label: 'All Categories' },
+      { value: 'Defence & Security VC', label: 'Defence & Security VC' },
+      { value: 'Corporate VC & Innovation', label: 'Corporate VC & Innovation' },
+      { value: 'Deep Tech & Dual-Use VC', label: 'Deep Tech & Dual-Use VC' },
+      { value: 'Government-Backed Schemes', label: 'Government-Backed Schemes' },
+      { value: 'University Spin-Out Funds', label: 'University Spin-Out Funds' },
+      { value: 'Growth Equity & Debt', label: 'Growth Equity & Debt' },
+      { value: 'Private Equity', label: 'Private Equity' },
+      { value: 'Accelerators & Incubators', label: 'Accelerators & Incubators' },
+      { value: 'Equity Crowdfunding', label: 'Equity Crowdfunding' }
+    ];
+
+    const filteredProviders = selectedCategory === 'all' 
+      ? fundingProviders 
+      : fundingProviders.filter(provider => provider.category === selectedCategory);
+
+    const getCategoryIcon = (category) => {
+      switch (category) {
+        case 'Defence & Security VC': return <Target className="w-5 h-5" />;
+        case 'Corporate VC & Innovation': return <Building className="w-5 h-5" />;
+        case 'Deep Tech & Dual-Use VC': return <Zap className="w-5 h-5" />;
+        case 'Government-Backed Schemes': return <Award className="w-5 h-5" />;
+        case 'University Spin-Out Funds': return <Star className="w-5 h-5" />;
+        case 'Growth Equity & Debt': return <TrendingUp className="w-5 h-5" />;
+        case 'Private Equity': return <Briefcase className="w-5 h-5" />;
+        case 'Accelerators & Incubators': return <Globe className="w-5 h-5" />;
+        case 'Equity Crowdfunding': return <Users className="w-5 h-5" />;
+        default: return <DollarSign className="w-5 h-5" />;
+      }
+    };
+
+    const getCategoryColor = (category) => {
+      switch (category) {
+        case 'Defence & Security VC': return 'bg-red-100 text-red-800';
+        case 'Corporate VC & Innovation': return 'bg-blue-100 text-blue-800';
+        case 'Deep Tech & Dual-Use VC': return 'bg-purple-100 text-purple-800';
+        case 'Government-Backed Schemes': return 'bg-green-100 text-green-800';
+        case 'University Spin-Out Funds': return 'bg-yellow-100 text-yellow-800';
+        case 'Growth Equity & Debt': return 'bg-cyan-100 text-cyan-800';
+        case 'Private Equity': return 'bg-gray-100 text-gray-800';
+        case 'Accelerators & Incubators': return 'bg-pink-100 text-pink-800';
+        case 'Equity Crowdfunding': return 'bg-indigo-100 text-indigo-800';
+        default: return 'bg-gray-100 text-gray-800';
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
       {
         category: "Defence & Security VC",
         name: "Paladin Capital Group",
