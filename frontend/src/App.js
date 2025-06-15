@@ -1868,15 +1868,27 @@ All funding provider links have been verified and updated to ensure they work pr
   const DashboardPage = () => (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">
-            Welcome back, {user?.full_name}
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Here's what's happening with UK defence opportunities today
-          </p>
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-900 to-slate-900 rounded-xl p-8 mb-8 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">Welcome back, {user?.full_name}</h1>
+              <p className="text-xl text-blue-100">Navigate UK Defence Funding & Contracts with Confidence</p>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-blue-200">Current Tier</div>
+              <div className={`text-2xl font-bold ${
+                user?.tier === 'pro' ? 'text-cyan-300' : 
+                user?.tier === 'enterprise' ? 'text-purple-300' : 
+                'text-gray-300'
+              }`}>
+                {user?.tier?.toUpperCase() || 'FREE'}
+              </div>
+            </div>
+          </div>
         </div>
 
+        {/* Stats Overview */}
         {dashboardStats && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
@@ -1917,58 +1929,124 @@ All funding provider links have been verified and updated to ensure they work pr
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Quick Actions</h2>
-            <div className="space-y-3">
-              <button
-                onClick={() => setCurrentView('opportunities')}
-                className="w-full flex items-center p-4 bg-cyan-50 hover:bg-cyan-100 rounded-lg transition-colors text-left"
-              >
-                <Search className="w-5 h-5 text-cyan-600 mr-3" />
-                <div>
-                  <div className="font-medium text-slate-900">Browse Opportunities</div>
-                  <div className="text-sm text-gray-600">Discover new funding and contracts</div>
+        {/* Quick Actions Grid - Responsive 5-card layout */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">📦 Quick Actions</h2>
+          
+          {/* Grid Layout - Responsive design for 5 cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            
+            {/* Browse Opportunities */}
+            <div 
+              onClick={() => setCurrentView('opportunities')}
+              className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-cyan-300 hover:shadow-lg transition-all duration-300 cursor-pointer group min-h-[200px] flex flex-col"
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-cyan-100 rounded-lg flex items-center justify-center group-hover:bg-cyan-200 transition-colors">
+                  <Search className="w-6 h-6 text-cyan-600" />
                 </div>
-              </button>
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">🔍 Browse Opportunities</h3>
+              <p className="text-sm text-gray-600 mb-3">Defence contracts & funding</p>
+              <p className="text-gray-700 text-xs flex-grow">
+                Access real-time defence procurement opportunities from MOD, DASA, and other UK government sources.
+              </p>
+            </div>
 
-              <button
-                onClick={() => setCurrentView('funding-opportunities')}
-                className="w-full flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-left"
-              >
-                <DollarSign className="w-5 h-5 text-green-600 mr-3" />
-                <div>
-                  <div className="font-medium text-slate-900">Funding Opportunities</div>
-                  <div className="text-sm text-gray-600">Private investment & capital funding for Defence SMEs</div>
+            {/* Funding Options */}
+            <div 
+              onClick={() => setCurrentView('funding-opportunities')}
+              className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-green-300 hover:shadow-lg transition-all duration-300 cursor-pointer group min-h-[200px] flex flex-col"
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                  <DollarSign className="w-6 h-6 text-green-600" />
                 </div>
-              </button>
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">💰 Funding Options</h3>
+              <p className="text-sm text-gray-600 mb-3">Private & government funding</p>
+              <p className="text-gray-700 text-xs flex-grow">
+                Comprehensive directory of VCs, government schemes, and accelerators investing in defence SMEs.
+              </p>
+            </div>
 
-              <button
-                onClick={() => {
-                  if (user?.tier === 'free') {
-                    setShowUpgradeModal(true);
-                  } else {
-                    setCurrentView('procurement-act');
-                  }
-                }}
-                className="w-full flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left"
-              >
-                <FileText className="w-5 h-5 text-blue-600 mr-3" />
-                <div>
-                  <div className="font-medium text-slate-900">UK Defence Procurement Guide</div>
-                  <div className="text-sm text-gray-600">Complete guide to MOD procurement</div>
+            {/* Procurement Guide */}
+            <div 
+              onClick={() => {
+                if (user?.tier === 'free') {
+                  setShowUpgradeModal(true);
+                } else {
+                  setCurrentView('procurement-act');
+                }
+              }}
+              className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 cursor-pointer group min-h-[200px] flex flex-col"
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <BookOpen className="w-6 h-6 text-blue-600" />
                 </div>
-              </button>
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">📘 Procurement Guide</h3>
+              <p className="text-sm text-gray-600 mb-3">UK Defence procurement</p>
+              <p className="text-gray-700 text-xs flex-grow">
+                Complete guide to UK Defence procurement processes, from registration to contract delivery.
+              </p>
+              {user?.tier === 'free' && (
+                <div className="mt-2 flex items-center">
+                  <Lock className="w-3 h-3 text-yellow-600 mr-1" />
+                  <span className="text-xs text-yellow-600 font-medium">Pro Required</span>
+                </div>
+              )}
+            </div>
 
-              {user?.tier !== 'free' && (
-                <button
-                  onClick={async () => {
-                    setIsRefreshing(true);
-                    try {
-                      const response = await api.post('/api/data/refresh');
-                      
-                      // Show detailed success message
-                      const message = `✅ Enhanced Actify Defence Aggregation Complete!
+            {/* Configure Alerts */}
+            <div 
+              onClick={() => setCurrentView('alerts')}
+              className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-yellow-300 hover:shadow-lg transition-all duration-300 cursor-pointer group min-h-[200px] flex flex-col"
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
+                  <Bell className="w-6 h-6 text-yellow-600" />
+                </div>
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">🔔 Configure Alerts</h3>
+              <p className="text-sm text-gray-600 mb-3">Real-time notifications</p>
+              <p className="text-gray-700 text-xs flex-grow">
+                Set up custom alerts for new opportunities matching your technology areas and funding requirements.
+              </p>
+            </div>
+
+            {/* SME Prioritisation */}
+            <div 
+              onClick={() => setCurrentView('sme-analysis')}
+              className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300 cursor-pointer group min-h-[200px] flex flex-col sm:col-span-2 lg:col-span-1"
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                  <TrendingUp className="w-6 h-6 text-purple-600" />
+                </div>
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">📊 SME Prioritisation</h3>
+              <p className="text-sm text-gray-600 mb-3">AI-powered analysis</p>
+              <p className="text-gray-700 text-xs flex-grow">
+                Opportunities ranked by SME relevance score, complexity assessment, and success probability.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Actify Defence Aggregation - Pro/Enterprise Only */}
+        {user?.tier !== 'free' && (
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">🧠 Enhanced Data Aggregation</h2>
+            <button
+              onClick={async () => {
+                setIsRefreshing(true);
+                try {
+                  const response = await api.post('/api/data/refresh');
+                  
+                  // Show detailed success message
+                  const message = `✅ Enhanced Actify Defence Aggregation Complete!
 
 📊 ${response.data.message}
 
@@ -1985,47 +2063,37 @@ All funding provider links have been verified and updated to ensure they work pr
 
 Opportunities have been refreshed with enhanced metadata including SME scores, technology tags, and priority rankings.`;
 
-                      alert(message);
-                      
-                      // Refresh data to show new opportunities
-                      fetchOpportunities();
-                      fetchDashboardStats();
-                    } catch (error) {
-                      alert('❌ Data refresh failed: ' + (error.response?.data?.detail || 'Unknown error'));
-                    } finally {
-                      setIsRefreshing(false);
-                    }
-                  }}
-                  disabled={isRefreshing}
-                  className="w-full flex items-center p-4 bg-gradient-to-r from-cyan-50 to-blue-50 hover:from-cyan-100 hover:to-blue-100 rounded-lg transition-colors text-left border-2 border-cyan-200"
-                >
-                  <Zap className={`w-5 h-5 text-cyan-600 mr-3 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  <div>
-                    <div className="font-medium text-slate-900">
-                      {isRefreshing ? 'Running Enhanced Actify Defence Aggregation...' : '🧠 Enhanced Actify Defence Aggregation'}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {isRefreshing ? 'Collecting from global sources with AI filtering...' : 'Multi-source aggregation with keyword prioritization, SME scoring & tech classification'}
-                    </div>
-                  </div>
-                </button>
-              )}
-
-              <button
-                onClick={() => setCurrentView('alerts')}
-                className="w-full flex items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors text-left"
-              >
-                <Bell className="w-5 h-5 text-purple-600 mr-3" />
-                <div>
-                  <div className="font-medium text-slate-900">Configure Alerts</div>
-                  <div className="text-sm text-gray-600">Set up personalized notifications</div>
+                  alert(message);
+                  
+                  // Refresh data to show new opportunities
+                  fetchOpportunities();
+                  fetchDashboardStats();
+                } catch (error) {
+                  alert('❌ Data refresh failed: ' + (error.response?.data?.detail || 'Unknown error'));
+                } finally {
+                  setIsRefreshing(false);
+                }
+              }}
+              disabled={isRefreshing}
+              className="w-full flex items-center justify-center p-4 bg-gradient-to-r from-cyan-50 to-blue-50 hover:from-cyan-100 hover:to-blue-100 rounded-lg transition-colors border-2 border-cyan-200"
+            >
+              <Zap className={`w-5 h-5 text-cyan-600 mr-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <div className="text-center">
+                <div className="font-medium text-slate-900">
+                  {isRefreshing ? 'Running Enhanced Actify Defence Aggregation...' : '🧠 Enhanced Actify Defence Aggregation'}
                 </div>
-              </button>
-            </div>
+                <div className="text-sm text-gray-600">
+                  {isRefreshing ? 'Collecting from global sources with AI filtering...' : 'Multi-source aggregation with keyword prioritization, SME scoring & tech classification'}
+                </div>
+              </div>
+            </button>
           </div>
+        )}
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Your Tier Benefits</h2>
+        {/* Tier Benefits Section */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <h2 className="text-xl font-bold text-slate-900 mb-4">Your Tier Benefits</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
               {dashboardStats.tier_benefits?.map((benefit, index) => (
                 <div key={index} className="flex items-start">
@@ -2036,14 +2104,14 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
             </div>
             
             {user?.tier === 'free' && (
-              <div className="mt-6 p-4 bg-cyan-50 rounded-lg border border-cyan-200">
+              <div className="p-4 bg-cyan-50 rounded-lg border border-cyan-200">
                 <h4 className="font-semibold text-cyan-900 mb-2">Upgrade to Pro</h4>
                 <p className="text-sm text-cyan-800 mb-3">
                   Get real-time alerts, enhanced analysis, and priority access to opportunities.
                 </p>
                 <button
                   onClick={() => handleUpgrade('pro')}
-                  className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                  className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors w-full"
                 >
                   Upgrade Now - £49/month
                 </button>
