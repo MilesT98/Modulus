@@ -1351,22 +1351,15 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
             f"Access to {accessible_opportunities} opportunities"
         ],
         UserTier.PRO: [
-            "Real-time global opportunity alerts",
-            "Enhanced Actify Defence aggregation",
-            "SME relevance scoring & prioritization",
-            "Technology area classification",
-            "Premium content & expert analysis",
-            "Community forum access",
-            f"Full access to {accessible_opportunities} opportunities"
-        ],
-        UserTier.ENTERPRISE: [
-            "Everything in Pro tier",
-            "Multi-user access (5 seats)",
-            "Custom opportunity reports",
-            "Priority expert support",
-            "Exclusive networking events",
-            "Advanced API access",
-            f"Enterprise access to {accessible_opportunities} opportunities"
+            "Full access to ALL contract opportunities",
+            "Hourly contract updates",
+            "Complete funding routes database (60+ sources)",
+            "UK Defence procurement guide access",
+            "Advanced search and filtering",
+            "Save searches and export results",
+            "AI-powered opportunity insights",
+            "Bookmark and note features",
+            "Priority support"
         ]
     }
     
@@ -1374,14 +1367,14 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         "total_opportunities": accessible_opportunities,
         "new_this_week": new_this_week,
         "closing_soon": closing_soon,
-        "tier": user_tier,
         "tier_benefits": tier_benefits.get(user_tier, []),
-        "enhanced_features": {
-            "keyword_prioritization": user_tier != UserTier.FREE,
-            "sme_scoring": user_tier != UserTier.FREE,
-            "global_sources": user_tier != UserTier.FREE,
-            "technology_classification": user_tier != UserTier.FREE,
-            "real_time_access": user_tier != UserTier.FREE
+        "user_tier": user_tier,
+        "subscription_model": {
+            "current_tier": user_tier,
+            "update_frequency": "Weekly" if user_tier == UserTier.FREE else "Hourly",
+            "contract_access": "Limited (1/3)" if user_tier == UserTier.FREE else "Full Access",
+            "funding_routes": "❌ No Access" if user_tier == UserTier.FREE else "✅ Full Access (60+ sources)",
+            "procurement_guide": "❌ No Access" if user_tier == UserTier.FREE else "✅ Full Access"
         }
     }
 
