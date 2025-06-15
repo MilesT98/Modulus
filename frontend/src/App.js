@@ -3488,6 +3488,15 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
                           </span>
                         </div>
                       )}
+
+                      {opportunity.enhanced_metadata.confidence_score !== undefined && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">Confidence Score:</span>
+                          <span className="text-xs font-semibold text-blue-600">
+                            {Math.round(opportunity.enhanced_metadata.confidence_score * 100)}%
+                          </span>
+                        </div>
+                      )}
                       
                       {opportunity.enhanced_metadata.keywords_matched?.length > 0 && (
                         <div>
