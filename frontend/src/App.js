@@ -2617,6 +2617,140 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
       );
     };
 
+    // Phase 2: Save Search Functionality
+    const saveCurrentSearch = () => {
+      if (!searchName.trim()) {
+        alert('Please enter a name for your saved search');
+        return;
+      }
+      
+      const searchConfig = {
+        id: Date.now(),
+        name: searchName.trim(),
+        searchTerm,
+        selectedFundingBody,
+        selectedTechAreas,
+        selectedDeadline,
+        sortBy,
+        createdAt: new Date().toISOString(),
+        resultCount: sortedOpportunities.length
+      };
+      
+      setSavedSearches([...savedSearches, searchConfig]);
+      setSearchName('');
+      setShowSaveSearch(false);
+      alert(`✅ Saved search "${searchName}" successfully!`);
+    };
+
+    const loadSavedSearch = (savedSearch) => {
+      setSearchTerm(savedSearch.searchTerm || '');
+      setSelectedFundingBody(savedSearch.selectedFundingBody || '');
+      setSelectedTechAreas(savedSearch.selectedTechAreas || []);
+      setSelectedDeadline(savedSearch.selectedDeadline || '');
+      setSortBy(savedSearch.sortBy || 'deadline_asc');
+      setShowSavedSearches(false);
+      alert(`📋 Loaded search "${savedSearch.name}"`);
+    };
+
+    const deleteSavedSearch = (searchId) => {
+      if (window.confirm('Are you sure you want to delete this saved search?')) {
+        setSavedSearches(savedSearches.filter(s => s.id !== searchId));
+      }
+    };
+
+    // Phase 2: Export Results
+    const exportResults = (format = 'csv') => {
+      const exportData = sortedOpportunities.map(opp => ({
+        Title: opp.title,
+        'Funding Body': opp.funding_body,
+        'Contract Value': opp.funding_amount || 'Not specified',
+        'Deadline': new Date(opp.closing_date || opp.deadline).toLocaleDateString(),
+        'Success Probability': Math.round(calculateSuccessProbability(opp) * 100) + '%',
+        'Competition Level': calculateCompetitionLevel(opp) < 0.4 ? 'Low' : 
+                           calculateCompetitionLevel(opp) < 0.7 ? 'Medium' : 'High',
+        'TRL Level': opp.trl_level || 'Not specified',
+        'Tech Areas': (opp.tech_tags || []).join('; '),
+        'Description': opp.description,
+        'MOD Department': opp.mod_department || 'Not specified',
+        'Contract Type': opp.contract_type || 'Not specified',
+        'Official Link': opp.official_link,
+        'AI Insights': generateMatchExplanation(opp).join('; '),
+        'Notes': opportunityNotes[opp.id || opp._id] || '',
+        'Bookmarked': bookmarkedOpportunities.includes(opp.id || opp._id) ? 'Yes' : 'No'
+      }));
+      
+      if (format === 'csv') {
+        // Create CSV content
+        const headers = Object.keys(exportData[0] || {});
+        const csvContent = [
+          headers.join(','),
+          ...exportData.map(row => headers.map(header => `"${(row[header] || '').toString().replace(/"/g, '""')}"`).join(','))
+        ].join('\n');
+        
+        // Download CSV
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `modulus-defence-opportunities-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } else if (format === 'json') {
+        // Download JSON
+        const jsonContent = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([jsonContent], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `modulus-defence-opportunities-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+      
+      alert(`📊 Exported ${exportData.length} opportunities to ${format.toUpperCase()}`);
+    };
+
+    // Phase 2: Bookmark Management
+    const toggleBookmark = (opportunityId) => {
+      setBookmarkedOpportunities(prev => {
+        if (prev.includes(opportunityId)) {
+          return prev.filter(id => id !== opportunityId);
+        } else {
+          return [...prev, opportunityId];
+        }
+      });
+    };
+
+    // Phase 2: Notes Management
+    const openNotesModal = (opportunity) => {
+      setCurrentNoteOpportunity(opportunity);
+      const oppId = opportunity.id || opportunity._id;
+      setNoteText(opportunityNotes[oppId] || '');
+      setShowNotesModal(true);
+    };
+
+    const saveNote = () => {
+      if (currentNoteOpportunity) {
+        const oppId = currentNoteOpportunity.id || currentNoteOpportunity._id;
+        setOpportunityNotes(prev => ({
+          ...prev,
+          [oppId]: noteText
+        }));
+        setShowNotesModal(false);
+        setCurrentNoteOpportunity(null);
+        setNoteText('');
+      }
+    };
+
+    // Phase 2: Clear all filters
+    const clearAllFilters = () => {
+      setSearchTerm('');
+      setSelectedFundingBody('');
+      setSelectedTechAreas([]);
+      setSelectedDeadline('');
+      setSortBy('deadline_asc');
+    };
+
     // Phase 3: AI-Powered Features
     
     // Calculate SME Success Probability
