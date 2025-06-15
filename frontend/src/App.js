@@ -2409,10 +2409,6 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
               </div>
             )}
           </div>
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* Results Summary */}
           <div className="mb-6">
