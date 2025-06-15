@@ -1100,6 +1100,9 @@ async def periodic_data_refresh():
 # Initialize with live data only
 @app.on_event("startup")
 async def initialize_live_data():
+    # Initialize funding opportunities
+    await initialize_funding_opportunities()
+    
     # Check if we need to populate with live data
     if opportunities_collection.count_documents({}) == 0:
         print("🔄 No opportunities found, fetching live data...")
