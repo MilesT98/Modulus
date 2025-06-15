@@ -2844,6 +2844,62 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
             )}
           </div>
 
+          {/* Phase 3: Personalized Recommendations */}
+          {user?.tier !== 'free' && sortedOpportunities.length > 0 && (
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-200 mb-8">
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                  <Star className="w-5 h-5 text-indigo-600" />
+                </div>
+                <h2 className="text-xl font-bold text-indigo-900">🤖 AI-Powered Recommendations for You</h2>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {getPersonalizedRecommendations().slice(0, 3).map((rec, index) => (
+                  <div 
+                    key={rec.id || rec._id || index}
+                    onClick={() => handleOpportunityClick(rec)}
+                    className="bg-white rounded-lg p-4 border border-indigo-200 hover:border-indigo-300 cursor-pointer transition-all duration-200 hover:shadow-md"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-indigo-600 bg-indigo-100 px-2 py-1 rounded-full">
+                        #{index + 1} Match
+                      </span>
+                      <span className="text-xs font-bold text-indigo-700">
+                        {Math.round(rec.recommendationScore * 100)}% Match
+                      </span>
+                    </div>
+                    
+                    <h4 className="font-semibold text-gray-900 mb-1 line-clamp-2 text-sm">
+                      {rec.title}
+                    </h4>
+                    
+                    <p className="text-xs text-gray-600 mb-2">
+                      {rec.funding_body}
+                    </p>
+                    
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-green-600 font-medium">
+                        {Math.round(calculateSuccessProbability(rec) * 100)}% Success
+                      </span>
+                      <span className={`font-medium ${
+                        calculateCompetitionLevel(rec) < 0.4 ? 'text-green-600' :
+                        calculateCompetitionLevel(rec) < 0.7 ? 'text-yellow-600' : 'text-red-600'
+                      }`}>
+                        {calculateCompetitionLevel(rec) < 0.4 ? 'Low' : 
+                         calculateCompetitionLevel(rec) < 0.7 ? 'Med' : 'High'} Competition
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <p className="text-xs text-indigo-600 mt-4">
+                💡 Recommendations based on your search patterns, company profile, and success probability analysis
+              </p>
+            </div>
+          )}
+
           {/* Results Summary */}
           <div className="mb-6">
             <p className="text-gray-600">
