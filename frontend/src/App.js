@@ -278,6 +278,7 @@ function App() {
     if (user) {
       fetchOpportunities();
       fetchDashboardStats();
+      fetchFundingProviders();
     }
   }, [user]);
 
