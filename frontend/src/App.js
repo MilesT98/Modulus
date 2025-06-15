@@ -3275,19 +3275,56 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
                   className="opportunity-card hover-card cursor-pointer group bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-cyan-300 transition-all duration-200"
                 >
                   <div className="flex items-start justify-between mb-4">
-                    <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      opportunity.tier_required === 'free' ? 'bg-gray-100 text-gray-800' :
-                      opportunity.tier_required === 'pro' ? 'bg-cyan-100 text-cyan-800' :
-                      'bg-purple-100 text-purple-800'
-                    }`}>
-                      {opportunity.tier_required?.toUpperCase() || 'FREE'}
+                    <div className="flex items-center gap-2">
+                      <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        opportunity.tier_required === 'free' ? 'bg-gray-100 text-gray-800' :
+                        opportunity.tier_required === 'pro' ? 'bg-cyan-100 text-cyan-800' :
+                        'bg-purple-100 text-purple-800'
+                      }`}>
+                        {opportunity.tier_required?.toUpperCase() || 'FREE'}
+                      </div>
+                      
+                      {opportunity.is_delayed && (
+                        <div className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">
+                          DELAYED
+                        </div>
+                      )}
                     </div>
                     
-                    {opportunity.is_delayed && (
-                      <div className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">
-                        DELAYED
-                      </div>
-                    )}
+                    {/* Phase 2: Bookmark and Notes Actions */}
+                    <div className="flex items-center gap-1">
+                      {/* Bookmark Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleBookmark(opportunity.id || opportunity._id);
+                        }}
+                        className={`p-1 rounded-full transition-colors ${
+                          bookmarkedOpportunities.includes(opportunity.id || opportunity._id)
+                            ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
+                            : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                        }`}
+                        title={bookmarkedOpportunities.includes(opportunity.id || opportunity._id) ? 'Remove bookmark' : 'Bookmark this opportunity'}
+                      >
+                        <Star className={`w-4 h-4 ${bookmarkedOpportunities.includes(opportunity.id || opportunity._id) ? 'fill-current' : ''}`} />
+                      </button>
+                      
+                      {/* Notes Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openNotesModal(opportunity);
+                        }}
+                        className={`p-1 rounded-full transition-colors ${
+                          opportunityNotes[opportunity.id || opportunity._id]
+                            ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                            : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                        }`}
+                        title={opportunityNotes[opportunity.id || opportunity._id] ? 'Edit note' : 'Add note'}
+                      >
+                        <FileText className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-cyan-600 transition-colors line-clamp-2">
