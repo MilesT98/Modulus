@@ -881,6 +881,13 @@ function App() {
                   Opportunities
                 </button>
                 <button
+                  onClick={() => setCurrentView('funding-opportunities')}
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center"
+                >
+                  <DollarSign className="w-4 h-4 mr-2" />
+                  Funding
+                </button>
+                <button
                   onClick={() => {
                     if (user?.tier === 'free') {
                       setShowUpgradeModal(true);
