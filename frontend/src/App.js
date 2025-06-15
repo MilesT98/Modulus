@@ -1059,7 +1059,7 @@ All funding provider links have been verified and updated to ensure they work pr
             <>
               {/* Funding Providers Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                {filteredProviders.map((provider, index) => (
+                {sortedProviders.map((provider, index) => (
                   <div 
                     key={provider.id || index}
                     className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-cyan-300 hover:shadow-md transition-all duration-200"
