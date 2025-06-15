@@ -3357,7 +3357,12 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
               Showing {sortedOpportunities.length} of {opportunities.length} opportunities
               {user?.tier === 'free' && (
                 <span className="ml-2 text-yellow-600 font-medium">
-                  (Pro/SME content delayed 48 hours)
+                  (Limited Access: Showing 1/3 of opportunities - Weekly Updates)
+                </span>
+              )}
+              {user?.tier === 'pro' && (
+                <span className="ml-2 text-green-600 font-medium">
+                  (Full Access - Hourly Updates)
                 </span>
               )}
             </p>
