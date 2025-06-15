@@ -2452,6 +2452,215 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
       );
     };
 
+    // Phase 3: AI-Powered Features
+    
+    // Calculate SME Success Probability
+    const calculateSuccessProbability = (opportunity) => {
+      let score = 0.5; // Base score
+      
+      // Funding body scoring
+      if (opportunity.funding_body.includes('DASA')) score += 0.2;
+      if (opportunity.funding_body.includes('Innovate UK')) score += 0.15;
+      if (opportunity.funding_body.includes('SBRI')) score += 0.25;
+      
+      // Contract value scoring (SMEs better at smaller contracts)
+      const value = parseFloat((opportunity.funding_amount || '0').replace(/[^\d.]/g, '')) || 0;
+      if (value <= 100000) score += 0.15;
+      else if (value <= 1000000) score += 0.1;
+      else if (value > 10000000) score -= 0.1;
+      
+      // Technology area alignment
+      const smeFrequentTech = ['AI/ML', 'Cyber Security', 'Software Development', 'Sensors'];
+      const techTags = opportunity.tech_tags || [];
+      const alignment = techTags.filter(tag => 
+        smeFrequentTech.some(freq => tag.toLowerCase().includes(freq.toLowerCase()))
+      ).length;
+      score += Math.min(alignment * 0.05, 0.15);
+      
+      // Deadline proximity (more time = better for SMEs)
+      const deadline = new Date(opportunity.closing_date || opportunity.deadline);
+      const now = new Date();
+      const daysLeft = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysLeft > 60) score += 0.1;
+      else if (daysLeft < 14) score -= 0.1;
+      
+      // TRL level (SMEs better at early-mid TRL)
+      const trl = parseInt(opportunity.trl_level?.match(/\d+/)?.[0]) || 5;
+      if (trl >= 3 && trl <= 6) score += 0.1;
+      else if (trl >= 7) score -= 0.05;
+      
+      return Math.max(0.1, Math.min(0.95, score));
+    };
+
+    // Calculate Competition Level
+    const calculateCompetitionLevel = (opportunity) => {
+      let competition = 0.5; // Base competition
+      
+      // High-value contracts attract more competition
+      const value = parseFloat((opportunity.funding_amount || '0').replace(/[^\d.]/g, '')) || 0;
+      if (value > 10000000) competition += 0.3;
+      else if (value > 1000000) competition += 0.1;
+      else if (value < 100000) competition -= 0.2;
+      
+      // Popular funding bodies
+      if (opportunity.funding_body.includes('DASA')) competition += 0.2;
+      if (opportunity.funding_body.includes('MOD')) competition += 0.15;
+      
+      // Technology area popularity
+      const highCompetitionTech = ['AI/ML', 'Autonomous Systems', 'Cyber Security'];
+      const techTags = opportunity.tech_tags || [];
+      const highCompTech = techTags.filter(tag => 
+        highCompetitionTech.some(hot => tag.toLowerCase().includes(hot.toLowerCase()))
+      ).length;
+      competition += highCompTech * 0.05;
+      
+      // Deadline urgency increases competition
+      const deadline = new Date(opportunity.closing_date || opportunity.deadline);
+      const now = new Date();
+      const daysLeft = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysLeft < 14) competition += 0.15;
+      else if (daysLeft > 90) competition -= 0.1;
+      
+      return Math.max(0.1, Math.min(0.95, competition));
+    };
+
+    // Get Similar Opportunities
+    const getSimilarOpportunities = (opportunity) => {
+      return opportunities
+        .filter(opp => opp.id !== opportunity.id && opp._id !== opportunity._id)
+        .map(opp => ({
+          ...opp,
+          similarity: calculateSimilarity(opportunity, opp)
+        }))
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, 3);
+    };
+
+    const calculateSimilarity = (opp1, opp2) => {
+      let score = 0;
+      
+      // Same funding body (high weight)
+      if (opp1.funding_body === opp2.funding_body) score += 0.3;
+      
+      // Similar tech areas
+      const tech1 = opp1.tech_tags || [];
+      const tech2 = opp2.tech_tags || [];
+      const commonTech = tech1.filter(t => tech2.some(t2 => t2.toLowerCase().includes(t.toLowerCase())));
+      score += (commonTech.length / Math.max(tech1.length, tech2.length, 1)) * 0.25;
+      
+      // Similar TRL level
+      const trl1 = parseInt(opp1.trl_level?.match(/\d+/)?.[0]) || 5;
+      const trl2 = parseInt(opp2.trl_level?.match(/\d+/)?.[0]) || 5;
+      if (Math.abs(trl1 - trl2) <= 1) score += 0.15;
+      
+      // Similar value range
+      const value1 = parseFloat((opp1.funding_amount || '0').replace(/[^\d.]/g, '')) || 0;
+      const value2 = parseFloat((opp2.funding_amount || '0').replace(/[^\d.]/g, '')) || 0;
+      const maxVal = Math.max(value1, value2, 1);
+      const similarity = 1 - Math.abs(value1 - value2) / maxVal;
+      if (similarity > 0.7) score += 0.1;
+      
+      // Similar contract type
+      if (opp1.contract_type === opp2.contract_type) score += 0.1;
+      
+      // Title/description similarity (simple keyword matching)
+      const words1 = (opp1.title + ' ' + opp1.description).toLowerCase().split(/\s+/);
+      const words2 = (opp2.title + ' ' + opp2.description).toLowerCase().split(/\s+/);
+      const commonWords = words1.filter(w => w.length > 4 && words2.includes(w));
+      score += Math.min(commonWords.length * 0.02, 0.1);
+      
+      return score;
+    };
+
+    // Personalized Recommendations based on user activity
+    const getPersonalizedRecommendations = () => {
+      // In a real app, this would use user's viewing history, company profile, etc.
+      // For now, we'll simulate smart recommendations
+      return sortedOpportunities
+        .map(opp => ({
+          ...opp,
+          recommendationScore: calculateRecommendationScore(opp)
+        }))
+        .sort((a, b) => b.recommendationScore - a.recommendationScore)
+        .slice(0, 5);
+    };
+
+    const calculateRecommendationScore = (opportunity) => {
+      let score = 0;
+      
+      // Base SME suitability
+      score += (opportunity.enhanced_metadata?.sme_score || calculateSuccessProbability(opportunity)) * 0.4;
+      
+      // Low competition bonus
+      score += (1 - calculateCompetitionLevel(opportunity)) * 0.2;
+      
+      // Technology alignment with current search
+      if (selectedTechAreas.length > 0) {
+        const techTags = opportunity.tech_tags || [];
+        const alignment = selectedTechAreas.filter(area => 
+          techTags.some(tag => tag.toLowerCase().includes(area.toLowerCase()))
+        ).length;
+        score += (alignment / selectedTechAreas.length) * 0.2;
+      }
+      
+      // Funding body preference (simulate user preference)
+      const preferredBodies = ['DASA', 'Innovate UK', 'SBRI'];
+      if (preferredBodies.some(body => opportunity.funding_body.includes(body))) {
+        score += 0.1;
+      }
+      
+      // Deadline sweet spot
+      const deadline = new Date(opportunity.closing_date || opportunity.deadline);
+      const now = new Date();
+      const daysLeft = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysLeft >= 30 && daysLeft <= 90) score += 0.1;
+      
+      return score;
+    };
+
+    // Generate AI insights for why an opportunity matches
+    const generateMatchExplanation = (opportunity) => {
+      const insights = [];
+      const successProb = calculateSuccessProbability(opportunity);
+      const competition = calculateCompetitionLevel(opportunity);
+      
+      if (successProb > 0.7) {
+        insights.push("🎯 High SME success probability");
+      }
+      
+      if (competition < 0.4) {
+        insights.push("🏆 Lower competition expected");
+      }
+      
+      if (opportunity.funding_body.includes('DASA') || opportunity.funding_body.includes('SBRI')) {
+        insights.push("🚀 SME-friendly funding body");
+      }
+      
+      const value = parseFloat((opportunity.funding_amount || '0').replace(/[^\d.]/g, '')) || 0;
+      if (value <= 1000000 && value > 0) {
+        insights.push("💰 SME-appropriate contract size");
+      }
+      
+      const deadline = new Date(opportunity.closing_date || opportunity.deadline);
+      const now = new Date();
+      const daysLeft = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysLeft >= 30) {
+        insights.push("⏰ Adequate preparation time");
+      }
+      
+      if (selectedTechAreas.length > 0) {
+        const techTags = opportunity.tech_tags || [];
+        const matches = selectedTechAreas.filter(area => 
+          techTags.some(tag => tag.toLowerCase().includes(area.toLowerCase()))
+        );
+        if (matches.length > 0) {
+          insights.push(`🔬 Matches your tech focus: ${matches.join(', ')}`);
+        }
+      }
+      
+      return insights.slice(0, 3); // Return top 3 insights
+    };
+
     return (
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
