@@ -1044,67 +1044,34 @@ Real-time funding intelligence refreshed successfully.`);
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <h3 className="text-xl font-bold text-slate-900 mb-4">Access Original Opportunity</h3>
                 
-                {/* Link Status Indicator */}
-                {status && (
-                  <div className={`mb-4 p-3 rounded-lg ${
-                    status.status === 'available' ? 'bg-green-50 border border-green-200' :
-                    'bg-red-50 border border-red-200'
-                  }`}>
-                    <div className="flex items-center">
-                      {status.status === 'available' ? (
-                        <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                      ) : (
-                        <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />
-                      )}
-                      <span className={`text-sm font-medium ${
-                        status.status === 'available' ? 'text-green-800' : 'text-red-800'
-                      }`}>
-                        {status.status === 'available' ? 'Link Available' : 'Link Unavailable'}
-                      </span>
-                    </div>
-                    {status.status === 'unavailable' && (
-                      <p className="text-sm text-red-700 mt-1">
-                        This link may be expired or temporarily unavailable. Try searching directly on the organization's website.
-                      </p>
-                    )}
-                  </div>
-                )}
-
                 <button
-                  onClick={() => handleExternalLinkClick(opportunity.official_link, opportunityId)}
-                  className={`w-full flex items-center justify-center px-6 py-4 rounded-lg font-semibold transition-colors ${
-                    status?.status === 'unavailable' 
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-cyan-600 hover:bg-cyan-700 text-white'
-                  }`}
-                  disabled={status?.status === 'unavailable'}
+                  onClick={() => handleExternalLinkClick(opportunity.official_link, `opportunity-${opportunity.title}`)}
+                  className="w-full flex items-center justify-center px-6 py-4 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold transition-colors"
                 >
                   <ExternalLink className="w-5 h-5 mr-2" />
-                  {status?.status === 'unavailable' ? 'Link Unavailable' : 'View on Official Site'}
+                  View on Official Site
                 </button>
 
-                {status?.status === 'unavailable' && (
-                  <div className="mt-4 space-y-2">
-                    <button
-                      onClick={() => window.open(`https://www.google.com/search?q="${opportunity.title}" ${opportunity.funding_body}`, '_blank')}
-                      className="w-full flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
-                    >
-                      <Search className="w-4 h-4 mr-2" />
-                      Search on Google
-                    </button>
-                    <button
-                      onClick={() => window.open(`https://www.contractsfinder.service.gov.uk/Search`, '_blank')}
-                      className="w-full flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
-                    >
-                      <Globe className="w-4 h-4 mr-2" />
-                      Browse {opportunity.funding_body}
-                    </button>
-                  </div>
-                )}
+                <div className="mt-4 space-y-2">
+                  <button
+                    onClick={() => handleExternalLinkClick(`https://www.google.com/search?q="${opportunity.title}" ${opportunity.funding_body}`, 'google-search')}
+                    className="w-full flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+                  >
+                    <Search className="w-4 h-4 mr-2" />
+                    Search on Google
+                  </button>
+                  <button
+                    onClick={() => handleExternalLinkClick('https://www.contractsfinder.service.gov.uk/Search', 'contracts-finder')}
+                    className="w-full flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+                  >
+                    <Globe className="w-4 h-4 mr-2" />
+                    Browse Contracts Finder
+                  </button>
+                </div>
 
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    <strong>Note:</strong> This link will open in a new tab so you can easily return to Modulus Defence.
+                    <strong>Note:</strong> Links will open in a new tab so you can easily return to Modulus Defence.
                   </p>
                 </div>
               </div>
