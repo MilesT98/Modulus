@@ -28,7 +28,8 @@ import {
   Briefcase,
   Calendar as CalendarIcon,
   MapPin,
-  AlertTriangle
+  AlertTriangle,
+  BookOpen
 } from 'lucide-react';
 import './App.css';
 
