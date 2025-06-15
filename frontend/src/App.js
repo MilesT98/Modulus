@@ -672,6 +672,9 @@ All funding provider links have been verified and updated to ensure they work pr
 
     const getCategoryIcon = (category) => {
       switch (category) {
+        case 'Government Funding & Innovation': return <Award className="w-5 h-5" />;
+        case 'Procurement & Tenders': return <FileText className="w-5 h-5" />;
+        case 'Strategic Government Investment': return <Crown className="w-5 h-5" />;
         case 'Defence & Security VC': return <Target className="w-5 h-5" />;
         case 'Corporate VC & Innovation': return <Building className="w-5 h-5" />;
         case 'Deep Tech & Dual-Use VC': return <Zap className="w-5 h-5" />;
@@ -680,6 +683,7 @@ All funding provider links have been verified and updated to ensure they work pr
         case 'Growth Equity & Debt': return <TrendingUp className="w-5 h-5" />;
         case 'Private Equity': return <Briefcase className="w-5 h-5" />;
         case 'Accelerators & Incubators': return <Globe className="w-5 h-5" />;
+        case 'Industry Bodies & Support': return <Users className="w-5 h-5" />;
         case 'Equity Crowdfunding': return <Users className="w-5 h-5" />;
         default: return <DollarSign className="w-5 h-5" />;
       }
@@ -687,6 +691,9 @@ All funding provider links have been verified and updated to ensure they work pr
 
     const getCategoryColor = (category) => {
       switch (category) {
+        case 'Government Funding & Innovation': return 'bg-emerald-100 text-emerald-800';
+        case 'Procurement & Tenders': return 'bg-amber-100 text-amber-800';
+        case 'Strategic Government Investment': return 'bg-violet-100 text-violet-800';
         case 'Defence & Security VC': return 'bg-red-100 text-red-800';
         case 'Corporate VC & Innovation': return 'bg-blue-100 text-blue-800';
         case 'Deep Tech & Dual-Use VC': return 'bg-purple-100 text-purple-800';
@@ -695,6 +702,7 @@ All funding provider links have been verified and updated to ensure they work pr
         case 'Growth Equity & Debt': return 'bg-cyan-100 text-cyan-800';
         case 'Private Equity': return 'bg-gray-100 text-gray-800';
         case 'Accelerators & Incubators': return 'bg-pink-100 text-pink-800';
+        case 'Industry Bodies & Support': return 'bg-teal-100 text-teal-800';
         case 'Equity Crowdfunding': return 'bg-indigo-100 text-indigo-800';
         default: return 'bg-gray-100 text-gray-800';
       }
