@@ -898,6 +898,121 @@ async def get_funding_stats(
         logger.error(f"Error getting funding stats: {e}")
         raise HTTPException(status_code=500, detail="Failed to get funding statistics")
 
+@app.post("/api/funding-opportunities/verify-urls")
+async def verify_funding_urls(
+    current_user: dict = Depends(get_current_user)
+):
+    """Verify and update funding opportunity URLs (Pro/Enterprise only)"""
+    if current_user['tier'] == 'free':
+        raise HTTPException(status_code=403, detail="URL verification requires Pro or Enterprise subscription")
+    
+    try:
+        import requests
+        from urllib.parse import urlparse
+        
+        verified_count = 0
+        updated_count = 0
+        
+        # Get all active funding opportunities
+        funding_opps = list(funding_opportunities_collection.find({"status": "active"}))
+        
+        for opp in funding_opps:
+            original_url = opp.get("website_url", "")
+            if not original_url:
+                continue
+                
+            try:
+                # Try the original URL first
+                response = requests.head(original_url, timeout=10, allow_redirects=True)
+                
+                if response.status_code == 200:
+                    # URL works, update last_verified
+                    funding_opportunities_collection.update_one(
+                        {"_id": opp["_id"]},
+                        {
+                            "$set": {
+                                "last_verified": datetime.utcnow(),
+                                "url_status": "verified",
+                                "final_url": response.url
+                            }
+                        }
+                    )
+                    verified_count += 1
+                    
+                elif response.status_code in [404, 403, 410]:
+                    # Try fallback to main domain
+                    try:
+                        parsed = urlparse(original_url)
+                        main_domain = f"{parsed.scheme}://{parsed.netloc}"
+                        
+                        fallback_response = requests.head(main_domain, timeout=10, allow_redirects=True)
+                        
+                        if fallback_response.status_code == 200:
+                            # Update to working main domain
+                            funding_opportunities_collection.update_one(
+                                {"_id": opp["_id"]},
+                                {
+                                    "$set": {
+                                        "website_url": main_domain,
+                                        "last_verified": datetime.utcnow(),
+                                        "url_status": "updated_to_fallback",
+                                        "original_url": original_url,
+                                        "final_url": fallback_response.url
+                                    }
+                                }
+                            )
+                            updated_count += 1
+                        else:
+                            # Mark as broken
+                            funding_opportunities_collection.update_one(
+                                {"_id": opp["_id"]},
+                                {
+                                    "$set": {
+                                        "last_verified": datetime.utcnow(),
+                                        "url_status": "broken",
+                                        "last_error": f"Status {fallback_response.status_code}"
+                                    }
+                                }
+                            )
+                    except Exception as fallback_error:
+                        # Mark as broken
+                        funding_opportunities_collection.update_one(
+                            {"_id": opp["_id"]},
+                            {
+                                "$set": {
+                                    "last_verified": datetime.utcnow(),
+                                    "url_status": "broken",
+                                    "last_error": str(fallback_error)
+                                }
+                            }
+                        )
+                        
+            except requests.exceptions.RequestException as e:
+                # Network error, mark as unverified
+                funding_opportunities_collection.update_one(
+                    {"_id": opp["_id"]},
+                    {
+                        "$set": {
+                            "last_verified": datetime.utcnow(),
+                            "url_status": "network_error",
+                            "last_error": str(e)
+                        }
+                    }
+                )
+        
+        return {
+            "status": "success",
+            "message": f"URL verification complete. {verified_count} verified, {updated_count} updated to fallbacks.",
+            "verified_count": verified_count,
+            "updated_count": updated_count,
+            "total_checked": len(funding_opps),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error during URL verification: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to verify URLs: {str(e)}")
+
 @app.put("/api/funding-opportunities/{funding_id}")
 async def update_funding_opportunity(
     funding_id: str,
