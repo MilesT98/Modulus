@@ -121,23 +121,48 @@ function App() {
     }
   };
 
-  const checkLinkStatus = async (url, opportunityId) => {
+  // Helper function to ensure URLs have proper protocol
+  const ensureHttpProtocol = (url) => {
+    if (!url) return '';
+    
+    // If URL already has protocol, return as is
+    if (url.match(/^https?:\/\//)) {
+      return url;
+    }
+    
+    // Add https:// by default
+    return `https://${url}`;
+  };
+
+  // Simplified external link handler that always works
+  const handleExternalLinkClick = (url, context = '') => {
+    if (!url) {
+      alert('No URL provided for this link.');
+      return;
+    }
+    
     try {
-      // Simple client-side check - in production you'd want server-side validation
-      const response = await fetch(url, { 
-        method: 'HEAD', 
-        mode: 'no-cors',
-        timeout: 5000 
-      });
-      setLinkStatus(prev => ({
-        ...prev,
-        [opportunityId]: { status: 'available', checked: new Date() }
-      }));
+      const properUrl = ensureHttpProtocol(url);
+      
+      // Log the attempt for debugging
+      console.log(`Opening external link: ${properUrl} (Context: ${context})`);
+      
+      // Open in new tab with proper settings
+      const newWindow = window.open(properUrl, '_blank', 'noopener,noreferrer');
+      
+      // Check if popup was blocked
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        // Fallback: try direct navigation in current tab
+        const userConfirmed = window.confirm(
+          `Popup blocked. Would you like to visit ${properUrl} in the current tab? (You can navigate back using your browser's back button)`
+        );
+        if (userConfirmed) {
+          window.location.href = properUrl;
+        }
+      }
     } catch (error) {
-      setLinkStatus(prev => ({
-        ...prev,
-        [opportunityId]: { status: 'unavailable', checked: new Date(), error: error.message }
-      }));
+      console.error('Error opening external link:', error);
+      alert(`Unable to open link: ${url}. You can copy and paste this URL directly into your browser.`);
     }
   };
 
@@ -189,24 +214,6 @@ function App() {
   const handleOpportunityClick = (opportunity) => {
     setSelectedOpportunity(opportunity);
     setCurrentView('opportunity-detail');
-    
-    // Check link status when opportunity is selected
-    if (opportunity.official_link) {
-      checkLinkStatus(opportunity.official_link, opportunity.id || opportunity._id);
-    }
-  };
-
-  const handleExternalLinkClick = (url, opportunityId) => {
-    const status = linkStatus[opportunityId];
-    
-    if (status && status.status === 'unavailable') {
-      // Show fallback message for broken links
-      alert('This link appears to be unavailable. You may want to search for this opportunity directly on the funding body\'s website.');
-      return;
-    }
-    
-    // Open in new tab
-    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   // Demo Tier Switcher Component
