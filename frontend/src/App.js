@@ -1724,6 +1724,17 @@ function App() {
               </button>
 
               <button
+                onClick={() => setCurrentView('funding-opportunities')}
+                className="w-full flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-left"
+              >
+                <DollarSign className="w-5 h-5 text-green-600 mr-3" />
+                <div>
+                  <div className="font-medium text-slate-900">Funding Opportunities</div>
+                  <div className="text-sm text-gray-600">Private investment & capital funding for Defence SMEs</div>
+                </div>
+              </button>
+
+              <button
                 onClick={() => {
                   if (user?.tier === 'free') {
                     setShowUpgradeModal(true);
