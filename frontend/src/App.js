@@ -399,8 +399,8 @@ function App() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2 text-sm">🆓 Free (Current)</h4>
                 <ul className="text-xs text-gray-600 space-y-1">
-                  <li>• 1/3 of opportunities only</li>
-                  <li>• Weekly updates</li>
+                  <li>• 1/3 of current opportunities</li>
+                  <li>• Sunday refresh</li>
                   <li>• No funding routes</li>
                   <li>• No procurement guide</li>
                 </ul>
