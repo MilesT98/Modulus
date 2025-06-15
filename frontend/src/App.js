@@ -2428,7 +2428,7 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
               <div className="w-8 h-8 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-gray-600">Loading opportunities...</p>
             </div>
-          ) : filteredOpportunities.length === 0 ? (
+          ) : sortedOpportunities.length === 0 ? (
             <div className="text-center py-20">
               <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No opportunities found</h3>
