@@ -996,8 +996,276 @@ Real-time funding intelligence refreshed successfully.`);
         stage: "Early-stage to growth",
         geographic: "UK, Europe",
         link: "https://www.crowdcube.com/raise"
+    // Static fallback data (same as before but as a function)
+    const getStaticFundingData = () => [
+      // 1. Dedicated Defence & Security Venture Capital (VC) Funds
+      {
+        category: "Defence & Security VC",
+        name: "Shield Capital",
+        investment_focus: "Early-stage companies building technologies that matter in artificial intelligence, autonomy, cybersecurity, and space, with a mission focus on the convergence of commercial technology and national security.",
+        investment_stage: "Early-stage (Seed, Series A)",
+        geographic_focus: "Primarily US, but invests globally in relevant areas",
+        website_url: "https://shieldcap.com/"
+      },
+      {
+        category: "Defence & Security VC",
+        name: "Paladin Capital Group",
+        investment_focus: "Global multi-stage investor focusing on cybersecurity, artificial intelligence, big data, and advanced computing, with significant defence and national security applications.",
+        investment_stage: "Multi-stage (growth equity to later stage)",
+        geographic_focus: "Global",
+        website_url: "https://www.paladincapgroup.com/investments/"
+      },
+      {
+        category: "Defence & Security VC",
+        name: "Lockheed Martin Ventures",
+        investment_focus: "Accelerating next-generation technologies strategically important to aerospace and defence, helping customers stay ahead of emerging threats.",
+        investment_stage: "Strategic investments",
+        geographic_focus: "Global",
+        website_url: "https://uktechnews.info/2024/02/05/q5d-nabs-10m-series-a-funding-round-led-by-lockheed-martin-ventures/"
+      },
+      {
+        category: "Defence & Security VC",
+        name: "RTX Ventures (Raytheon Technologies Ventures)",
+        investment_focus: "Investing in early-stage companies that will transform aerospace and defense across areas like autonomy & sensing, compute, advanced manufacturing, space, data, analytics & code, and propulsion.",
+        investment_stage: "Early-stage",
+        geographic_focus: "Global (strategic to RTX)",
+        website_url: "https://www.rtx.com/who-we-are/ventures"
+      },
+      {
+        category: "Defence & Security VC",
+        name: "AE Industrial Partners (AEI)",
+        investment_focus: "Private equity firm specializing in Aerospace, Defense & Government Services, Space, Power Generation, and Specialty Industrial markets.",
+        investment_stage: "Growth equity, buyouts",
+        geographic_focus: "Primarily North America, but with global reach for portfolio companies",
+        website_url: "https://www.aeroequity.com/focus/"
+      },
+      {
+        category: "Defence & Security VC",
+        name: "True Global Ventures",
+        investment_focus: "Global investment fund across various sectors including deep tech, often with relevance to digital security.",
+        investment_stage: "Varies by specific fund",
+        geographic_focus: "Global",
+        website_url: "https://www.stradley.com/insights/publications/2023/11/true-global-ventures-4-plus-fund"
+      },
+      
+      // 2. Corporate Venture Capital (CVC) & Innovation Arms
+      {
+        category: "Corporate VC & Innovation",
+        name: "Thales Group (Thales Corporate Ventures / Thales Startups)",
+        investment_focus: "Investing in digital and 'deep tech' innovations (Big Data, AI, connectivity, cybersecurity, and quantum technology) that align with their strategic interests. Engages through partnerships, investment, and acquisitions.",
+        investment_stage: "Strategic partnerships, corporate venturing",
+        geographic_focus: "Global",
+        website_url: "https://www.thalesgroup.com/en/thales-startups"
+      },
+      {
+        category: "Corporate VC & Innovation",
+        name: "Rolls-Royce (Innovation & Future Programmes)",
+        investment_focus: "Actively seeks innovation and partners with SMEs in advanced materials, digital, and propulsion systems; often through collaborative R&D and strategic partnerships.",
+        investment_stage: "Collaborative R&D, strategic partnerships, potential for future acquisition",
+        geographic_focus: "Global",
+        website_url: "https://www.rolls-royce.com/innovation.aspx"
+      },
+      
+      // 3. Generalist Deep Tech / Hard Tech VCs
+      {
+        category: "Deep Tech & Dual-Use VC",
+        name: "Octopus Ventures",
+        investment_focus: "Broad deep tech, AI, fintech, health tech, and other sectors; dual-use potential is often a factor.",
+        investment_stage: "Pre-seed, Seed, Series A, and later-stage",
+        geographic_focus: "UK & Europe",
+        website_url: "https://octopusventures.com/"
+      },
+      {
+        category: "Deep Tech & Dual-Use VC",
+        name: "MMC Ventures",
+        investment_focus: "AI and data-driven companies, including enterprise AI, fintech, data-driven health, data infrastructure, and cloud.",
+        investment_stage: "Series A specialist",
+        geographic_focus: "Europe",
+        website_url: "https://mmc.vc/about-us/"
+      },
+      {
+        category: "Deep Tech & Dual-Use VC",
+        name: "Amadeus Capital Partners",
+        investment_focus: "Deep tech across various sectors, including AI, cybersecurity, and space technologies.",
+        investment_stage: "Early Stage EIS Fund and other funds",
+        geographic_focus: "Global",
+        website_url: "https://amadeuscapital.com/our-approach/"
+      },
+      {
+        category: "Deep Tech & Dual-Use VC",
+        name: "Playfair Capital",
+        investment_focus: "Early-stage technology companies across various sectors, including those with dual-use potential.",
+        investment_stage: "Early-stage VC",
+        geographic_focus: "UK & Europe",
+        website_url: "https://playfair.vc/"
+      },
+      {
+        category: "Deep Tech & Dual-Use VC",
+        name: "2048 Ventures",
+        investment_focus: "Vertical AI, Deep Tech Infrastructure, Healthcare, and Biotech; includes next-gen drone operating systems.",
+        investment_stage: "Pre-seed rounds",
+        geographic_focus: "US & Canada",
+        website_url: "https://2048.vc/"
+      },
+      
+      // 4. UK Government-Backed Investment Schemes
+      {
+        category: "Government-Backed Schemes",
+        name: "British Business Bank",
+        investment_focus: "Facilitates access to finance for smaller businesses via partner funds, covering venture capital, debt finance, and regional funds. (This is an enabler, guiding to many other funds used by Defence SMEs).",
+        investment_stage: "Varies by program/partner fund",
+        geographic_focus: "UK",
+        website_url: "https://www.british-business-bank.co.uk/how-we-help/"
+      },
+      {
+        category: "Government-Backed Schemes",
+        name: "Northern Powerhouse Investment Fund (NPIF)",
+        investment_focus: "Addresses market weakness in providing venture debt, debt, and equity finance to SMEs in the North of England. Includes advanced manufacturing, tech, and digital sectors relevant to defence.",
+        investment_stage: "Seed, early-stage, growth debt/equity",
+        geographic_focus: "North of England, UK",
+        website_url: "https://npif.co.uk/"
+      },
+      {
+        category: "Government-Backed Schemes",
+        name: "Midlands Engine Investment Fund (MEIF)",
+        investment_focus: "Provides debt and equity finance to SMEs across the Midlands. Similar sectoral relevance to NPIF.",
+        investment_stage: "Seed, early-stage, growth debt/equity",
+        geographic_focus: "Midlands, UK",
+        website_url: "https://meif.co.uk/"
+      },
+      
+      // 5. University Spin-Out Funds
+      {
+        category: "University Spin-Out Funds",
+        name: "Oxford Science Enterprises (OSE)",
+        investment_focus: "Investing in deep tech and life sciences spin-outs from the University of Oxford, including AI, quantum, and advanced materials.",
+        investment_stage: "Seed to Series A/B",
+        geographic_focus: "Oxford, UK (for source of tech)",
+        website_url: "https://oxfordscienceenterprises.com/"
+      },
+      {
+        category: "University Spin-Out Funds",
+        name: "Cambridge Enterprise (University of Cambridge)",
+        investment_focus: "Commercializing University of Cambridge research through licensing, consultancy, and creating new spin-out companies across various tech sectors.",
+        investment_stage: "Seed funding for spin-outs",
+        geographic_focus: "Cambridge, UK (for source of tech)",
+        website_url: "https://www.enterprise.cam.ac.uk/"
+      },
+      {
+        category: "University Spin-Out Funds",
+        name: "Imperial College Innovations",
+        investment_focus: "Commercializing research from Imperial College London, with strong departments in engineering, AI, and science.",
+        investment_stage: "Spin-out seed funding",
+        geographic_focus: "London, UK (for source of tech)",
+        website_url: "https://www.imperial.ac.uk/enterprise/commercialisation/imperial-innovations/"
+      },
+      
+      // 6. Growth Equity / Debt Providers
+      {
+        category: "Growth Equity & Debt",
+        name: "Gresham House Ventures",
+        investment_focus: "Provides growth capital for innovative UK software and digitally-enabled businesses.",
+        investment_stage: "Growth capital",
+        geographic_focus: "UK",
+        website_url: "https://greshamhouse.com/businesses/private-equity/gresham-house-ventures/"
+      },
+      {
+        category: "Growth Equity & Debt",
+        name: "HSBC Innovation Banking (formerly Silicon Valley Bank UK)",
+        investment_focus: "Provides banking and debt solutions tailored for technology and innovation companies, including venture debt.",
+        investment_stage: "Growth-stage debt, venture debt",
+        geographic_focus: "UK",
+        website_url: "https://www.business.hsbc.uk/en-gb/campaigns/innovation-banking"
+      },
+      
+      // 7. Private Equity Firms
+      {
+        category: "Private Equity",
+        name: "Inflexion",
+        investment_focus: "High-growth, market-leading companies with strong internationalization potential; sectors include technology and business services.",
+        investment_stage: "Mid-market private equity",
+        geographic_focus: "Global (based in UK)",
+        website_url: "https://www.inflexion.com/"
+      },
+      {
+        category: "Private Equity",
+        name: "ECI Partners",
+        investment_focus: "Growth-focused private equity group investing in businesses across services, consumer, and technology/software.",
+        investment_stage: "Growth-focused private equity (£15m-£200m investment)",
+        geographic_focus: "UK & Europe",
+        website_url: "https://www.ecipartners.com/"
+      },
+      {
+        category: "Private Equity",
+        name: "Livingbridge",
+        investment_focus: "Backs management teams to build 'best in class' businesses across various sectors, including technology.",
+        investment_stage: "Mid-market private equity",
+        geographic_focus: "UK",
+        website_url: "https://www.livingbridge.com/"
+      },
+      
+      // 8. Accelerators & Incubators
+      {
+        category: "Accelerators & Incubators",
+        name: "National Security Innovation Network (NSIN) Accelerators",
+        investment_focus: "Provides funding, prototyping, and resources for translating high-potential concepts into minimum viable products for national security.",
+        investment_stage: "Early-stage, accelerator programs",
+        geographic_focus: "Primarily US, but global partnerships",
+        website_url: "https://www.nsin.mil/"
+      },
+      {
+        category: "Accelerators & Incubators",
+        name: "Techstars",
+        investment_focus: "Operates accelerators focusing on commercially viable startups with dual-purpose technologies, including aerospace and defence.",
+        investment_stage: "Early-stage, accelerator programs",
+        geographic_focus: "Global (via various programs)",
+        website_url: "https://www.techstars.com/"
+      },
+      {
+        category: "Accelerators & Incubators",
+        name: "Plug and Play (Aerospace & Defense Innovation)",
+        investment_focus: "Finds and supports aerospace and defence startups through investment and mentorship, focusing on advanced defence technologies, hardware, aeronautics, and advanced air mobility.",
+        investment_stage: "Early-stage, accelerator programs",
+        geographic_focus: "Global (via various programs)",
+        website_url: "https://www.plugandplaytechcenter.com/industries/aerospace"
+      },
+      
+      // 9. Equity Crowdfunding Platforms
+      {
+        category: "Equity Crowdfunding",
+        name: "Seedrs",
+        investment_focus: "Equity crowdfunding platform for businesses to raise capital across various sectors. Defence SMEs may find investors here, but it's less targeted.",
+        investment_stage: "Early-stage to growth",
+        geographic_focus: "UK, Europe",
+        website_url: "https://www.seedrs.com/raise"
+      },
+      {
+        category: "Equity Crowdfunding",
+        name: "Crowdcube",
+        investment_focus: "Equity crowdfunding platform enabling businesses to raise finance from a community of investors. Defence SMEs may find investors here, but it's less targeted.",
+        investment_stage: "Early-stage to growth",
+        geographic_focus: "UK, Europe",
+        website_url: "https://www.crowdcube.com/raise"
       }
     ];
+
+    // Load funding opportunities on component mount and when category changes
+    useEffect(() => {
+      fetchFundingOpportunities();
+      fetchFundingStats();
+    }, [selectedCategory]);
+
+    // Auto-refresh every 5 minutes for Pro users
+    useEffect(() => {
+      if (user?.tier !== 'free') {
+        const interval = setInterval(() => {
+          fetchFundingOpportunities();
+          fetchFundingStats();
+        }, 5 * 60 * 1000); // 5 minutes
+
+        return () => clearInterval(interval);
+      }
+    }, [user]);
 
     const categories = [
       { value: 'all', label: 'All Categories' },
