@@ -400,6 +400,39 @@ function App() {
       }
     };
 
+    // Refresh funding data
+    const handleRefreshFunding = async () => {
+      if (user?.tier === 'free') {
+        setShowUpgradeModal(true);
+        return;
+      }
+
+      try {
+        setIsRefreshingFunding(true);
+        const response = await api.post('/api/funding-opportunities/refresh');
+        
+        // Show success message
+        alert(`✅ Funding Opportunities Refresh Complete!
+
+📊 ${response.data.message}
+
+🔍 Sources Checked:
+${response.data.sources_checked.map(source => `• ${source}`).join('\n')}
+
+🕒 Last Updated: ${new Date().toLocaleString()}
+
+Real-time funding intelligence refreshed successfully.`);
+        
+        // Refresh data
+        await fetchFundingOpportunities();
+        await fetchFundingStats();
+      } catch (error) {
+        alert('❌ Funding refresh failed: ' + (error.response?.data?.detail || 'Unknown error'));
+      } finally {
+        setIsRefreshingFunding(false);
+      }
+    };
+
     // Verify funding URLs
     const handleVerifyUrls = async () => {
       if (user?.tier === 'free') {
