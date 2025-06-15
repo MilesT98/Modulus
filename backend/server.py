@@ -117,6 +117,29 @@ class OpportunityCreate(BaseModel):
     official_link: str
     tier_required: UserTier = UserTier.FREE
 
+class FundingOpportunity(BaseModel):
+    id: str
+    name: str
+    category: str
+    investment_focus: str
+    investment_stage: str
+    geographic_focus: str
+    website_url: str
+    status: str = "active"
+    created_at: datetime
+    updated_at: datetime
+    last_verified: Optional[datetime] = None
+    additional_info: Optional[dict] = {}
+
+class FundingOpportunityCreate(BaseModel):
+    name: str
+    category: str
+    investment_focus: str
+    investment_stage: str
+    geographic_focus: str
+    website_url: str
+    additional_info: Optional[dict] = {}
+
 class AlertPreferences(BaseModel):
     keywords: List[str] = []
     tech_areas: List[str] = []
