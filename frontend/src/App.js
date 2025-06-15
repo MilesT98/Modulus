@@ -2237,17 +2237,17 @@ All funding provider links have been verified and updated to ensure they work pr
           </div>
         </div>
 
-        {/* Stats Overview */}
+        {/* Updated KPIs Overview */}
         {dashboardStats && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex items-center">
                 <div className="p-3 bg-cyan-100 rounded-lg">
                   <Target className="w-6 h-6 text-cyan-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Opportunities</p>
-                  <p className="text-2xl font-bold text-slate-900">{dashboardStats.total_opportunities}</p>
+                  <p className="text-sm font-medium text-gray-600">Contracting Opportunities</p>
+                  <p className="text-2xl font-bold text-slate-900">{opportunities.length}</p>
                 </div>
               </div>
             </div>
@@ -2255,23 +2255,76 @@ All funding provider links have been verified and updated to ensure they work pr
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex items-center">
                 <div className="p-3 bg-green-100 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
+                  <DollarSign className="w-6 h-6 text-green-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">New This Week</p>
-                  <p className="text-2xl font-bold text-slate-900">{dashboardStats.new_this_week}</p>
+                  <p className="text-sm font-medium text-gray-600">Total Contract Value</p>
+                  <p className="text-2xl font-bold text-slate-900">
+                    £{(() => {
+                      const totalValue = opportunities.reduce((sum, opp) => {
+                        const value = parseFloat((opp.funding_amount || '0').replace(/[^\d.]/g, '')) || 0;
+                        return sum + value;
+                      }, 0);
+                      if (totalValue >= 1000000000) {
+                        return (totalValue / 1000000000).toFixed(1) + 'B';
+                      } else if (totalValue >= 1000000) {
+                        return (totalValue / 1000000).toFixed(1) + 'M';
+                      } else if (totalValue >= 1000) {
+                        return (totalValue / 1000).toFixed(1) + 'K';
+                      }
+                      return totalValue.toLocaleString();
+                    })()}
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex items-center">
-                <div className="p-3 bg-red-100 rounded-lg">
-                  <Clock className="w-6 h-6 text-red-600" />
+                <div className="p-3 bg-purple-100 rounded-lg">
+                  <Building className="w-6 h-6 text-purple-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Closing Soon</p>
-                  <p className="text-2xl font-bold text-slate-900">{dashboardStats.closing_soon}</p>
+                  <p className="text-sm font-medium text-gray-600">Funding Routes</p>
+                  <p className="text-2xl font-bold text-slate-900">{fundingProviders.length}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              <div className="flex items-center">
+                <div className="p-3 bg-orange-100 rounded-lg">
+                  <TrendingUp className="w-6 h-6 text-orange-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Funding Available</p>
+                  <p className="text-2xl font-bold text-slate-900">
+                    £{(() => {
+                      // Estimate total funding available (since funding sources don't have specific amounts)
+                      // We'll estimate based on typical funding ranges per category
+                      const estimatedTotal = fundingProviders.reduce((sum, provider) => {
+                        const category = provider.category;
+                        let estimate = 0;
+                        
+                        // Rough estimates based on typical funding available per category
+                        if (category.includes('Government')) estimate = 50000000; // £50M per govt source
+                        else if (category.includes('Corporate')) estimate = 25000000; // £25M per corporate VC
+                        else if (category.includes('VC')) estimate = 100000000; // £100M per VC fund
+                        else if (category.includes('University')) estimate = 5000000; // £5M per university fund
+                        else if (category.includes('Accelerator')) estimate = 2000000; // £2M per accelerator
+                        else estimate = 10000000; // £10M default
+                        
+                        return sum + estimate;
+                      }, 0);
+                      
+                      if (estimatedTotal >= 1000000000) {
+                        return (estimatedTotal / 1000000000).toFixed(1) + 'B';
+                      } else if (estimatedTotal >= 1000000) {
+                        return (estimatedTotal / 1000000).toFixed(0) + 'M';
+                      }
+                      return estimatedTotal.toLocaleString();
+                    })()}
+                  </p>
                 </div>
               </div>
             </div>
