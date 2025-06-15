@@ -134,7 +134,44 @@ function App() {
     return `https://${url}`;
   };
 
-  // Simplified external link handler that always works
+  // Get fallback URLs for common funding providers
+  const getFallbackUrls = (providerName, originalUrl) => {
+    const fallbacks = [];
+    
+    // Extract domain from original URL
+    try {
+      const domain = new URL(ensureHttpProtocol(originalUrl)).hostname;
+      fallbacks.push(`https://${domain}`); // Try homepage
+    } catch (e) {
+      // If URL parsing fails, ignore
+    }
+    
+    // Provider-specific fallbacks
+    const providerFallbacks = {
+      'Shield Capital': ['https://shieldcap.com/', 'https://shieldcap.com/portfolio'],
+      'Paladin Capital': ['https://www.paladincapgroup.com/', 'https://www.paladincapgroup.com/portfolio'],
+      'Lockheed Martin': ['https://www.lockheedmartin.com/en-us/who-we-are/business-areas/ventures.html', 'https://www.lockheedmartin.com/'],
+      'RTX Ventures': ['https://www.rtx.com/who-we-are/ventures', 'https://www.rtx.com/'],
+      'Thales': ['https://www.thalesgroup.com/en/markets/defence', 'https://www.thalesgroup.com/'],
+      'Octopus Ventures': ['https://octopusventures.com/', 'https://octopusventures.com/sectors'],
+      'British Business Bank': ['https://www.british-business-bank.co.uk/', 'https://www.british-business-bank.co.uk/finance-hub'],
+      'MMC Ventures': ['https://mmc.vc/', 'https://mmc.vc/portfolio'],
+      'Amadeus Capital': ['https://amadeuscapital.com/', 'https://amadeuscapital.com/portfolio']
+    };
+    
+    // Find matching provider
+    for (const [provider, urls] of Object.entries(providerFallbacks)) {
+      if (providerName.toLowerCase().includes(provider.toLowerCase()) || 
+          provider.toLowerCase().includes(providerName.toLowerCase())) {
+        fallbacks.push(...urls);
+        break;
+      }
+    }
+    
+    return [...new Set(fallbacks)]; // Remove duplicates
+  };
+
+  // Enhanced external link handler with fallback options
   const handleExternalLinkClick = (url, context = '') => {
     if (!url) {
       alert('No URL provided for this link.');
@@ -152,17 +189,36 @@ function App() {
       
       // Check if popup was blocked
       if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-        // Fallback: try direct navigation in current tab
-        const userConfirmed = window.confirm(
-          `Popup blocked. Would you like to visit ${properUrl} in the current tab? (You can navigate back using your browser's back button)`
-        );
-        if (userConfirmed) {
-          window.location.href = properUrl;
-        }
+        // Show popup blocked message with options
+        showLinkFallbackModal(properUrl, context);
       }
     } catch (error) {
       console.error('Error opening external link:', error);
-      alert(`Unable to open link: ${url}. You can copy and paste this URL directly into your browser.`);
+      showLinkFallbackModal(url, context);
+    }
+  };
+
+  // Show modal with link options when main link fails
+  const showLinkFallbackModal = (originalUrl, context) => {
+    const providerName = context.replace('funding-', '').replace('opportunity-', '');
+    const fallbackUrls = getFallbackUrls(providerName, originalUrl);
+    
+    let message = `Having trouble accessing the link?\n\n`;
+    message += `Original URL: ${originalUrl}\n\n`;
+    message += `Try these alternatives:\n`;
+    
+    if (fallbackUrls.length > 0) {
+      fallbackUrls.forEach((url, index) => {
+        message += `${index + 1}. ${url}\n`;
+      });
+      message += `\nWould you like to try the main website?`;
+      
+      if (window.confirm(message)) {
+        window.open(fallbackUrls[0], '_blank', 'noopener,noreferrer');
+      }
+    } else {
+      message += `No alternatives available. You can copy and paste the URL directly into your browser.`;
+      alert(message);
     }
   };
 
