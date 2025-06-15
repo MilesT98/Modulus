@@ -394,12 +394,17 @@ async def fetch_and_store_live_data():
 
 async def periodic_data_refresh():
     """
-    Periodically refresh live data every 4 hours
+    Periodically refresh live data based on subscription tiers:
+    - Free users: Weekly updates (7 days)
+    - Pro users: Hourly updates (1 hour)
     """
     while True:
-        await asyncio.sleep(4 * 60 * 60)  # Sleep for 4 hours
         print("🔄 Starting scheduled live data refresh...")
         await fetch_and_store_live_data()
+        
+        # Sleep for 1 hour to support Pro hourly updates
+        # Free users will see filtered data that updates weekly
+        await asyncio.sleep(1 * 60 * 60)  # Sleep for 1 hour
 
 # API Routes
 @app.get("/api/")
