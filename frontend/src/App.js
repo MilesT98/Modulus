@@ -2222,7 +2222,7 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
     const toggleTechArea = (area) => {
       setSelectedTechAreas(prev => 
         prev.includes(area) 
-          ? prev.filter(a => a !== area)
+          ? prev.filter(item => item !== area)
           : [...prev, area]
       );
     };
