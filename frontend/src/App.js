@@ -2075,6 +2075,7 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
       {currentView === 'register' && <RegisterPage />}
       {currentView === 'dashboard' && user && <DashboardPage />}
       {currentView === 'opportunities' && <OpportunitiesPage />}
+      {currentView === 'funding-opportunities' && <FundingOpportunitiesPage />}
       {currentView === 'opportunity-detail' && <OpportunityDetailPage />}
       {currentView === 'alerts' && user && <AlertsPage />}
       {currentView === 'procurement-act' && user && <ProcurementActHub />}
