@@ -47,6 +47,7 @@ db = client[DB_NAME]
 # Collections
 users_collection = db.users
 opportunities_collection = db.opportunities
+funding_opportunities_collection = db.funding_opportunities
 subscriptions_collection = db.subscriptions
 
 # Security
