@@ -700,9 +700,74 @@ All funding provider links have been verified and updated to ensure they work pr
       { value: 'Equity Crowdfunding', label: 'Equity Crowdfunding' }
     ];
 
-    const filteredProviders = selectedCategory === 'all' 
-      ? fundingProviders 
-      : fundingProviders.filter(provider => provider.category === selectedCategory);
+    // Phase 1: Enhanced filtering logic for funding
+    const filteredProviders = fundingProviders.filter(provider => {
+      // Category filter
+      const matchesCategory = selectedCategory === 'all' || provider.category === selectedCategory;
+      
+      // Text search across multiple fields
+      const matchesSearch = !searchTerm || 
+        provider.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        provider.investment_focus.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        provider.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        provider.geographic_focus.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Investment stage filter
+      const matchesStage = !selectedStage || (() => {
+        const stage = provider.investment_stage.toLowerCase();
+        switch(selectedStage) {
+          case 'pre-seed': return stage.includes('pre-seed') || stage.includes('pre seed');
+          case 'seed': return stage.includes('seed') && !stage.includes('pre-seed');
+          case 'series-a': return stage.includes('series a') || stage.includes('a round');
+          case 'series-b+': return stage.includes('series b') || stage.includes('series c') || stage.includes('growth');
+          case 'growth': return stage.includes('growth') || stage.includes('scale');
+          case 'research': return stage.includes('research') || stage.includes('grant');
+          default: return true;
+        }
+      })();
+      
+      // Geographic focus filter
+      const matchesGeography = !selectedGeography || (() => {
+        const geo = provider.geographic_focus.toLowerCase();
+        switch(selectedGeography) {
+          case 'uk-only': return geo.includes('uk') && !geo.includes('eu') && !geo.includes('global');
+          case 'uk-eu': return geo.includes('uk') && (geo.includes('eu') || geo.includes('europe'));
+          case 'global': return geo.includes('global') || geo.includes('international');
+          case 'regional': return geo.includes('scotland') || geo.includes('wales') || geo.includes('northern ireland');
+          default: return true;
+        }
+      })();
+      
+      return matchesCategory && matchesSearch && matchesStage && matchesGeography;
+    });
+
+    // Phase 1: Enhanced sorting logic for funding
+    const sortedProviders = [...filteredProviders].sort((a, b) => {
+      const getSmeRelevance = (provider) => {
+        // Higher score for government funding and smaller ticket sizes
+        let score = 0;
+        if (provider.category.includes('Government')) score += 0.4;
+        if (provider.category.includes('SME') || provider.investment_focus.includes('SME')) score += 0.3;
+        if (provider.geographic_focus.includes('UK')) score += 0.2;
+        if (provider.investment_stage.includes('Seed') || provider.investment_stage.includes('Early')) score += 0.1;
+        return score + Math.random() * 0.2; // Add some randomization
+      };
+
+      const getUpdatedDate = (provider) => new Date(provider.updated_at || provider.last_verified || '2024-01-01');
+
+      switch(sortBy) {
+        case 'name_asc':
+          return a.name.localeCompare(b.name);
+        case 'category_asc':
+          return a.category.localeCompare(b.category);
+        case 'updated_desc':
+          return getUpdatedDate(b) - getUpdatedDate(a);
+        case 'relevance_desc':
+          return getSmeRelevance(b) - getSmeRelevance(a);
+        default:
+          return 0;
+      }
+    });
 
     const getCategoryIcon = (category) => {
       switch (category) {
