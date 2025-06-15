@@ -651,6 +651,9 @@ All funding provider links have been verified and updated to ensure they work pr
 
     const categories = [
       { value: 'all', label: 'All Categories' },
+      { value: 'Government Funding & Innovation', label: 'Government Funding & Innovation' },
+      { value: 'Procurement & Tenders', label: 'Procurement & Tenders' },
+      { value: 'Strategic Government Investment', label: 'Strategic Government Investment' },
       { value: 'Defence & Security VC', label: 'Defence & Security VC' },
       { value: 'Corporate VC & Innovation', label: 'Corporate VC & Innovation' },
       { value: 'Deep Tech & Dual-Use VC', label: 'Deep Tech & Dual-Use VC' },
@@ -659,6 +662,7 @@ All funding provider links have been verified and updated to ensure they work pr
       { value: 'Growth Equity & Debt', label: 'Growth Equity & Debt' },
       { value: 'Private Equity', label: 'Private Equity' },
       { value: 'Accelerators & Incubators', label: 'Accelerators & Incubators' },
+      { value: 'Industry Bodies & Support', label: 'Industry Bodies & Support' },
       { value: 'Equity Crowdfunding', label: 'Equity Crowdfunding' }
     ];
 
