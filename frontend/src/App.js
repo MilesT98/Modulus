@@ -874,13 +874,42 @@ All funding provider links have been verified and updated to ensure they work pr
             </div>
           </div>
 
-          {/* Filter Section */}
+          {/* Phase 1: Enhanced Filter Section */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-            <div className="flex flex-col md:flex-row gap-4">
+            {/* Search Bar and Sort */}
+            <div className="flex flex-col lg:flex-row gap-4 mb-4">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Filter by Category
-                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search funding sources..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              
+              {/* Phase 1: Smart Sorting */}
+              <div>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-white"
+                >
+                  {fundingSortOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Phase 1: Enhanced Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              {/* Category Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
@@ -892,9 +921,38 @@ All funding provider links have been verified and updated to ensure they work pr
                 </select>
               </div>
               
+              {/* Phase 1: Investment Stage Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Investment Stage</label>
+                <select
+                  value={selectedStage}
+                  onChange={(e) => setSelectedStage(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                >
+                  {stageOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Phase 1: Geographic Focus Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Geographic Focus</label>
+                <select
+                  value={selectedGeography}
+                  onChange={(e) => setSelectedGeography(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                >
+                  {geographyOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Results Count and Actions */}
               <div className="flex items-end space-x-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-slate-900">{filteredProviders.length}</div>
+                  <div className="text-2xl font-bold text-slate-900">{sortedProviders.length}</div>
                   <div className="text-sm text-gray-600">Funding Sources</div>
                 </div>
                 
@@ -909,6 +967,75 @@ All funding provider links have been verified and updated to ensure they work pr
                 )}
               </div>
             </div>
+
+            {/* Active Filters Display */}
+            {(selectedCategory !== 'all' || searchTerm || selectedStage || selectedGeography) && (
+              <div className="border-t border-gray-200 pt-4">
+                <div className="flex flex-wrap gap-2 items-center">
+                  <span className="text-sm font-medium text-gray-700">Active filters:</span>
+                  
+                  {selectedCategory !== 'all' && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {categories.find(cat => cat.value === selectedCategory)?.label}
+                      <button
+                        onClick={() => setSelectedCategory('all')}
+                        className="ml-1 text-blue-600 hover:text-blue-800"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  
+                  {searchTerm && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Search: "{searchTerm}"
+                      <button
+                        onClick={() => setSearchTerm('')}
+                        className="ml-1 text-green-600 hover:text-green-800"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  
+                  {selectedStage && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      {stageOptions.find(opt => opt.value === selectedStage)?.label}
+                      <button
+                        onClick={() => setSelectedStage('')}
+                        className="ml-1 text-purple-600 hover:text-purple-800"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  
+                  {selectedGeography && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      {geographyOptions.find(opt => opt.value === selectedGeography)?.label}
+                      <button
+                        onClick={() => setSelectedGeography('')}
+                        className="ml-1 text-orange-600 hover:text-orange-800"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  
+                  <button
+                    onClick={() => {
+                      setSelectedCategory('all');
+                      setSearchTerm('');
+                      setSelectedStage('');
+                      setSelectedGeography('');
+                    }}
+                    className="text-sm text-gray-500 hover:text-gray-700 underline"
+                  >
+                    Clear all
+                  </button>
+                </div>
+              </div>
+            )}
             
             {user?.tier === 'free' && (
               <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
