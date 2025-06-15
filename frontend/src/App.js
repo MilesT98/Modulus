@@ -396,12 +396,36 @@ Real-time funding intelligence refreshed successfully.`);
         website_url: "https://www.paladincapgroup.com/investments/"
       },
       {
+        category: "Defence & Security VC",
+        name: "Lockheed Martin Ventures",
+        investment_focus: "Accelerating next-generation technologies strategically important to aerospace and defence, helping customers stay ahead of emerging threats.",
+        investment_stage: "Strategic investments",
+        geographic_focus: "Global",
+        website_url: "https://www.lockheedmartin.com/en-us/who-we-are/business-areas/ventures.html"
+      },
+      {
+        category: "Defence & Security VC",
+        name: "RTX Ventures (Raytheon Technologies Ventures)",
+        investment_focus: "Investing in early-stage companies that will transform aerospace and defense across areas like autonomy & sensing, compute, advanced manufacturing, space, data, analytics & code, and propulsion.",
+        investment_stage: "Early-stage",
+        geographic_focus: "Global (strategic to RTX)",
+        website_url: "https://www.rtx.com/who-we-are/ventures"
+      },
+      {
         category: "Corporate VC & Innovation",
         name: "Thales Group (Thales Corporate Ventures)",
         investment_focus: "Investing in digital and 'deep tech' innovations (Big Data, AI, connectivity, cybersecurity, and quantum technology) that align with their strategic interests.",
         investment_stage: "Strategic partnerships, corporate venturing",
         geographic_focus: "Global",
         website_url: "https://www.thalesgroup.com/en/thales-startups"
+      },
+      {
+        category: "Corporate VC & Innovation",
+        name: "Rolls-Royce (Innovation & Future Programmes)",
+        investment_focus: "Actively seeks innovation and partners with SMEs in advanced materials, digital, and propulsion systems; often through collaborative R&D and strategic partnerships.",
+        investment_stage: "Collaborative R&D, strategic partnerships, potential for future acquisition",
+        geographic_focus: "Global",
+        website_url: "https://www.rolls-royce.com/innovation.aspx"
       },
       {
         category: "Deep Tech & Dual-Use VC",
@@ -412,12 +436,68 @@ Real-time funding intelligence refreshed successfully.`);
         website_url: "https://octopusventures.com/"
       },
       {
+        category: "Deep Tech & Dual-Use VC",
+        name: "MMC Ventures",
+        investment_focus: "AI and data-driven companies, including enterprise AI, fintech, data-driven health, data infrastructure, and cloud.",
+        investment_stage: "Series A specialist",
+        geographic_focus: "Europe",
+        website_url: "https://mmc.vc/about-us/"
+      },
+      {
+        category: "Deep Tech & Dual-Use VC",
+        name: "Amadeus Capital Partners",
+        investment_focus: "Deep tech across various sectors, including AI, cybersecurity, and space technologies.",
+        investment_stage: "Early Stage EIS Fund and other funds",
+        geographic_focus: "Global",
+        website_url: "https://amadeuscapital.com/our-approach/"
+      },
+      {
         category: "Government-Backed Schemes",
         name: "British Business Bank",
         investment_focus: "Facilitates access to finance for smaller businesses via partner funds, covering venture capital, debt finance, and regional funds.",
         investment_stage: "Varies by program/partner fund",
         geographic_focus: "UK",
         website_url: "https://www.british-business-bank.co.uk/how-we-help/"
+      },
+      {
+        category: "Government-Backed Schemes",
+        name: "Northern Powerhouse Investment Fund (NPIF)",
+        investment_focus: "Addresses market weakness in providing venture debt, debt, and equity finance to SMEs in the North of England. Includes advanced manufacturing, tech, and digital sectors relevant to defence.",
+        investment_stage: "Seed, early-stage, growth debt/equity",
+        geographic_focus: "North of England, UK",
+        website_url: "https://npif.co.uk/"
+      },
+      {
+        category: "University Spin-Out Funds",
+        name: "Oxford Science Enterprises (OSE)",
+        investment_focus: "Investing in deep tech and life sciences spin-outs from the University of Oxford, including AI, quantum, and advanced materials.",
+        investment_stage: "Seed to Series A/B",
+        geographic_focus: "Oxford, UK (for source of tech)",
+        website_url: "https://oxfordscienceenterprises.com/"
+      },
+      {
+        category: "University Spin-Out Funds",
+        name: "Cambridge Enterprise (University of Cambridge)",
+        investment_focus: "Commercializing University of Cambridge research through licensing, consultancy, and creating new spin-out companies across various tech sectors.",
+        investment_stage: "Seed funding for spin-outs",
+        geographic_focus: "Cambridge, UK (for source of tech)",
+        website_url: "https://www.enterprise.cam.ac.uk/"
+      },
+      {
+        category: "Accelerators & Incubators",
+        name: "Techstars",
+        investment_focus: "Operates accelerators focusing on commercially viable startups with dual-purpose technologies, including aerospace and defence.",
+        investment_stage: "Early-stage, accelerator programs",
+        geographic_focus: "Global (via various programs)",
+        website_url: "https://www.techstars.com/"
+      },
+      {
+        category: "Equity Crowdfunding",
+        name: "Seedrs",
+        investment_focus: "Equity crowdfunding platform for businesses to raise capital across various sectors. Defence SMEs may find investors here, but it's less targeted.",
+        investment_stage: "Early-stage to growth",
+        geographic_focus: "UK, Europe",
+        website_url: "https://www.seedrs.com/raise"
       }
     ];
 
