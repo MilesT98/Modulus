@@ -422,7 +422,6 @@ function App() {
     const [selectedStage, setSelectedStage] = useState('');
     const [selectedGeography, setSelectedGeography] = useState('');
     const [sortBy, setSortBy] = useState('name_asc');
-    const [fundingProviders, setFundingProviders] = useState([]);
     const [fundingStats, setFundingStats] = useState({});
     const [isLoadingFunding, setIsLoadingFunding] = useState(false);
     const [isRefreshingFunding, setIsRefreshingFunding] = useState(false);
