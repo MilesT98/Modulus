@@ -750,7 +750,15 @@ async def get_funding_opportunities(
     stage: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get funding opportunities with optional filtering"""
+    """Get funding opportunities with optional filtering - Pro users only"""
+    
+    # New subscription model: Block free users from funding routes
+    if current_user["tier"] == UserTier.FREE:
+        raise HTTPException(
+            status_code=403, 
+            detail="Funding routes access requires Pro subscription. Upgrade to access 60+ funding sources."
+        )
+    
     # Build query
     query = {"status": "active"}
     
