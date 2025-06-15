@@ -674,7 +674,7 @@ Real-time funding intelligence refreshed successfully.`);
 
                     {/* Action Button */}
                     <button
-                      onClick={() => window.open(provider.website_url, '_blank', 'noopener,noreferrer')}
+                      onClick={() => handleExternalLinkClick(provider.website_url, `funding-${provider.name}`)}
                       className="w-full flex items-center justify-center px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold transition-colors"
                     >
                       <ExternalLink className="w-4 h-4 mr-2" />
