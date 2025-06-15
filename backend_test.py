@@ -167,6 +167,38 @@ class ModulusDefenceAPITester:
             200
         )
         
+    def test_get_funding_opportunities(self, category=None):
+        """Test getting funding opportunities with optional category filter"""
+        params = {}
+        if category:
+            params['category'] = category
+            
+        return self.run_test(
+            f"Get Funding Opportunities (category: {category if category else 'all'})",
+            "GET",
+            "funding-opportunities",
+            200,
+            params=params
+        )
+        
+    def test_get_funding_stats(self):
+        """Test getting funding opportunities statistics"""
+        return self.run_test(
+            "Get Funding Stats",
+            "GET",
+            "funding-opportunities/stats",
+            200
+        )
+        
+    def test_refresh_funding_opportunities(self):
+        """Test refreshing funding opportunities data (Pro/Enterprise only)"""
+        return self.run_test(
+            "Refresh Funding Opportunities",
+            "POST",
+            "funding-opportunities/refresh",
+            200
+        )
+        
     def test_create_opportunity(self, tier_required="free"):
         """Test creating a new opportunity"""
         data = {
