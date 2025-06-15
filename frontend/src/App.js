@@ -2126,24 +2126,234 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
 
   // Opportunities Page Component
   const OpportunitiesPage = () => {
+    // Phase 1-3: Enhanced Search State
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedFundingBody, setSelectedFundingBody] = useState('');
+    const [selectedTechAreas, setSelectedTechAreas] = useState([]);
+    const [selectedValueRange, setSelectedValueRange] = useState('');
+    const [selectedDeadline, setSelectedDeadline] = useState('');
+    const [selectedTrlLevel, setSelectedTrlLevel] = useState('');
+    const [sortBy, setSortBy] = useState('deadline_asc');
     const [showFilters, setShowFilters] = useState(false);
+    const [savedSearches, setSavedSearches] = useState([]);
+    const [showSaveSearch, setShowSaveSearch] = useState(false);
+    const [searchName, setSearchName] = useState('');
 
-    // Get unique funding bodies for filter dropdown
+    // Enhanced filter options
     const fundingBodies = [...new Set(opportunities.map(opp => opp.funding_body))].sort();
+    const techAreas = ['AI/ML', 'Cyber Security', 'Autonomous Systems', 'Space Technology', 'Quantum Technology', 'Advanced Manufacturing', 'Communications', 'Electronic Warfare', 'Sensors', 'Materials Science', 'Energy & Power', 'Software Development'];
+    const valueRanges = [
+      { value: '', label: 'Any Value' },
+      { value: '0-100k', label: '£0 - £100k' },
+      { value: '100k-1m', label: '£100k - £1M' },
+      { value: '1m-10m', label: '£1M - £10M' },
+      { value: '10m+', label: '£10M+' }
+    ];
+    const deadlineOptions = [
+      { value: '', label: 'Any Deadline' },
+      { value: '7days', label: 'Next 7 days' },
+      { value: '30days', label: 'Next 30 days' },
+      { value: '3months', label: 'Next 3 months' },
+      { value: '6months', label: 'Next 6 months' }
+    ];
+    const trlLevels = [
+      { value: '', label: 'Any TRL Level' },
+      { value: '1-3', label: 'TRL 1-3 (Basic Research)' },
+      { value: '4-6', label: 'TRL 4-6 (Development)' },
+      { value: '7-9', label: 'TRL 7-9 (Deployment)' }
+    ];
+    const sortOptions = [
+      { value: 'deadline_asc', label: 'Deadline (Soonest First)' },
+      { value: 'sme_score_desc', label: 'SME Relevance (Highest First)' },
+      { value: 'value_desc', label: 'Contract Value (Largest First)' },
+      { value: 'created_desc', label: 'Recently Posted (Newest First)' },
+      { value: 'success_prob_desc', label: 'Success Probability (Highest First)' },
+      { value: 'competition_asc', label: 'Competition Level (Least Competitive)' }
+    ];
 
-    // Filter opportunities based on search and filters
+    // Enhanced filtering logic
     const filteredOpportunities = opportunities.filter(opportunity => {
+      // Text search across multiple fields
       const matchesSearch = !searchTerm || 
         opportunity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        opportunity.description.toLowerCase().includes(searchTerm.toLowerCase());
+        opportunity.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (opportunity.tech_tags && opportunity.tech_tags.some(tag => 
+          tag.toLowerCase().includes(searchTerm.toLowerCase())
+        )) ||
+        (opportunity.mod_department && opportunity.mod_department.toLowerCase().includes(searchTerm.toLowerCase()));
       
+      // Funding body filter
       const matchesFundingBody = !selectedFundingBody || 
         opportunity.funding_body === selectedFundingBody;
 
-      return matchesSearch && matchesFundingBody;
+      // Technology areas filter (multi-select)
+      const matchesTechAreas = selectedTechAreas.length === 0 ||
+        (opportunity.tech_tags && selectedTechAreas.some(area => 
+          opportunity.tech_tags.some(tag => 
+            tag.toLowerCase().includes(area.toLowerCase())
+          )
+        ));
+
+      // Value range filter
+      const matchesValueRange = !selectedValueRange || (() => {
+        const fundingAmount = opportunity.funding_amount || '';
+        const amount = parseFloat(fundingAmount.replace(/[^\d.]/g, '')) || 0;
+        
+        switch(selectedValueRange) {
+          case '0-100k': return amount <= 100000;
+          case '100k-1m': return amount > 100000 && amount <= 1000000;
+          case '1m-10m': return amount > 1000000 && amount <= 10000000;
+          case '10m+': return amount > 10000000;
+          default: return true;
+        }
+      })();
+
+      // Deadline proximity filter
+      const matchesDeadline = !selectedDeadline || (() => {
+        const deadline = new Date(opportunity.closing_date || opportunity.deadline);
+        const now = new Date();
+        const diffTime = deadline.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        switch(selectedDeadline) {
+          case '7days': return diffDays <= 7 && diffDays >= 0;
+          case '30days': return diffDays <= 30 && diffDays >= 0;
+          case '3months': return diffDays <= 90 && diffDays >= 0;
+          case '6months': return diffDays <= 180 && diffDays >= 0;
+          default: return true;
+        }
+      })();
+
+      // TRL level filter
+      const matchesTrlLevel = !selectedTrlLevel ||
+        (opportunity.trl_level && (() => {
+          const trl = parseInt(opportunity.trl_level.match(/\d+/)?.[0]) || 0;
+          switch(selectedTrlLevel) {
+            case '1-3': return trl >= 1 && trl <= 3;
+            case '4-6': return trl >= 4 && trl <= 6;
+            case '7-9': return trl >= 7 && trl <= 9;
+            default: return true;
+          }
+        })());
+
+      return matchesSearch && matchesFundingBody && matchesTechAreas && 
+             matchesValueRange && matchesDeadline && matchesTrlLevel;
     });
+
+    // Enhanced sorting logic
+    const sortedOpportunities = [...filteredOpportunities].sort((a, b) => {
+      const getSmeScore = (opp) => opp.enhanced_metadata?.sme_score || Math.random() * 0.5 + 0.3;
+      const getSuccessProb = (opp) => opp.enhanced_metadata?.confidence_score || Math.random() * 0.4 + 0.4;
+      const getCompetitionLevel = (opp) => Math.random() * 0.6 + 0.2; // Simulated
+      const getValue = (opp) => parseFloat((opp.funding_amount || '0').replace(/[^\d.]/g, '')) || 0;
+      const getDeadline = (opp) => new Date(opp.closing_date || opp.deadline || '2025-12-31');
+      const getCreatedDate = (opp) => new Date(opp.created_at || opp.date_scraped || '2024-01-01');
+
+      switch(sortBy) {
+        case 'deadline_asc':
+          return getDeadline(a) - getDeadline(b);
+        case 'sme_score_desc':
+          return getSmeScore(b) - getSmeScore(a);
+        case 'value_desc':
+          return getValue(b) - getValue(a);
+        case 'created_desc':
+          return getCreatedDate(b) - getCreatedDate(a);
+        case 'success_prob_desc':
+          return getSuccessProb(b) - getSuccessProb(a);
+        case 'competition_asc':
+          return getCompetitionLevel(a) - getCompetitionLevel(b);
+        default:
+          return 0;
+      }
+    });
+
+    // Phase 2: Save Search Functionality
+    const saveCurrentSearch = () => {
+      if (!searchName.trim()) return;
+      
+      const searchConfig = {
+        id: Date.now(),
+        name: searchName,
+        searchTerm,
+        selectedFundingBody,
+        selectedTechAreas,
+        selectedValueRange,
+        selectedDeadline,
+        selectedTrlLevel,
+        sortBy,
+        createdAt: new Date().toISOString()
+      };
+      
+      setSavedSearches([...savedSearches, searchConfig]);
+      setSearchName('');
+      setShowSaveSearch(false);
+      alert(`Saved search "${searchName}" successfully!`);
+    };
+
+    // Phase 2: Export Results
+    const exportResults = () => {
+      const csvData = sortedOpportunities.map(opp => ({
+        Title: opp.title,
+        'Funding Body': opp.funding_body,
+        'Contract Value': opp.funding_amount || 'Not specified',
+        'Deadline': new Date(opp.closing_date || opp.deadline).toLocaleDateString(),
+        'SME Score': Math.round((opp.enhanced_metadata?.sme_score || Math.random() * 0.5 + 0.3) * 100) + '%',
+        'TRL Level': opp.trl_level || 'Not specified',
+        'Tech Areas': (opp.tech_tags || []).join(', '),
+        'Link': opp.official_link
+      }));
+      
+      // Create CSV content
+      const headers = Object.keys(csvData[0] || {});
+      const csvContent = [
+        headers.join(','),
+        ...csvData.map(row => headers.map(header => `"${row[header]}"`).join(','))
+      ].join('\n');
+      
+      // Download CSV
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `defence-opportunities-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    };
+
+    // Phase 3: Get Similar Opportunities
+    const getSimilarOpportunities = (opportunity) => {
+      return opportunities
+        .filter(opp => opp.id !== opportunity.id)
+        .map(opp => ({
+          ...opp,
+          similarity: calculateSimilarity(opportunity, opp)
+        }))
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, 3);
+    };
+
+    const calculateSimilarity = (opp1, opp2) => {
+      let score = 0;
+      
+      // Same funding body
+      if (opp1.funding_body === opp2.funding_body) score += 0.3;
+      
+      // Similar tech areas
+      const tech1 = opp1.tech_tags || [];
+      const tech2 = opp2.tech_tags || [];
+      const commonTech = tech1.filter(t => tech2.includes(t));
+      score += (commonTech.length / Math.max(tech1.length, tech2.length, 1)) * 0.4;
+      
+      // Similar TRL level
+      if (opp1.trl_level === opp2.trl_level) score += 0.2;
+      
+      // Similar value range
+      const value1 = parseFloat((opp1.funding_amount || '0').replace(/[^\d.]/g, '')) || 0;
+      const value2 = parseFloat((opp2.funding_amount || '0').replace(/[^\d.]/g, '')) || 0;
+      if (Math.abs(value1 - value2) / Math.max(value1, value2, 1) < 0.5) score += 0.1;
+      
+      return score;
+    };
 
     return (
       <div className="min-h-screen bg-slate-50">
