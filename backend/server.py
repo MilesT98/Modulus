@@ -567,15 +567,50 @@ async def fetch_and_store_live_data():
 async def periodic_data_refresh():
     """
     Periodically refresh live data based on subscription tiers:
-    - Free users: Weekly updates (7 days)
-    - Pro users: Hourly updates (1 hour)
+    - Free users: Sunday refresh (1/3 of current opportunities)
+    - Pro users: Hourly updates with comprehensive sources
     """
     while True:
-        print("🔄 Starting scheduled live data refresh...")
-        await fetch_and_store_live_data()
+        print("🔄 Starting scheduled comprehensive data refresh...")
+        
+        try:
+            # Import comprehensive aggregator
+            from comprehensive_defence_aggregator import run_comprehensive_aggregation
+            
+            # Run comprehensive collection
+            new_opportunities = await run_comprehensive_aggregation()
+            
+            if new_opportunities:
+                stored_count = 0
+                for opp in new_opportunities:
+                    # Check if opportunity already exists
+                    existing = opportunities_collection.find_one({
+                        "title": opp["title"],
+                        "funding_body": opp["funding_body"]
+                    })
+                    
+                    if not existing:
+                        # Add metadata
+                        opp["created_at"] = datetime.utcnow()
+                        opp["updated_at"] = datetime.utcnow()
+                        opp["status"] = OpportunityStatus.ACTIVE
+                        
+                        # Ensure proper datetime objects
+                        if not isinstance(opp.get("closing_date"), datetime):
+                            opp["closing_date"] = datetime.utcnow() + timedelta(days=30)
+                        
+                        opportunities_collection.insert_one(opp)
+                        stored_count += 1
+                
+                total_opportunities = opportunities_collection.count_documents({"status": OpportunityStatus.ACTIVE})
+                print(f"✅ Scheduled refresh complete: {stored_count} new opportunities, {total_opportunities} total")
+            else:
+                print("ℹ️ No new opportunities found during scheduled refresh")
+                
+        except Exception as e:
+            print(f"❌ Scheduled refresh failed: {e}")
         
         # Sleep for 1 hour to support Pro hourly updates
-        # Free users will see filtered data that updates weekly
         await asyncio.sleep(1 * 60 * 60)  # Sleep for 1 hour
 
 # API Routes
