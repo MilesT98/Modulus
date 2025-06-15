@@ -122,6 +122,17 @@ function App() {
     }
   };
 
+  // Fetch funding providers for dashboard KPIs
+  const fetchFundingProviders = async () => {
+    try {
+      const response = await api.get('/api/funding-opportunities');
+      setFundingProviders(response.data);
+    } catch (error) {
+      console.error('Error fetching funding providers:', error);
+      setFundingProviders([]);
+    }
+  };
+
   // Helper function to ensure URLs have proper protocol
   const ensureHttpProtocol = (url) => {
     if (!url) return '';
