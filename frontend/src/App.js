@@ -400,8 +400,8 @@ function App() {
       }
     };
 
-    // Refresh funding data
-    const handleRefreshFunding = async () => {
+    // Verify funding URLs
+    const handleVerifyUrls = async () => {
       if (user?.tier === 'free') {
         setShowUpgradeModal(true);
         return;
@@ -409,25 +409,27 @@ function App() {
 
       try {
         setIsRefreshingFunding(true);
-        const response = await api.post('/api/funding-opportunities/refresh');
+        const response = await api.post('/api/funding-opportunities/verify-urls');
         
-        // Show success message
-        alert(`✅ Funding Opportunities Refresh Complete!
+        // Show detailed success message
+        alert(`✅ URL Verification Complete!
 
 📊 ${response.data.message}
 
-🔍 Sources Checked:
-${response.data.sources_checked.map(source => `• ${source}`).join('\n')}
+🔍 Results:
+• ${response.data.verified_count} URLs verified working
+• ${response.data.updated_count} URLs updated to working fallbacks
+• ${response.data.total_checked} total URLs checked
 
-🕒 Last Updated: ${new Date().toLocaleString()}
+🕒 Completed: ${new Date().toLocaleString()}
 
-Real-time funding intelligence refreshed successfully.`);
+All funding provider links have been verified and updated to ensure they work properly.`);
         
-        // Refresh data
+        // Refresh data to show updated URLs
         await fetchFundingOpportunities();
         await fetchFundingStats();
       } catch (error) {
-        alert('❌ Funding refresh failed: ' + (error.response?.data?.detail || 'Unknown error'));
+        alert('❌ URL verification failed: ' + (error.response?.data?.detail || 'Unknown error'));
       } finally {
         setIsRefreshingFunding(false);
       }
