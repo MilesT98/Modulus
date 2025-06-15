@@ -1256,6 +1256,50 @@ All funding provider links have been verified and updated to ensure they work pr
     const opportunityId = opportunity.id || opportunity._id;
     const status = linkStatus[opportunityId];
     
+    // Phase 3: AI functions for detail page
+    const calculateSuccessProbability = (opp) => {
+      let score = 0.5;
+      if (opp.funding_body.includes('DASA')) score += 0.2;
+      if (opp.funding_body.includes('Innovate UK')) score += 0.15;
+      if (opp.funding_body.includes('SBRI')) score += 0.25;
+      const value = parseFloat((opp.funding_amount || '0').replace(/[^\d.]/g, '')) || 0;
+      if (value <= 100000) score += 0.15;
+      else if (value <= 1000000) score += 0.1;
+      else if (value > 10000000) score -= 0.1;
+      return Math.max(0.1, Math.min(0.95, score));
+    };
+
+    const calculateCompetitionLevel = (opp) => {
+      let competition = 0.5;
+      const value = parseFloat((opp.funding_amount || '0').replace(/[^\d.]/g, '')) || 0;
+      if (value > 10000000) competition += 0.3;
+      else if (value > 1000000) competition += 0.1;
+      else if (value < 100000) competition -= 0.2;
+      if (opp.funding_body.includes('DASA')) competition += 0.2;
+      if (opp.funding_body.includes('MOD')) competition += 0.15;
+      return Math.max(0.1, Math.min(0.95, competition));
+    };
+
+    const getSimilarOpportunities = (currentOpp) => {
+      return opportunities
+        .filter(opp => opp.id !== currentOpp.id && opp._id !== currentOpp._id)
+        .map(opp => ({
+          ...opp,
+          similarity: (() => {
+            let score = 0;
+            if (opp.funding_body === currentOpp.funding_body) score += 0.3;
+            const tech1 = currentOpp.tech_tags || [];
+            const tech2 = opp.tech_tags || [];
+            const commonTech = tech1.filter(t => tech2.some(t2 => t2.toLowerCase().includes(t.toLowerCase())));
+            score += (commonTech.length / Math.max(tech1.length, tech2.length, 1)) * 0.25;
+            if (currentOpp.trl_level === opp.trl_level) score += 0.15;
+            return score;
+          })()
+        }))
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, 3);
+    };
+    
     // Check if user has access to this opportunity
     const hasAccess = user?.tier !== 'free' || 
                      opportunity.tier_required === 'free' || 
