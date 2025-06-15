@@ -1321,17 +1321,46 @@ Real-time funding intelligence refreshed successfully.`);
           
           {/* Header Section */}
           <div className="bg-gradient-to-r from-green-900 to-blue-900 rounded-xl p-8 mb-8 text-white">
-            <div className="flex items-center mb-4">
-              <DollarSign className="w-8 h-8 mr-3" />
-              <h1 className="text-4xl font-bold">Funding Opportunities for Defence SMEs</h1>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <DollarSign className="w-8 h-8 mr-3" />
+                <h1 className="text-4xl font-bold">Funding Opportunities for Defence SMEs</h1>
+              </div>
+              
+              {/* Live Data Indicator */}
+              <div className="flex items-center space-x-4">
+                {user?.tier !== 'free' && (
+                  <button
+                    onClick={handleRefreshFunding}
+                    disabled={isRefreshingFunding}
+                    className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
+                  >
+                    <Zap className={`w-4 h-4 mr-2 ${isRefreshingFunding ? 'animate-spin' : ''}`} />
+                    {isRefreshingFunding ? 'Refreshing...' : 'Refresh Data'}
+                  </button>
+                )}
+                
+                <div className="text-right">
+                  <div className="flex items-center text-green-200">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                    <span className="text-sm font-medium">LIVE DATA</span>
+                  </div>
+                  {lastRefresh && (
+                    <div className="text-xs text-green-100">
+                      Updated: {lastRefresh.toLocaleTimeString()}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
+            
             <p className="text-xl text-green-100 mb-4">
-              Comprehensive directory of private investment and funding opportunities specifically for UK Defence SMEs
+              Comprehensive directory of private investment and funding opportunities - continuously updated in real-time
             </p>
             <div className="bg-white bg-opacity-20 rounded-lg p-4">
               <p className="text-green-100">
-                <strong>Note:</strong> This page focuses on capital funding and private investment opportunities, not government contracts. 
-                For procurement and contract opportunities, visit our <button 
+                <strong>🚀 Our USP:</strong> This data is continuously scanned and updated from live sources across the funding ecosystem. 
+                For procurement opportunities, visit our <button 
                   onClick={() => setCurrentView('opportunities')} 
                   className="underline hover:text-white transition-colors"
                 >
@@ -1358,103 +1387,190 @@ Real-time funding intelligence refreshed successfully.`);
                   ))}
                 </select>
               </div>
-              <div className="flex items-end">
+              
+              <div className="flex items-end space-x-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-slate-900">{filteredProviders.length}</div>
                   <div className="text-sm text-gray-600">Funding Sources</div>
                 </div>
+                
+                {user?.tier === 'free' && (
+                  <button
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    Get Live Updates
+                  </button>
+                )}
               </div>
             </div>
+            
+            {user?.tier === 'free' && (
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>📊 Limited Access:</strong> Free users see our curated database. 
+                  <button onClick={() => setShowUpgradeModal(true)} className="underline hover:text-yellow-900 ml-1">
+                    Upgrade to Pro
+                  </button> for real-time updates, new funding alerts, and expanded coverage.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Stats Overview */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div className="bg-white rounded-lg p-4 text-center border border-gray-200">
-              <div className="text-2xl font-bold text-red-600">6</div>
+              <div className="text-2xl font-bold text-red-600">
+                {fundingStats.category_breakdown?.filter(cat => cat._id === 'Defence & Security VC')[0]?.count || 6}
+              </div>
               <div className="text-sm text-gray-600">Defence-Focused VCs</div>
             </div>
             <div className="bg-white rounded-lg p-4 text-center border border-gray-200">
-              <div className="text-2xl font-bold text-blue-600">5</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {fundingStats.category_breakdown?.filter(cat => cat._id === 'Deep Tech & Dual-Use VC')[0]?.count || 5}
+              </div>
               <div className="text-sm text-gray-600">Deep Tech VCs</div>
             </div>
             <div className="bg-white rounded-lg p-4 text-center border border-gray-200">
-              <div className="text-2xl font-bold text-green-600">3</div>
+              <div className="text-2xl font-bold text-green-600">
+                {fundingStats.category_breakdown?.filter(cat => cat._id === 'Government-Backed Schemes')[0]?.count || 3}
+              </div>
               <div className="text-sm text-gray-600">Government Schemes</div>
             </div>
             <div className="bg-white rounded-lg p-4 text-center border border-gray-200">
-              <div className="text-2xl font-bold text-purple-600">9</div>
-              <div className="text-sm text-gray-600">Other Sources</div>
+              <div className="text-2xl font-bold text-purple-600">
+                {fundingStats.recently_updated || 0}
+              </div>
+              <div className="text-sm text-gray-600">Updated This Week</div>
             </div>
           </div>
 
-          {/* Funding Providers Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {filteredProviders.map((provider, index) => (
-              <div 
-                key={index}
-                className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-cyan-300 hover:shadow-md transition-all duration-200"
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center mb-2">
-                      <div className={`p-2 rounded-lg mr-3 ${getCategoryColor(provider.category)}`}>
-                        {getCategoryIcon(provider.category)}
+          {/* Loading State */}
+          {isLoadingFunding ? (
+            <div className="text-center py-20">
+              <div className="w-8 h-8 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading live funding opportunities...</p>
+            </div>
+          ) : (
+            <>
+              {/* Funding Providers Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                {filteredProviders.map((provider, index) => (
+                  <div 
+                    key={provider.id || index}
+                    className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-cyan-300 hover:shadow-md transition-all duration-200"
+                  >
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center mb-2">
+                          <div className={`p-2 rounded-lg mr-3 ${getCategoryColor(provider.category)}`}>
+                            {getCategoryIcon(provider.category)}
+                          </div>
+                          <h3 className="text-lg font-bold text-slate-900 leading-tight">
+                            {provider.name}
+                          </h3>
+                        </div>
+                        <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(provider.category)}`}>
+                          {provider.category}
+                        </div>
                       </div>
-                      <h3 className="text-lg font-bold text-slate-900 leading-tight">
-                        {provider.name}
-                      </h3>
+                      
+                      {/* Live indicator for recently updated */}
+                      {provider.updated_at && new Date(provider.updated_at) > new Date(Date.now() - 7*24*60*60*1000) && (
+                        <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center">
+                          <div className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></div>
+                          UPDATED
+                        </div>
+                      )}
                     </div>
-                    <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(provider.category)}`}>
-                      {provider.category}
-                    </div>
-                  </div>
-                </div>
 
-                {/* Main Investment Focus */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <Target className="w-4 h-4 mr-2 text-gray-500" />
-                    Defence Investment Focus
-                  </h4>
-                  <p className="text-gray-700 text-sm leading-relaxed">
-                    {provider.focus}
+                    {/* Main Investment Focus */}
+                    <div className="mb-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                        <Target className="w-4 h-4 mr-2 text-gray-500" />
+                        Defence Investment Focus
+                      </h4>
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        {provider.investment_focus}
+                      </p>
+                    </div>
+
+                    {/* Key Details */}
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-start">
+                        <TrendingUp className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div className="text-xs font-medium text-gray-500">Investment Stage</div>
+                          <div className="text-sm text-gray-900">{provider.investment_stage}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start">
+                        <MapPin className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div className="text-xs font-medium text-gray-500">Geographic Focus</div>
+                          <div className="text-sm text-gray-900">{provider.geographic_focus}</div>
+                        </div>
+                      </div>
+
+                      {provider.last_verified && (
+                        <div className="flex items-start">
+                          <Clock className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <div className="text-xs font-medium text-gray-500">Last Verified</div>
+                            <div className="text-sm text-gray-900">
+                              {new Date(provider.last_verified).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Action Button */}
+                    <button
+                      onClick={() => window.open(provider.website_url, '_blank', 'noopener,noreferrer')}
+                      className="w-full flex items-center justify-center px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Visit {provider.name}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Real-Time Data Banner */}
+          <div className="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-xl p-6 mb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-cyan-500 rounded-full mr-3 animate-pulse"></div>
+                <div>
+                  <h3 className="text-lg font-bold text-cyan-900">Continuous Data Updates</h3>
+                  <p className="text-cyan-700">
+                    Our system scans funding sources every hour to bring you the latest opportunities.
+                    {user?.tier !== 'free' ? (
+                      <span className="font-semibold"> Real-time updates active.</span>
+                    ) : (
+                      <span> Upgrade for real-time alerts.</span>
+                    )}
                   </p>
                 </div>
-
-                {/* Key Details */}
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-start">
-                    <TrendingUp className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <div className="text-xs font-medium text-gray-500">Investment Stage</div>
-                      <div className="text-sm text-gray-900">{provider.stage}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start">
-                    <MapPin className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <div className="text-xs font-medium text-gray-500">Geographic Focus</div>
-                      <div className="text-sm text-gray-900">{provider.geographic}</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Button */}
-                <button
-                  onClick={() => window.open(provider.link, '_blank', 'noopener,noreferrer')}
-                  className="w-full flex items-center justify-center px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Visit {provider.name}
-                </button>
               </div>
-            ))}
+              
+              {user?.tier !== 'free' && lastRefresh && (
+                <div className="text-right text-cyan-700">
+                  <div className="text-sm font-medium">Last Scan</div>
+                  <div className="text-xs">{lastRefresh.toLocaleString()}</div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Bottom CTA Section */}
-          <div className="mt-12 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl p-8 text-white text-center">
+          <div className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl p-8 text-white text-center">
             <h3 className="text-2xl font-bold mb-4">Ready to Secure Funding for Your Defence SME?</h3>
             <p className="text-xl text-cyan-100 mb-6">
               These funding sources are actively investing in defence and dual-use technologies. Research each one that matches your stage and focus area.
