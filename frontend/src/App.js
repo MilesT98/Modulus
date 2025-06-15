@@ -673,14 +673,25 @@ All funding provider links have been verified and updated to ensure they work pr
               {/* Live Data Indicator */}
               <div className="flex items-center space-x-4">
                 {user?.tier !== 'free' && (
-                  <button
-                    onClick={handleRefreshFunding}
-                    disabled={isRefreshingFunding}
-                    className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
-                  >
-                    <Zap className={`w-4 h-4 mr-2 ${isRefreshingFunding ? 'animate-spin' : ''}`} />
-                    {isRefreshingFunding ? 'Refreshing...' : 'Refresh Data'}
-                  </button>
+                  <>
+                    <button
+                      onClick={handleRefreshFunding}
+                      disabled={isRefreshingFunding}
+                      className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
+                    >
+                      <Zap className={`w-4 h-4 mr-2 ${isRefreshingFunding ? 'animate-spin' : ''}`} />
+                      {isRefreshingFunding ? 'Refreshing...' : 'Refresh Data'}
+                    </button>
+                    
+                    <button
+                      onClick={handleVerifyUrls}
+                      disabled={isRefreshingFunding}
+                      className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
+                    >
+                      <CheckCircle className={`w-4 h-4 mr-2 ${isRefreshingFunding ? 'animate-spin' : ''}`} />
+                      Verify URLs
+                    </button>
+                  </>
                 )}
                 
                 <div className="text-right">
