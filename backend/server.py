@@ -1307,27 +1307,13 @@ async def initialize_funding_opportunities():
 async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     user_tier = current_user["tier"]
     
-    # Count opportunities based on user tier with enhanced logic
+    # Dashboard KPIs are the same for both tiers (show total available)
     total_opportunities = opportunities_collection.count_documents({"status": OpportunityStatus.ACTIVE})
     
-    if user_tier == UserTier.FREE:
-        # Free users see UK sources + delayed Pro content
-        accessible_opportunities = opportunities_collection.count_documents({
-            "status": OpportunityStatus.ACTIVE,
-            "$or": [
-                {"tier_required": "free"},
-                {
-                    "tier_required": {"$in": ["pro", "enterprise"]},
-                    "created_at": {"$lte": datetime.utcnow() - timedelta(hours=48)}
-                }
-            ]
-        })
-        new_this_week = max(2, accessible_opportunities // 4)
-        closing_soon = max(1, accessible_opportunities // 6)
-    else:
-        accessible_opportunities = total_opportunities
-        new_this_week = max(8, total_opportunities // 3)
-        closing_soon = max(4, total_opportunities // 5)
+    # Calculate stats based on total opportunities (same for both tiers)
+    accessible_opportunities = total_opportunities
+    new_this_week = max(8, total_opportunities // 3)
+    closing_soon = max(4, total_opportunities // 5)
     
     # Enhanced tier benefits
     tier_benefits = {
