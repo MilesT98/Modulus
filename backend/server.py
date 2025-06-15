@@ -1061,8 +1061,9 @@ async def initialize_funding_opportunities():
                 return f'https://{url}' if not url.startswith('www.') else f'https://{url}'
             return url
         
-        # Initial funding opportunities data with verified working URLs
+        # Enhanced funding opportunities data with government sources
         initial_funding_data = [
+            # Existing Private VC/Investment sources
             {
                 "id": str(uuid.uuid4()),
                 "name": "Shield Capital",
@@ -1091,34 +1092,156 @@ async def initialize_funding_opportunities():
                 "last_verified": datetime.utcnow(),
                 "additional_info": {"focus_areas": ["cybersecurity", "AI", "big data"]}
             },
+            
+            # NEW: Government Funding & Innovation Programs
             {
                 "id": str(uuid.uuid4()),
-                "name": "Lockheed Martin Ventures",
-                "category": "Defence & Security VC",
-                "investment_focus": "Accelerating next-generation technologies strategically important to aerospace and defence, helping customers stay ahead of emerging threats.",
-                "investment_stage": "Strategic investments",
-                "geographic_focus": "Global",
-                "website_url": "https://www.lockheedmartin.com/",
+                "name": "Defence and Security Accelerator (DASA)",
+                "category": "Government Funding & Innovation",
+                "investment_focus": "DASA funding competitions for defence and security innovations. Open calls and themed challenges supporting early-stage through to mature defence technologies. The primary UK government portal for defence innovation funding.",
+                "investment_stage": "All stages - from concept to commercialization",
+                "geographic_focus": "UK",
+                "website_url": "https://www.gov.uk/government/organisations/defence-and-security-accelerator",
                 "status": "active",
                 "created_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow(),
                 "last_verified": datetime.utcnow(),
-                "additional_info": {"focus_areas": ["aerospace", "defence technology"]}
+                "additional_info": {"focus_areas": ["defence innovation", "security technology", "dual-use"]}
             },
             {
                 "id": str(uuid.uuid4()),
-                "name": "Thales Group (Thales Corporate Ventures)",
-                "category": "Corporate VC & Innovation",
-                "investment_focus": "Investing in digital and 'deep tech' innovations (Big Data, AI, connectivity, cybersecurity, and quantum technology) that align with their strategic interests.",
-                "investment_stage": "Strategic partnerships, corporate venturing",
-                "geographic_focus": "Global",
-                "website_url": "https://www.thalesgroup.com/",
+                "name": "Innovate UK Defence Innovation",
+                "category": "Government Funding & Innovation",
+                "investment_focus": "Innovation funding service for defence-relevant grants and dual-use technologies. Part of UKRI, supporting commercialization of innovative defence solutions through various funding competitions.",
+                "investment_stage": "R&D grants and innovation loans",
+                "geographic_focus": "UK",
+                "website_url": "https://www.gov.uk/apply-for-innovation-funding",
                 "status": "active",
                 "created_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow(),
                 "last_verified": datetime.utcnow(),
-                "additional_info": {"focus_areas": ["quantum", "AI", "cybersecurity"]}
+                "additional_info": {"focus_areas": ["innovation", "R&D", "commercialization"]}
             },
+            {
+                "id": str(uuid.uuid4()),
+                "name": "UK Defence Innovation Fund (£400m)",
+                "category": "Government Funding & Innovation",
+                "investment_focus": "Major £400 million fund to transform military technology and accelerate UK defence innovation. Channeled through DASA and Innovate UK for breakthrough defence technologies.",
+                "investment_stage": "Strategic defence technology development",
+                "geographic_focus": "UK",
+                "website_url": "https://www.gov.uk/government/news/major-5-billion-technology-investment-accelerates-uk-defence-innovation",
+                "status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_verified": datetime.utcnow(),
+                "additional_info": {"focus_areas": ["military technology", "defence transformation"]}
+            },
+            
+            # NEW: Procurement & Supplier Registration
+            {
+                "id": str(uuid.uuid4()),
+                "name": "Defence Sourcing Portal (DSP)",
+                "category": "Procurement & Tenders",
+                "investment_focus": "Primary platform for direct Ministry of Defence (MOD) tenders. Essential registration portal for accessing MOD procurement opportunities and supplier frameworks.",
+                "investment_stage": "Contract opportunities (all values)",
+                "geographic_focus": "UK",
+                "website_url": "https://www.contracts.mod.uk/",
+                "status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_verified": datetime.utcnow(),
+                "additional_info": {"focus_areas": ["MOD contracts", "defence procurement"]}
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "name": "Contracts Finder",
+                "category": "Procurement & Tenders",
+                "investment_focus": "All UK government tenders above £10,000, including defence contracts. Official government portal for public sector procurement opportunities.",
+                "investment_stage": "Government contracts £10k+",
+                "geographic_focus": "UK",
+                "website_url": "https://www.contractsfinder.service.gov.uk/",
+                "status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_verified": datetime.utcnow(),
+                "additional_info": {"focus_areas": ["government contracts", "public procurement"]}
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "name": "Find a Tender Service (FTS)",
+                "category": "Procurement & Tenders",
+                "investment_focus": "High-value public sector tenders in the UK. Post-Brexit replacement for OJEU, covering major government and defence procurement opportunities.",
+                "investment_stage": "High-value public contracts",
+                "geographic_focus": "UK",
+                "website_url": "https://www.find-tender.service.gov.uk/",
+                "status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_verified": datetime.utcnow(),
+                "additional_info": {"focus_areas": ["high-value tenders", "public procurement"]}
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "name": "Helios SME Portal",
+                "category": "Procurement & Tenders",
+                "investment_focus": "Free platform designed to enhance SME visibility to buyers across defence, aerospace, and security sectors. Joint initiative with MOD and BAE Systems.",
+                "investment_stage": "SME supplier registration and visibility",
+                "geographic_focus": "UK",
+                "website_url": "https://heliosportal.co.uk/",
+                "status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_verified": datetime.utcnow(),
+                "additional_info": {"focus_areas": ["SME visibility", "supplier registration"]}
+            },
+            
+            # NEW: Strategic Investment Funds
+            {
+                "id": str(uuid.uuid4()),
+                "name": "National Security Strategic Investment Fund (NSSIF)",
+                "category": "Strategic Government Investment",
+                "investment_focus": "Government-backed investment fund specifically for national security technologies. Managed by British Business Bank, focusing on critical technologies for UK national security.",
+                "investment_stage": "Strategic investment in national security tech",
+                "geographic_focus": "UK",
+                "website_url": "https://www.british-business-bank.co.uk/ourpartners/national-security-strategic-investment-fund/",
+                "status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_verified": datetime.utcnow(),
+                "additional_info": {"focus_areas": ["national security", "critical technologies"]}
+            },
+            
+            # NEW: Industry Bodies & Support
+            {
+                "id": str(uuid.uuid4()),
+                "name": "ADS Group",
+                "category": "Industry Bodies & Support",
+                "investment_focus": "Trade organization for aerospace, defence, security, and space industries. Provides networking, support, and advocacy for defence SMEs and access to industry connections.",
+                "investment_stage": "Industry support and networking",
+                "geographic_focus": "UK",
+                "website_url": "https://www.adsgroup.org.uk/",
+                "status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_verified": datetime.utcnow(),
+                "additional_info": {"focus_areas": ["aerospace", "defence", "security", "space"]}
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "name": "UK Defence Solutions Centre (UKDSC)",
+                "category": "Industry Bodies & Support",
+                "investment_focus": "Facilitates collaboration within the UK defence sector, connecting SMEs with larger defence contractors and government opportunities.",
+                "investment_stage": "Collaboration and networking support",
+                "geographic_focus": "UK",
+                "website_url": "https://www.ukdefencesolutionscentre.com/",
+                "status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_verified": datetime.utcnow(),
+                "additional_info": {"focus_areas": ["defence collaboration", "SME support"]}
+            },
+            
+            # Continue with existing private sources...
             {
                 "id": str(uuid.uuid4()),
                 "name": "Octopus Ventures",
@@ -1149,20 +1272,6 @@ async def initialize_funding_opportunities():
             },
             {
                 "id": str(uuid.uuid4()),
-                "name": "RTX Ventures (Raytheon Technologies)",
-                "category": "Defence & Security VC",
-                "investment_focus": "Investing in early-stage companies that will transform aerospace and defense across areas like autonomy & sensing, compute, advanced manufacturing, space, data, analytics & code, and propulsion.",
-                "investment_stage": "Early-stage",
-                "geographic_focus": "Global (strategic to RTX)",
-                "website_url": "https://www.rtx.com/",
-                "status": "active",
-                "created_at": datetime.utcnow(),
-                "updated_at": datetime.utcnow(),
-                "last_verified": datetime.utcnow(),
-                "additional_info": {"focus_areas": ["aerospace", "defense", "autonomy"]}
-            },
-            {
-                "id": str(uuid.uuid4()),
                 "name": "MMC Ventures",
                 "category": "Deep Tech & Dual-Use VC",
                 "investment_focus": "AI and data-driven companies, including enterprise AI, fintech, data-driven health, data infrastructure, and cloud.",
@@ -1174,34 +1283,6 @@ async def initialize_funding_opportunities():
                 "updated_at": datetime.utcnow(),
                 "last_verified": datetime.utcnow(),
                 "additional_info": {"focus_areas": ["AI", "data infrastructure"]}
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "name": "Amadeus Capital Partners",
-                "category": "Deep Tech & Dual-Use VC",
-                "investment_focus": "Deep tech across various sectors, including AI, cybersecurity, and space technologies.",
-                "investment_stage": "Early Stage EIS Fund and other funds",
-                "geographic_focus": "Global",
-                "website_url": "https://amadeuscapital.com/",
-                "status": "active",
-                "created_at": datetime.utcnow(),
-                "updated_at": datetime.utcnow(),
-                "last_verified": datetime.utcnow(),
-                "additional_info": {"focus_areas": ["AI", "cybersecurity", "space"]}
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "name": "Playfair Capital",
-                "category": "Deep Tech & Dual-Use VC",
-                "investment_focus": "Early-stage technology companies across various sectors, including those with dual-use potential.",
-                "investment_stage": "Early-stage VC",
-                "geographic_focus": "UK & Europe",
-                "website_url": "https://playfair.vc/",
-                "status": "active",
-                "created_at": datetime.utcnow(),
-                "updated_at": datetime.utcnow(),
-                "last_verified": datetime.utcnow(),
-                "additional_info": {"focus_areas": ["early-stage tech", "dual-use"]}
             }
         ]
         
