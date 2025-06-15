@@ -2493,58 +2493,87 @@ All funding provider links have been verified and updated to ensure they work pr
           </div>
         </div>
 
-        {/* Enhanced Actify Defence Aggregation - Pro/Enterprise Only */}
+        {/* Enhanced Comprehensive Data Collection - Pro/Enterprise Only */}
         {user?.tier !== 'free' && (
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-            <h2 className="text-xl font-bold text-slate-900 mb-4">🧠 Enhanced Data Aggregation</h2>
-            <button
-              onClick={async () => {
-                setIsRefreshing(true);
-                try {
-                  const response = await api.post('/api/data/refresh');
-                  
-                  // Show detailed success message
-                  const message = `✅ Enhanced Actify Defence Aggregation Complete!
-
-📊 ${response.data.message}
-
-🌍 Sources: ${response.data.source_info}
-
-🔢 Total Opportunities: ${response.data.opportunities_count}
-
-🎯 Features Applied:
-• Advanced keyword filtering ✓
-• SME relevance scoring ✓  
-• Technology classification ✓
-• Multi-source deduplication ✓
-• Confidence scoring ✓
-
-Opportunities have been refreshed with enhanced metadata including SME scores, technology tags, and priority rankings.`;
-
-                  alert(message);
-                  
-                  // Refresh data to show new opportunities
-                  fetchOpportunities();
-                  fetchDashboardStats();
-                } catch (error) {
-                  alert('❌ Data refresh failed: ' + (error.response?.data?.detail || 'Unknown error'));
-                } finally {
-                  setIsRefreshing(false);
-                }
-              }}
-              disabled={isRefreshing}
-              className="w-full flex items-center justify-center p-4 bg-gradient-to-r from-cyan-50 to-blue-50 hover:from-cyan-100 hover:to-blue-100 rounded-lg transition-colors border-2 border-cyan-200"
-            >
-              <Zap className={`w-5 h-5 text-cyan-600 mr-3 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <div className="text-center">
-                <div className="font-medium text-slate-900">
-                  {isRefreshing ? 'Running Enhanced Actify Defence Aggregation...' : '🧠 Enhanced Actify Defence Aggregation'}
+            <h2 className="text-xl font-bold text-slate-900 mb-4">🎯 100% UK Defence Coverage</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              {/* Current Enhanced Aggregation */}
+              <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-lg p-4 border-2 border-cyan-200">
+                <h3 className="font-semibold text-cyan-900 mb-2">🧠 Enhanced Actify Aggregation</h3>
+                <p className="text-sm text-cyan-700 mb-3">Multi-source aggregation with AI filtering and SME scoring</p>
+                <button
+                  onClick={async () => {
+                    setIsRefreshing(true);
+                    try {
+                      const response = await api.post('/api/data/refresh');
+                      alert(`✅ Enhanced Aggregation Complete!\n\n${response.data.message}\n\nSources: ${response.data.source_info}\nOpportunities: ${response.data.opportunities_count}`);
+                      fetchOpportunities();
+                      fetchDashboardStats();
+                    } catch (error) {
+                      alert('❌ Enhanced aggregation failed: ' + (error.response?.data?.detail || 'Unknown error'));
+                    } finally {
+                      setIsRefreshing(false);
+                    }
+                  }}
+                  disabled={isRefreshing}
+                  className="w-full flex items-center justify-center p-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
+                >
+                  <Zap className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  {isRefreshing ? 'Running Enhanced Aggregation...' : 'Enhanced Aggregation'}
+                </button>
+              </div>
+              
+              {/* NEW: Comprehensive Collection */}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border-2 border-green-200">
+                <h3 className="font-semibold text-green-900 mb-2">🚀 Comprehensive Collection</h3>
+                <p className="text-sm text-green-700 mb-3">Target 100% coverage including missing primary sources</p>
+                <button
+                  onClick={async () => {
+                    setIsRefreshing(true);
+                    try {
+                      const response = await api.post('/api/data/comprehensive-refresh');
+                      alert(`🎯 100% Coverage Collection Complete!\n\n${response.data.message}\n\nNew Opportunities: ${response.data.new_opportunities}\nTotal: ${response.data.total_opportunities}\n\nMissing Sources Added:\n• Defence Sourcing Portal (DSP)\n• Crown Commercial Service\n• Service-Specific Portals`);
+                      fetchOpportunities();
+                      fetchDashboardStats();
+                      fetchFundingProviders();
+                    } catch (error) {
+                      alert('❌ Comprehensive collection failed: ' + (error.response?.data?.detail || 'Unknown error'));
+                    } finally {
+                      setIsRefreshing(false);
+                    }
+                  }}
+                  disabled={isRefreshing}
+                  className="w-full flex items-center justify-center p-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                >
+                  <Target className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  {isRefreshing ? 'Collecting from All Sources...' : '100% Coverage Collection'}
+                </button>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 mb-2">📊 Coverage Status</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="text-center">
+                  <div className="font-bold text-cyan-600">Current Sources</div>
+                  <div className="text-gray-600">30+ Active</div>
                 </div>
-                <div className="text-sm text-gray-600">
-                  {isRefreshing ? 'Collecting from global sources with AI filtering...' : 'Multi-source aggregation with keyword prioritization, SME scoring & tech classification'}
+                <div className="text-center">
+                  <div className="font-bold text-green-600">Target Sources</div>
+                  <div className="text-gray-600">50+ Complete</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-purple-600">Missing Key</div>
+                  <div className="text-gray-600">DSP, CCS, Services</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-orange-600">Update Freq</div>
+                  <div className="text-gray-600">Hourly (Pro)</div>
                 </div>
               </div>
-            </button>
+            </div>
           </div>
         )}
 
