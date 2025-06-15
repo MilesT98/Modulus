@@ -3446,6 +3446,159 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
               ))}
             </div>
           )}
+
+          {/* Phase 2: Save Search Modal */}
+          {showSaveSearch && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Save Current Search</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Search Name</label>
+                    <input
+                      type="text"
+                      value={searchName}
+                      onChange={(e) => setSearchName(e.target.value)}
+                      placeholder="e.g., AI Cyber Security Opportunities"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Current Search Criteria:</h4>
+                    <div className="text-xs text-gray-600 space-y-1">
+                      {searchTerm && <div>Search: "{searchTerm}"</div>}
+                      {selectedFundingBody && <div>Funding Body: {selectedFundingBody}</div>}
+                      {selectedTechAreas.length > 0 && <div>Tech Areas: {selectedTechAreas.join(', ')}</div>}
+                      {selectedDeadline && <div>Deadline: {deadlineOptions.find(opt => opt.value === selectedDeadline)?.label}</div>}
+                      <div>Sort: {sortOptions.find(opt => opt.value === sortBy)?.label}</div>
+                      <div>Results: {sortedOpportunities.length} opportunities</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowSaveSearch(false)}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={saveCurrentSearch}
+                      className="flex-1 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
+                    >
+                      Save Search
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Phase 2: Saved Searches Modal */}
+          {showSavedSearches && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-slate-900">Saved Searches ({savedSearches.length})</h3>
+                  <button
+                    onClick={() => setShowSavedSearches(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                {savedSearches.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">No saved searches yet</p>
+                    <p className="text-sm text-gray-500">Use the "Save" button to save your current search criteria</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {savedSearches.map((search) => (
+                      <div key={search.id} className="border border-gray-200 rounded-lg p-4 hover:border-cyan-300 transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-slate-900 mb-2">{search.name}</h4>
+                            <div className="text-xs text-gray-600 space-y-1">
+                              {search.searchTerm && <div>Search: "{search.searchTerm}"</div>}
+                              {search.selectedFundingBody && <div>Funding Body: {search.selectedFundingBody}</div>}
+                              {search.selectedTechAreas?.length > 0 && <div>Tech Areas: {search.selectedTechAreas.join(', ')}</div>}
+                              {search.selectedDeadline && <div>Deadline: {deadlineOptions.find(opt => opt.value === search.selectedDeadline)?.label}</div>}
+                              <div>Created: {new Date(search.createdAt).toLocaleDateString()}</div>
+                              <div>Results when saved: {search.resultCount} opportunities</div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex gap-2 ml-4">
+                            <button
+                              onClick={() => loadSavedSearch(search)}
+                              className="px-3 py-1 bg-cyan-100 hover:bg-cyan-200 text-cyan-700 rounded text-sm transition-colors"
+                            >
+                              Load
+                            </button>
+                            <button
+                              onClick={() => deleteSavedSearch(search.id)}
+                              className="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-sm transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Phase 2: Notes Modal */}
+          {showNotesModal && currentNoteOpportunity && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">
+                  Add Note for Opportunity
+                </h3>
+                <div className="space-y-4">
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <h4 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
+                      {currentNoteOpportunity.title}
+                    </h4>
+                    <p className="text-xs text-gray-600">{currentNoteOpportunity.funding_body}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Your Note</label>
+                    <textarea
+                      value={noteText}
+                      onChange={(e) => setNoteText(e.target.value)}
+                      placeholder="Add your thoughts, next steps, or reminders..."
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowNotesModal(false)}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={saveNote}
+                      className="flex-1 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
+                    >
+                      Save Note
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
