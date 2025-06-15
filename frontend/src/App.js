@@ -1570,6 +1570,85 @@ All funding provider links have been verified and updated to ensure they work pr
               </div>
             </div>
           </div>
+
+          {/* Phase 3: Similar Opportunities */}
+          {user?.tier !== 'free' && (
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center mb-6">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                    <Target className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <h2 className="text-xl font-bold text-slate-900">Similar Opportunities You Might Like</h2>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {getSimilarOpportunities(selectedOpportunity).map((similar, index) => (
+                    <div 
+                      key={similar.id || similar._id || index}
+                      onClick={() => {
+                        setSelectedOpportunity(similar);
+                        window.scrollTo(0, 0);
+                      }}
+                      className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-purple-300 cursor-pointer transition-all duration-200 hover:shadow-md"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
+                          {Math.round(similar.similarity * 100)}% Similar
+                        </span>
+                        <div className="text-xs text-gray-500">
+                          {similar.funding_body.split(' ').slice(0, 2).join(' ')}
+                        </div>
+                      </div>
+                      
+                      <h4 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-sm">
+                        {similar.title}
+                      </h4>
+                      
+                      <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                        {similar.description}
+                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-green-100 rounded px-2 py-1 text-center">
+                          <div className="font-medium text-green-800">
+                            {Math.round(calculateSuccessProbability(similar) * 100)}%
+                          </div>
+                          <div className="text-green-600">Success</div>
+                        </div>
+                        <div className={`rounded px-2 py-1 text-center ${
+                          calculateCompetitionLevel(similar) < 0.4 ? 'bg-green-100' :
+                          calculateCompetitionLevel(similar) < 0.7 ? 'bg-yellow-100' : 'bg-red-100'
+                        }`}>
+                          <div className={`font-medium ${
+                            calculateCompetitionLevel(similar) < 0.4 ? 'text-green-800' :
+                            calculateCompetitionLevel(similar) < 0.7 ? 'text-yellow-800' : 'text-red-800'
+                          }`}>
+                            {calculateCompetitionLevel(similar) < 0.4 ? 'Low' : 
+                             calculateCompetitionLevel(similar) < 0.7 ? 'Med' : 'High'}
+                          </div>
+                          <div className={`${
+                            calculateCompetitionLevel(similar) < 0.4 ? 'text-green-600' :
+                            calculateCompetitionLevel(similar) < 0.7 ? 'text-yellow-600' : 'text-red-600'
+                          }`}>
+                            Competition
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 text-xs text-purple-600 font-medium text-center">
+                        Click to view details →
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <p className="text-xs text-gray-500 mt-4 text-center">
+                  💡 Similarity based on funding body, technology areas, TRL level, and contract value
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
