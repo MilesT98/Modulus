@@ -376,7 +376,7 @@ function App() {
   // Upgrade Modal Component
   const UpgradeModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-md w-full p-6 relative">
+      <div className="bg-white rounded-xl max-w-lg w-full p-6 relative">
         <button 
           onClick={() => setShowUpgradeModal(false)}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
@@ -386,12 +386,37 @@ function App() {
         
         <div className="text-center">
           <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-cyan-600" />
+            <Crown className="w-8 h-8 text-cyan-600" />
           </div>
-          <h3 className="text-xl font-bold text-slate-900 mb-2">Pro Feature Required</h3>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">Upgrade to Pro</h3>
           <p className="text-gray-600 mb-6">
-            This feature is available to Pro and Enterprise subscribers. Upgrade now to unlock advanced procurement intelligence.
+            Unlock full access to all contract opportunities, funding routes, and premium features.
           </p>
+          
+          {/* New Benefits Comparison */}
+          <div className="text-left mb-6 bg-gray-50 rounded-lg p-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-2 text-sm">🆓 Free (Current)</h4>
+                <ul className="text-xs text-gray-600 space-y-1">
+                  <li>• 1/3 of opportunities only</li>
+                  <li>• Weekly updates</li>
+                  <li>• No funding routes</li>
+                  <li>• No procurement guide</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-cyan-900 mb-2 text-sm">💼 Pro</h4>
+                <ul className="text-xs text-cyan-700 space-y-1">
+                  <li>• ALL contract opportunities</li>
+                  <li>• Hourly updates</li>
+                  <li>• 60+ funding sources</li>
+                  <li>• Full procurement guide</li>
+                  <li>• AI insights & bookmarks</li>
+                </ul>
+              </div>
+            </div>
+          </div>
           
           <div className="space-y-3">
             <button
