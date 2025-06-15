@@ -2417,7 +2417,7 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
           {/* Results Summary */}
           <div className="mb-6">
             <p className="text-gray-600">
-              Showing {filteredOpportunities.length} of {opportunities.length} opportunities
+              Showing {sortedOpportunities.length} of {opportunities.length} opportunities
               {user?.tier === 'free' && (
                 <span className="ml-2 text-yellow-600 font-medium">
                   (Pro/SME content delayed 48 hours)
