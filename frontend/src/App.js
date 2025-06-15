@@ -2376,7 +2376,13 @@ All funding provider links have been verified and updated to ensure they work pr
 
             {/* Funding Options */}
             <div 
-              onClick={() => setCurrentView('funding-opportunities')}
+              onClick={() => {
+                if (user?.tier === 'free') {
+                  setShowUpgradeModal(true);
+                } else {
+                  setCurrentView('funding-opportunities');
+                }
+              }}
               className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-green-300 hover:shadow-lg transition-all duration-300 cursor-pointer group min-h-[200px] flex flex-col"
             >
               <div className="flex items-center mb-4">
@@ -2389,6 +2395,12 @@ All funding provider links have been verified and updated to ensure they work pr
               <p className="text-gray-700 text-xs flex-grow">
                 Comprehensive directory of VCs, government schemes, and accelerators investing in defence SMEs.
               </p>
+              {user?.tier === 'free' && (
+                <div className="mt-2 flex items-center">
+                  <Lock className="w-3 h-3 text-yellow-600 mr-1" />
+                  <span className="text-xs text-yellow-600 font-medium">Pro Required</span>
+                </div>
+              )}
             </div>
 
             {/* Procurement Guide */}
