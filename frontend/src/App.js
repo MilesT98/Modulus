@@ -298,6 +298,440 @@ function App() {
     </div>
   );
 
+  // Funding Opportunities Page Component
+  const FundingOpportunitiesPage = () => {
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [fundingProviders, setFundingProviders] = useState([]);
+    const [fundingStats, setFundingStats] = useState({});
+    const [isLoadingFunding, setIsLoadingFunding] = useState(false);
+    const [isRefreshingFunding, setIsRefreshingFunding] = useState(false);
+    const [lastRefresh, setLastRefresh] = useState(null);
+
+    // Fetch funding opportunities from API
+    const fetchFundingOpportunities = async () => {
+      try {
+        setIsLoadingFunding(true);
+        const response = await api.get('/api/funding-opportunities', {
+          params: {
+            category: selectedCategory !== 'all' ? selectedCategory : undefined
+          }
+        });
+        setFundingProviders(response.data);
+      } catch (error) {
+        console.error('Failed to fetch funding opportunities:', error);
+        // Fallback to static data if API fails
+        setFundingProviders(getStaticFundingData());
+      } finally {
+        setIsLoadingFunding(false);
+      }
+    };
+
+    // Fetch funding statistics
+    const fetchFundingStats = async () => {
+      try {
+        const response = await api.get('/api/funding-opportunities/stats');
+        setFundingStats(response.data);
+        setLastRefresh(new Date(response.data.last_refresh));
+      } catch (error) {
+        console.error('Failed to fetch funding stats:', error);
+      }
+    };
+
+    // Refresh funding data
+    const handleRefreshFunding = async () => {
+      if (user?.tier === 'free') {
+        setShowUpgradeModal(true);
+        return;
+      }
+
+      try {
+        setIsRefreshingFunding(true);
+        const response = await api.post('/api/funding-opportunities/refresh');
+        
+        // Show success message
+        alert(`✅ Funding Opportunities Refresh Complete!
+
+📊 ${response.data.message}
+
+🔍 Sources Checked:
+${response.data.sources_checked.map(source => `• ${source}`).join('\n')}
+
+🕒 Last Updated: ${new Date().toLocaleString()}
+
+Real-time funding intelligence refreshed successfully.`);
+        
+        // Refresh data
+        await fetchFundingOpportunities();
+        await fetchFundingStats();
+      } catch (error) {
+        alert('❌ Funding refresh failed: ' + (error.response?.data?.detail || 'Unknown error'));
+      } finally {
+        setIsRefreshingFunding(false);
+      }
+    };
+
+    // Static fallback data
+    const getStaticFundingData = () => [
+      {
+        category: "Defence & Security VC",
+        name: "Shield Capital",
+        investment_focus: "Early-stage companies building technologies that matter in artificial intelligence, autonomy, cybersecurity, and space, with a mission focus on the convergence of commercial technology and national security.",
+        investment_stage: "Early-stage (Seed, Series A)",
+        geographic_focus: "Primarily US, but invests globally in relevant areas",
+        website_url: "https://shieldcap.com/"
+      },
+      {
+        category: "Defence & Security VC",
+        name: "Paladin Capital Group",
+        investment_focus: "Global multi-stage investor focusing on cybersecurity, artificial intelligence, big data, and advanced computing, with significant defence and national security applications.",
+        investment_stage: "Multi-stage (growth equity to later stage)",
+        geographic_focus: "Global",
+        website_url: "https://www.paladincapgroup.com/investments/"
+      },
+      {
+        category: "Corporate VC & Innovation",
+        name: "Thales Group (Thales Corporate Ventures)",
+        investment_focus: "Investing in digital and 'deep tech' innovations (Big Data, AI, connectivity, cybersecurity, and quantum technology) that align with their strategic interests.",
+        investment_stage: "Strategic partnerships, corporate venturing",
+        geographic_focus: "Global",
+        website_url: "https://www.thalesgroup.com/en/thales-startups"
+      },
+      {
+        category: "Deep Tech & Dual-Use VC",
+        name: "Octopus Ventures",
+        investment_focus: "Broad deep tech, AI, fintech, health tech, and other sectors; dual-use potential is often a factor.",
+        investment_stage: "Pre-seed, Seed, Series A, and later-stage",
+        geographic_focus: "UK & Europe",
+        website_url: "https://octopusventures.com/"
+      },
+      {
+        category: "Government-Backed Schemes",
+        name: "British Business Bank",
+        investment_focus: "Facilitates access to finance for smaller businesses via partner funds, covering venture capital, debt finance, and regional funds.",
+        investment_stage: "Varies by program/partner fund",
+        geographic_focus: "UK",
+        website_url: "https://www.british-business-bank.co.uk/how-we-help/"
+      }
+    ];
+
+    // Load funding opportunities on component mount and when category changes
+    useEffect(() => {
+      fetchFundingOpportunities();
+      fetchFundingStats();
+    }, [selectedCategory]);
+
+    // Auto-refresh every 5 minutes for Pro users
+    useEffect(() => {
+      if (user?.tier !== 'free') {
+        const interval = setInterval(() => {
+          fetchFundingOpportunities();
+          fetchFundingStats();
+        }, 5 * 60 * 1000); // 5 minutes
+
+        return () => clearInterval(interval);
+      }
+    }, [user]);
+
+    const categories = [
+      { value: 'all', label: 'All Categories' },
+      { value: 'Defence & Security VC', label: 'Defence & Security VC' },
+      { value: 'Corporate VC & Innovation', label: 'Corporate VC & Innovation' },
+      { value: 'Deep Tech & Dual-Use VC', label: 'Deep Tech & Dual-Use VC' },
+      { value: 'Government-Backed Schemes', label: 'Government-Backed Schemes' },
+      { value: 'University Spin-Out Funds', label: 'University Spin-Out Funds' },
+      { value: 'Growth Equity & Debt', label: 'Growth Equity & Debt' },
+      { value: 'Private Equity', label: 'Private Equity' },
+      { value: 'Accelerators & Incubators', label: 'Accelerators & Incubators' },
+      { value: 'Equity Crowdfunding', label: 'Equity Crowdfunding' }
+    ];
+
+    const filteredProviders = selectedCategory === 'all' 
+      ? fundingProviders 
+      : fundingProviders.filter(provider => provider.category === selectedCategory);
+
+    const getCategoryIcon = (category) => {
+      switch (category) {
+        case 'Defence & Security VC': return <Target className="w-5 h-5" />;
+        case 'Corporate VC & Innovation': return <Building className="w-5 h-5" />;
+        case 'Deep Tech & Dual-Use VC': return <Zap className="w-5 h-5" />;
+        case 'Government-Backed Schemes': return <Award className="w-5 h-5" />;
+        case 'University Spin-Out Funds': return <Star className="w-5 h-5" />;
+        case 'Growth Equity & Debt': return <TrendingUp className="w-5 h-5" />;
+        case 'Private Equity': return <Briefcase className="w-5 h-5" />;
+        case 'Accelerators & Incubators': return <Globe className="w-5 h-5" />;
+        case 'Equity Crowdfunding': return <Users className="w-5 h-5" />;
+        default: return <DollarSign className="w-5 h-5" />;
+      }
+    };
+
+    const getCategoryColor = (category) => {
+      switch (category) {
+        case 'Defence & Security VC': return 'bg-red-100 text-red-800';
+        case 'Corporate VC & Innovation': return 'bg-blue-100 text-blue-800';
+        case 'Deep Tech & Dual-Use VC': return 'bg-purple-100 text-purple-800';
+        case 'Government-Backed Schemes': return 'bg-green-100 text-green-800';
+        case 'University Spin-Out Funds': return 'bg-yellow-100 text-yellow-800';
+        case 'Growth Equity & Debt': return 'bg-cyan-100 text-cyan-800';
+        case 'Private Equity': return 'bg-gray-100 text-gray-800';
+        case 'Accelerators & Incubators': return 'bg-pink-100 text-pink-800';
+        case 'Equity Crowdfunding': return 'bg-indigo-100 text-indigo-800';
+        default: return 'bg-gray-100 text-gray-800';
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
+          
+          {/* Header Section with Live Data Indicator */}
+          <div className="bg-gradient-to-r from-green-900 to-blue-900 rounded-xl p-8 mb-8 text-white">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <DollarSign className="w-8 h-8 mr-3" />
+                <h1 className="text-4xl font-bold">Funding Opportunities for Defence SMEs</h1>
+              </div>
+              
+              {/* Live Data Indicator */}
+              <div className="flex items-center space-x-4">
+                {user?.tier !== 'free' && (
+                  <button
+                    onClick={handleRefreshFunding}
+                    disabled={isRefreshingFunding}
+                    className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
+                  >
+                    <Zap className={`w-4 h-4 mr-2 ${isRefreshingFunding ? 'animate-spin' : ''}`} />
+                    {isRefreshingFunding ? 'Refreshing...' : 'Refresh Data'}
+                  </button>
+                )}
+                
+                <div className="text-right">
+                  <div className="flex items-center text-green-200">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                    <span className="text-sm font-medium">LIVE DATA</span>
+                  </div>
+                  {lastRefresh && (
+                    <div className="text-xs text-green-100">
+                      Updated: {lastRefresh.toLocaleTimeString()}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <p className="text-xl text-green-100 mb-4">
+              Comprehensive directory of private investment and funding opportunities - continuously updated in real-time
+            </p>
+            <div className="bg-white bg-opacity-20 rounded-lg p-4">
+              <p className="text-green-100">
+                <strong>🚀 Our USP:</strong> This data is continuously scanned and updated from live sources across the funding ecosystem. 
+                For procurement opportunities, visit our <button 
+                  onClick={() => setCurrentView('opportunities')} 
+                  className="underline hover:text-white transition-colors"
+                >
+                  Opportunities page
+                </button>.
+              </p>
+            </div>
+          </div>
+
+          {/* Filter Section */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Filter by Category
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                >
+                  {categories.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="flex items-end space-x-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-slate-900">{filteredProviders.length}</div>
+                  <div className="text-sm text-gray-600">Funding Sources</div>
+                </div>
+                
+                {user?.tier === 'free' && (
+                  <button
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    Get Live Updates
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {user?.tier === 'free' && (
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>📊 Limited Access:</strong> Free users see our curated database. 
+                  <button onClick={() => setShowUpgradeModal(true)} className="underline hover:text-yellow-900 ml-1">
+                    Upgrade to Pro
+                  </button> for real-time updates, new funding alerts, and expanded coverage.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Loading State */}
+          {isLoadingFunding ? (
+            <div className="text-center py-20">
+              <div className="w-8 h-8 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading live funding opportunities...</p>
+            </div>
+          ) : (
+            <>
+              {/* Funding Providers Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                {filteredProviders.map((provider, index) => (
+                  <div 
+                    key={provider.id || index}
+                    className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-cyan-300 hover:shadow-md transition-all duration-200"
+                  >
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center mb-2">
+                          <div className={`p-2 rounded-lg mr-3 ${getCategoryColor(provider.category)}`}>
+                            {getCategoryIcon(provider.category)}
+                          </div>
+                          <h3 className="text-lg font-bold text-slate-900 leading-tight">
+                            {provider.name}
+                          </h3>
+                        </div>
+                        <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(provider.category)}`}>
+                          {provider.category}
+                        </div>
+                      </div>
+                      
+                      {/* Live indicator for recently updated */}
+                      {provider.updated_at && new Date(provider.updated_at) > new Date(Date.now() - 7*24*60*60*1000) && (
+                        <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center">
+                          <div className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></div>
+                          UPDATED
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Main Investment Focus */}
+                    <div className="mb-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                        <Target className="w-4 h-4 mr-2 text-gray-500" />
+                        Defence Investment Focus
+                      </h4>
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        {provider.investment_focus}
+                      </p>
+                    </div>
+
+                    {/* Key Details */}
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-start">
+                        <TrendingUp className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div className="text-xs font-medium text-gray-500">Investment Stage</div>
+                          <div className="text-sm text-gray-900">{provider.investment_stage}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start">
+                        <MapPin className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div className="text-xs font-medium text-gray-500">Geographic Focus</div>
+                          <div className="text-sm text-gray-900">{provider.geographic_focus}</div>
+                        </div>
+                      </div>
+
+                      {provider.last_verified && (
+                        <div className="flex items-start">
+                          <Clock className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <div className="text-xs font-medium text-gray-500">Last Verified</div>
+                            <div className="text-sm text-gray-900">
+                              {new Date(provider.last_verified).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Action Button */}
+                    <button
+                      onClick={() => window.open(provider.website_url, '_blank', 'noopener,noreferrer')}
+                      className="w-full flex items-center justify-center px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Visit {provider.name}
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Real-Time Data Banner */}
+              <div className="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-xl p-6 mb-8">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-cyan-500 rounded-full mr-3 animate-pulse"></div>
+                    <div>
+                      <h3 className="text-lg font-bold text-cyan-900">Continuous Data Updates</h3>
+                      <p className="text-cyan-700">
+                        Our system scans funding sources every hour to bring you the latest opportunities.
+                        {user?.tier !== 'free' ? (
+                          <span className="font-semibold"> Real-time updates active.</span>
+                        ) : (
+                          <span> Upgrade for real-time alerts.</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {user?.tier !== 'free' && lastRefresh && (
+                    <div className="text-right text-cyan-700">
+                      <div className="text-sm font-medium">Last Scan</div>
+                      <div className="text-xs">{lastRefresh.toLocaleString()}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Bottom CTA Section */}
+          <div className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl p-8 text-white text-center">
+            <h3 className="text-2xl font-bold mb-4">Ready to Secure Funding for Your Defence SME?</h3>
+            <p className="text-xl text-cyan-100 mb-6">
+              These funding sources are actively investing in defence and dual-use technologies. Research each one that matches your stage and focus area.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+              <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                <h4 className="font-semibold mb-2">Early Stage (Pre-Seed/Seed)</h4>
+                <p className="text-sm text-cyan-100">Focus on Shield Capital, university funds, and accelerators</p>
+              </div>
+              <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                <h4 className="font-semibold mb-2">Growth Stage (Series A+)</h4>
+                <p className="text-sm text-cyan-100">Consider Paladin Capital, Octopus Ventures, and growth equity firms</p>
+              </div>
+              <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                <h4 className="font-semibold mb-2">Mature Companies</h4>
+                <p className="text-sm text-cyan-100">Explore private equity firms and corporate venture arms</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Opportunity Detail Page Component
   const OpportunityDetailPage = () => {
     if (!selectedOpportunity) {
@@ -674,1317 +1108,7 @@ function App() {
     );
   };
 
-  // Funding Opportunities Page Component
-  const FundingOpportunitiesPage = () => {
-    const [selectedCategory, setSelectedCategory] = useState('all');
-    const [fundingProviders, setFundingProviders] = useState([]);
-    const [fundingStats, setFundingStats] = useState({});
-    const [isLoadingFunding, setIsLoadingFunding] = useState(false);
-    const [isRefreshingFunding, setIsRefreshingFunding] = useState(false);
-    const [lastRefresh, setLastRefresh] = useState(null);
-
-    // Fetch funding opportunities from API
-    const fetchFundingOpportunities = async () => {
-      try {
-        setIsLoadingFunding(true);
-        const response = await api.get('/api/funding-opportunities', {
-          params: {
-            category: selectedCategory !== 'all' ? selectedCategory : undefined
-          }
-        });
-        setFundingProviders(response.data);
-      } catch (error) {
-        console.error('Failed to fetch funding opportunities:', error);
-        // Fallback to static data if API fails
-        setFundingProviders(getStaticFundingData());
-      } finally {
-        setIsLoadingFunding(false);
-      }
-    };
-
-    // Fetch funding statistics
-    const fetchFundingStats = async () => {
-      try {
-        const response = await api.get('/api/funding-opportunities/stats');
-        setFundingStats(response.data);
-        setLastRefresh(new Date(response.data.last_refresh));
-      } catch (error) {
-        console.error('Failed to fetch funding stats:', error);
-      }
-    };
-
-    // Refresh funding data
-    const handleRefreshFunding = async () => {
-      if (user?.tier === 'free') {
-        setShowUpgradeModal(true);
-        return;
-      }
-
-      try {
-        setIsRefreshingFunding(true);
-        const response = await api.post('/api/funding-opportunities/refresh');
-        
-        // Show success message
-        alert(`✅ Funding Opportunities Refresh Complete!
-
-📊 ${response.data.message}
-
-🔍 Sources Checked:
-${response.data.sources_checked.map(source => `• ${source}`).join('\n')}
-
-🕒 Last Updated: ${new Date().toLocaleString()}
-
-Real-time funding intelligence refreshed successfully.`);
-        
-        // Refresh data
-        await fetchFundingOpportunities();
-        await fetchFundingStats();
-      } catch (error) {
-        alert('❌ Funding refresh failed: ' + (error.response?.data?.detail || 'Unknown error'));
-      } finally {
-        setIsRefreshingFunding(false);
-      }
-    };
-
-    // Static fallback data (same as before but as a function)
-    const getStaticFundingData = () => [
-      // 1. Dedicated Defence & Security Venture Capital (VC) Funds
-      {
-        category: "Defence & Security VC",
-        name: "Shield Capital",
-        focus: "Early-stage companies building technologies that matter in artificial intelligence, autonomy, cybersecurity, and space, with a mission focus on the convergence of commercial technology and national security.",
-        stage: "Early-stage (Seed, Series A)",
-        geographic: "Primarily US, but invests globally in relevant areas",
-        link: "https://shieldcap.com/"
-      },
-      {
-        category: "Defence & Security VC",
-        name: "Paladin Capital Group",
-        focus: "Global multi-stage investor focusing on cybersecurity, artificial intelligence, big data, and advanced computing, with significant defence and national security applications.",
-        stage: "Multi-stage (growth equity to later stage)",
-        geographic: "Global",
-        link: "https://www.paladincapgroup.com/investments/"
-      },
-      {
-        category: "Defence & Security VC",
-        name: "Lockheed Martin Ventures",
-        focus: "Accelerating next-generation technologies strategically important to aerospace and defence, helping customers stay ahead of emerging threats.",
-        stage: "Strategic investments",
-        geographic: "Global",
-        link: "https://uktechnews.info/2024/02/05/q5d-nabs-10m-series-a-funding-round-led-by-lockheed-martin-ventures/"
-      },
-      {
-        category: "Defence & Security VC",
-        name: "RTX Ventures (Raytheon Technologies Ventures)",
-        focus: "Investing in early-stage companies that will transform aerospace and defense across areas like autonomy & sensing, compute, advanced manufacturing, space, data, analytics & code, and propulsion.",
-        stage: "Early-stage",
-        geographic: "Global (strategic to RTX)",
-        link: "https://www.rtx.com/who-we-are/ventures"
-      },
-      {
-        category: "Defence & Security VC",
-        name: "AE Industrial Partners (AEI)",
-        focus: "Private equity firm specializing in Aerospace, Defense & Government Services, Space, Power Generation, and Specialty Industrial markets.",
-        stage: "Growth equity, buyouts",
-        geographic: "Primarily North America, but with global reach for portfolio companies",
-        link: "https://www.aeroequity.com/focus/"
-      },
-      {
-        category: "Defence & Security VC",
-        name: "True Global Ventures",
-        focus: "Global investment fund across various sectors including deep tech, often with relevance to digital security.",
-        stage: "Varies by specific fund",
-        geographic: "Global",
-        link: "https://www.stradley.com/insights/publications/2023/11/true-global-ventures-4-plus-fund"
-      },
-      
-      // 2. Corporate Venture Capital (CVC) & Innovation Arms
-      {
-        category: "Corporate VC & Innovation",
-        name: "Thales Group (Thales Corporate Ventures / Thales Startups)",
-        focus: "Investing in digital and 'deep tech' innovations (Big Data, AI, connectivity, cybersecurity, and quantum technology) that align with their strategic interests. Engages through partnerships, investment, and acquisitions.",
-        stage: "Strategic partnerships, corporate venturing",
-        geographic: "Global",
-        link: "https://www.thalesgroup.com/en/thales-startups"
-      },
-      {
-        category: "Corporate VC & Innovation",
-        name: "Rolls-Royce (Innovation & Future Programmes)",
-        focus: "Actively seeks innovation and partners with SMEs in advanced materials, digital, and propulsion systems; often through collaborative R&D and strategic partnerships.",
-        stage: "Collaborative R&D, strategic partnerships, potential for future acquisition",
-        geographic: "Global",
-        link: "https://www.rolls-royce.com/innovation.aspx"
-      },
-      
-      // 3. Generalist Deep Tech / Hard Tech VCs
-      {
-        category: "Deep Tech & Dual-Use VC",
-        name: "Octopus Ventures",
-        focus: "Broad deep tech, AI, fintech, health tech, and other sectors; dual-use potential is often a factor.",
-        stage: "Pre-seed, Seed, Series A, and later-stage",
-        geographic: "UK & Europe",
-        link: "https://octopusventures.com/"
-      },
-      {
-        category: "Deep Tech & Dual-Use VC",
-        name: "MMC Ventures",
-        focus: "AI and data-driven companies, including enterprise AI, fintech, data-driven health, data infrastructure, and cloud.",
-        stage: "Series A specialist",
-        geographic: "Europe",
-        link: "https://mmc.vc/about-us/"
-      },
-      {
-        category: "Deep Tech & Dual-Use VC",
-        name: "Amadeus Capital Partners",
-        focus: "Deep tech across various sectors, including AI, cybersecurity, and space technologies.",
-        stage: "Early Stage EIS Fund and other funds",
-        geographic: "Global",
-        link: "https://amadeuscapital.com/our-approach/"
-      },
-      {
-        category: "Deep Tech & Dual-Use VC",
-        name: "Playfair Capital",
-        focus: "Early-stage technology companies across various sectors, including those with dual-use potential.",
-        stage: "Early-stage VC",
-        geographic: "UK & Europe",
-        link: "https://playfair.vc/"
-      },
-      {
-        category: "Deep Tech & Dual-Use VC",
-        name: "2048 Ventures",
-        focus: "Vertical AI, Deep Tech Infrastructure, Healthcare, and Biotech; includes next-gen drone operating systems.",
-        stage: "Pre-seed rounds",
-        geographic: "US & Canada",
-        link: "https://2048.vc/"
-      },
-      
-      // 4. UK Government-Backed Investment Schemes
-      {
-        category: "Government-Backed Schemes",
-        name: "British Business Bank",
-        focus: "Facilitates access to finance for smaller businesses via partner funds, covering venture capital, debt finance, and regional funds. (This is an enabler, guiding to many other funds used by Defence SMEs).",
-        stage: "Varies by program/partner fund",
-        geographic: "UK",
-        link: "https://www.british-business-bank.co.uk/how-we-help/"
-      },
-      {
-        category: "Government-Backed Schemes",
-        name: "Northern Powerhouse Investment Fund (NPIF)",
-        focus: "Addresses market weakness in providing venture debt, debt, and equity finance to SMEs in the North of England. Includes advanced manufacturing, tech, and digital sectors relevant to defence.",
-        stage: "Seed, early-stage, growth debt/equity",
-        geographic: "North of England, UK",
-        link: "https://npif.co.uk/"
-      },
-      {
-        category: "Government-Backed Schemes",
-        name: "Midlands Engine Investment Fund (MEIF)",
-        focus: "Provides debt and equity finance to SMEs across the Midlands. Similar sectoral relevance to NPIF.",
-        stage: "Seed, early-stage, growth debt/equity",
-        geographic: "Midlands, UK",
-        link: "https://meif.co.uk/"
-      },
-      
-      // 5. University Spin-Out Funds
-      {
-        category: "University Spin-Out Funds",
-        name: "Oxford Science Enterprises (OSE)",
-        focus: "Investing in deep tech and life sciences spin-outs from the University of Oxford, including AI, quantum, and advanced materials.",
-        stage: "Seed to Series A/B",
-        geographic: "Oxford, UK (for source of tech)",
-        link: "https://oxfordscienceenterprises.com/"
-      },
-      {
-        category: "University Spin-Out Funds",
-        name: "Cambridge Enterprise (University of Cambridge)",
-        focus: "Commercializing University of Cambridge research through licensing, consultancy, and creating new spin-out companies across various tech sectors.",
-        stage: "Seed funding for spin-outs",
-        geographic: "Cambridge, UK (for source of tech)",
-        link: "https://www.enterprise.cam.ac.uk/"
-      },
-      {
-        category: "University Spin-Out Funds",
-        name: "Imperial College Innovations",
-        focus: "Commercializing research from Imperial College London, with strong departments in engineering, AI, and science.",
-        stage: "Spin-out seed funding",
-        geographic: "London, UK (for source of tech)",
-        link: "https://www.imperial.ac.uk/enterprise/commercialisation/imperial-innovations/"
-      },
-      
-      // 6. Growth Equity / Debt Providers
-      {
-        category: "Growth Equity & Debt",
-        name: "Gresham House Ventures",
-        focus: "Provides growth capital for innovative UK software and digitally-enabled businesses.",
-        stage: "Growth capital",
-        geographic: "UK",
-        link: "https://greshamhouse.com/businesses/private-equity/gresham-house-ventures/"
-      },
-      {
-        category: "Growth Equity & Debt",
-        name: "HSBC Innovation Banking (formerly Silicon Valley Bank UK)",
-        focus: "Provides banking and debt solutions tailored for technology and innovation companies, including venture debt.",
-        stage: "Growth-stage debt, venture debt",
-        geographic: "UK",
-        link: "https://www.business.hsbc.uk/en-gb/campaigns/innovation-banking"
-      },
-      
-      // 7. Private Equity Firms
-      {
-        category: "Private Equity",
-        name: "Inflexion",
-        focus: "High-growth, market-leading companies with strong internationalization potential; sectors include technology and business services.",
-        stage: "Mid-market private equity",
-        geographic: "Global (based in UK)",
-        link: "https://www.inflexion.com/"
-      },
-      {
-        category: "Private Equity",
-        name: "ECI Partners",
-        focus: "Growth-focused private equity group investing in businesses across services, consumer, and technology/software.",
-        stage: "Growth-focused private equity (£15m-£200m investment)",
-        geographic: "UK & Europe",
-        link: "https://www.ecipartners.com/"
-      },
-      {
-        category: "Private Equity",
-        name: "Livingbridge",
-        focus: "Backs management teams to build 'best in class' businesses across various sectors, including technology.",
-        stage: "Mid-market private equity",
-        geographic: "UK",
-        link: "https://www.livingbridge.com/"
-      },
-      
-      // 8. Accelerators & Incubators
-      {
-        category: "Accelerators & Incubators",
-        name: "National Security Innovation Network (NSIN) Accelerators",
-        focus: "Provides funding, prototyping, and resources for translating high-potential concepts into minimum viable products for national security.",
-        stage: "Early-stage, accelerator programs",
-        geographic: "Primarily US, but global partnerships",
-        link: "https://www.nsin.mil/"
-      },
-      {
-        category: "Accelerators & Incubators",
-        name: "Techstars",
-        focus: "Operates accelerators focusing on commercially viable startups with dual-purpose technologies, including aerospace and defence.",
-        stage: "Early-stage, accelerator programs",
-        geographic: "Global (via various programs)",
-        link: "https://www.techstars.com/"
-      },
-      {
-        category: "Accelerators & Incubators",
-        name: "Plug and Play (Aerospace & Defense Innovation)",
-        focus: "Finds and supports aerospace and defence startups through investment and mentorship, focusing on advanced defence technologies, hardware, aeronautics, and advanced air mobility.",
-        stage: "Early-stage, accelerator programs",
-        geographic: "Global (via various programs)",
-        link: "https://www.plugandplaytechcenter.com/industries/aerospace"
-      },
-      
-      // 9. Equity Crowdfunding Platforms
-      {
-        category: "Equity Crowdfunding",
-        name: "Seedrs",
-        focus: "Equity crowdfunding platform for businesses to raise capital across various sectors. Defence SMEs may find investors here, but it's less targeted.",
-        stage: "Early-stage to growth",
-        geographic: "UK, Europe",
-        website_url: "https://www.seedrs.com/raise"
-      },
-      {
-        category: "Equity Crowdfunding",
-        name: "Crowdcube",
-        investment_focus: "Equity crowdfunding platform enabling businesses to raise finance from a community of investors. Defence SMEs may find investors here, but it's less targeted.",
-        investment_stage: "Early-stage to growth",
-        geographic_focus: "UK, Europe",
-        website_url: "https://www.crowdcube.com/raise"
-      }
-    ];
-
-    // Load funding opportunities on component mount and when category changes
-    useEffect(() => {
-      fetchFundingOpportunities();
-      fetchFundingStats();
-    }, [selectedCategory]);
-
-    // Auto-refresh every 5 minutes for Pro users
-    useEffect(() => {
-      if (user?.tier !== 'free') {
-        const interval = setInterval(() => {
-          fetchFundingOpportunities();
-          fetchFundingStats();
-        }, 5 * 60 * 1000); // 5 minutes
-
-        return () => clearInterval(interval);
-      }
-    }, [user]);
-
-    const categories = [
-      { value: 'all', label: 'All Categories' },
-      { value: 'Defence & Security VC', label: 'Defence & Security VC' },
-      { value: 'Corporate VC & Innovation', label: 'Corporate VC & Innovation' },
-      { value: 'Deep Tech & Dual-Use VC', label: 'Deep Tech & Dual-Use VC' },
-      { value: 'Government-Backed Schemes', label: 'Government-Backed Schemes' },
-      { value: 'University Spin-Out Funds', label: 'University Spin-Out Funds' },
-      { value: 'Growth Equity & Debt', label: 'Growth Equity & Debt' },
-      { value: 'Private Equity', label: 'Private Equity' },
-      { value: 'Accelerators & Incubators', label: 'Accelerators & Incubators' },
-      { value: 'Equity Crowdfunding', label: 'Equity Crowdfunding' }
-    ];
-
-    const filteredProviders = selectedCategory === 'all' 
-      ? fundingProviders 
-      : fundingProviders.filter(provider => provider.category === selectedCategory);
-
-    const getCategoryIcon = (category) => {
-      switch (category) {
-        case 'Defence & Security VC': return <Target className="w-5 h-5" />;
-        case 'Corporate VC & Innovation': return <Building className="w-5 h-5" />;
-        case 'Deep Tech & Dual-Use VC': return <Zap className="w-5 h-5" />;
-        case 'Government-Backed Schemes': return <Award className="w-5 h-5" />;
-        case 'University Spin-Out Funds': return <Star className="w-5 h-5" />;
-        case 'Growth Equity & Debt': return <TrendingUp className="w-5 h-5" />;
-        case 'Private Equity': return <Briefcase className="w-5 h-5" />;
-        case 'Accelerators & Incubators': return <Globe className="w-5 h-5" />;
-        case 'Equity Crowdfunding': return <Users className="w-5 h-5" />;
-        default: return <DollarSign className="w-5 h-5" />;
-      }
-    };
-
-    const getCategoryColor = (category) => {
-      switch (category) {
-        case 'Defence & Security VC': return 'bg-red-100 text-red-800';
-        case 'Corporate VC & Innovation': return 'bg-blue-100 text-blue-800';
-        case 'Deep Tech & Dual-Use VC': return 'bg-purple-100 text-purple-800';
-        case 'Government-Backed Schemes': return 'bg-green-100 text-green-800';
-        case 'University Spin-Out Funds': return 'bg-yellow-100 text-yellow-800';
-        case 'Growth Equity & Debt': return 'bg-cyan-100 text-cyan-800';
-        case 'Private Equity': return 'bg-gray-100 text-gray-800';
-        case 'Accelerators & Incubators': return 'bg-pink-100 text-pink-800';
-        case 'Equity Crowdfunding': return 'bg-indigo-100 text-indigo-800';
-        default: return 'bg-gray-100 text-gray-800';
-      }
-    };
-
-    return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
-          
-          {/* Header Section with Live Data Indicator */}
-          <div className="bg-gradient-to-r from-green-900 to-blue-900 rounded-xl p-8 mb-8 text-white">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <DollarSign className="w-8 h-8 mr-3" />
-                <h1 className="text-4xl font-bold">Funding Opportunities for Defence SMEs</h1>
-              </div>
-              
-              {/* Live Data Indicator */}
-              <div className="flex items-center space-x-4">
-                {user?.tier !== 'free' && (
-                  <button
-                    onClick={handleRefreshFunding}
-                    disabled={isRefreshingFunding}
-                    className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
-                  >
-                    <Zap className={`w-4 h-4 mr-2 ${isRefreshingFunding ? 'animate-spin' : ''}`} />
-                    {isRefreshingFunding ? 'Refreshing...' : 'Refresh Data'}
-                  </button>
-                )}
-                
-                <div className="text-right">
-                  <div className="flex items-center text-green-200">
-                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
-                    <span className="text-sm font-medium">LIVE DATA</span>
-                  </div>
-                  {lastRefresh && (
-                    <div className="text-xs text-green-100">
-                      Updated: {lastRefresh.toLocaleTimeString()}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            <p className="text-xl text-green-100 mb-4">
-              Comprehensive directory of private investment and funding opportunities - continuously updated in real-time
-            </p>
-            <div className="bg-white bg-opacity-20 rounded-lg p-4">
-              <p className="text-green-100">
-                <strong>🚀 Our USP:</strong> This data is continuously scanned and updated from live sources across the funding ecosystem. 
-                For procurement opportunities, visit our <button 
-                  onClick={() => setCurrentView('opportunities')} 
-                  className="underline hover:text-white transition-colors"
-                >
-                  Opportunities page
-                </button>.
-              </p>
-            </div>
-          </div>
-
-          {/* Filter Section */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Filter by Category
-                </label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                >
-                  {categories.map(cat => (
-                    <option key={cat.value} value={cat.value}>{cat.label}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="flex items-end space-x-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-slate-900">{filteredProviders.length}</div>
-                  <div className="text-sm text-gray-600">Funding Sources</div>
-                </div>
-                
-                {user?.tier === 'free' && (
-                  <button
-                    onClick={() => setShowUpgradeModal(true)}
-                    className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
-                  >
-                    <Crown className="w-4 h-4 mr-2" />
-                    Get Live Updates
-                  </button>
-                )}
-              </div>
-            </div>
-            
-            {user?.tier === 'free' && (
-              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  <strong>📊 Limited Access:</strong> Free users see our curated database. 
-                  <button onClick={() => setShowUpgradeModal(true)} className="underline hover:text-yellow-900 ml-1">
-                    Upgrade to Pro
-                  </button> for real-time updates, new funding alerts, and expanded coverage.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Loading State */}
-          {isLoadingFunding ? (
-            <div className="text-center py-20">
-              <div className="w-8 h-8 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading live funding opportunities...</p>
-            </div>
-          ) : (
-            <>
-              {/* Funding Providers Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                {filteredProviders.map((provider, index) => (
-                  <div 
-                    key={provider.id || index}
-                    className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-cyan-300 hover:shadow-md transition-all duration-200"
-                  >
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center mb-2">
-                          <div className={`p-2 rounded-lg mr-3 ${getCategoryColor(provider.category)}`}>
-                            {getCategoryIcon(provider.category)}
-                          </div>
-                          <h3 className="text-lg font-bold text-slate-900 leading-tight">
-                            {provider.name}
-                          </h3>
-                        </div>
-                        <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(provider.category)}`}>
-                          {provider.category}
-                        </div>
-                      </div>
-                      
-                      {/* Live indicator for recently updated */}
-                      {provider.updated_at && new Date(provider.updated_at) > new Date(Date.now() - 7*24*60*60*1000) && (
-                        <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center">
-                          <div className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></div>
-                          UPDATED
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Main Investment Focus */}
-                    <div className="mb-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                        <Target className="w-4 h-4 mr-2 text-gray-500" />
-                        Defence Investment Focus
-                      </h4>
-                      <p className="text-gray-700 text-sm leading-relaxed">
-                        {provider.investment_focus}
-                      </p>
-                    </div>
-
-                    {/* Key Details */}
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-start">
-                        <TrendingUp className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <div className="text-xs font-medium text-gray-500">Investment Stage</div>
-                          <div className="text-sm text-gray-900">{provider.investment_stage}</div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start">
-                        <MapPin className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <div className="text-xs font-medium text-gray-500">Geographic Focus</div>
-                          <div className="text-sm text-gray-900">{provider.geographic_focus}</div>
-                        </div>
-                      </div>
-
-                      {provider.last_verified && (
-                        <div className="flex items-start">
-                          <Clock className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <div className="text-xs font-medium text-gray-500">Last Verified</div>
-                            <div className="text-sm text-gray-900">
-                              {new Date(provider.last_verified).toLocaleDateString()}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Action Button */}
-                    <button
-                      onClick={() => window.open(provider.website_url, '_blank', 'noopener,noreferrer')}
-                      className="w-full flex items-center justify-center px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold transition-colors"
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Visit {provider.name}
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              {/* Real-Time Data Banner */}
-              <div className="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-xl p-6 mb-8">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-cyan-500 rounded-full mr-3 animate-pulse"></div>
-                    <div>
-                      <h3 className="text-lg font-bold text-cyan-900">Continuous Data Updates</h3>
-                      <p className="text-cyan-700">
-                        Our system scans funding sources every hour to bring you the latest opportunities.
-                        {user?.tier !== 'free' ? (
-                          <span className="font-semibold"> Real-time updates active.</span>
-                        ) : (
-                          <span> Upgrade for real-time alerts.</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {user?.tier !== 'free' && lastRefresh && (
-                    <div className="text-right text-cyan-700">
-                      <div className="text-sm font-medium">Last Scan</div>
-                      <div className="text-xs">{lastRefresh.toLocaleString()}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Bottom CTA Section */}
-          <div className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl p-8 text-white text-center">
-            <h3 className="text-2xl font-bold mb-4">Ready to Secure Funding for Your Defence SME?</h3>
-            <p className="text-xl text-cyan-100 mb-6">
-              These funding sources are actively investing in defence and dual-use technologies. Research each one that matches your stage and focus area.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-              <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                <h4 className="font-semibold mb-2">Early Stage (Pre-Seed/Seed)</h4>
-                <p className="text-sm text-cyan-100">Focus on Shield Capital, university funds, and accelerators</p>
-              </div>
-              <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                <h4 className="font-semibold mb-2">Growth Stage (Series A+)</h4>
-                <p className="text-sm text-cyan-100">Consider Paladin Capital, Octopus Ventures, and growth equity firms</p>
-              </div>
-              <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                <h4 className="font-semibold mb-2">Mature Companies</h4>
-                <p className="text-sm text-cyan-100">Explore private equity firms and corporate venture arms</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-        geographic_focus: "UK & Europe",
-        website_url: "https://octopusventures.com/"
-      },
-      {
-        category: "Government-Backed Schemes",
-        name: "British Business Bank",
-        investment_focus: "Facilitates access to finance for smaller businesses via partner funds, covering venture capital, debt finance, and regional funds.",
-        investment_stage: "Varies by program/partner fund",
-        geographic_focus: "UK",
-        website_url: "https://www.british-business-bank.co.uk/how-we-help/"
-      }
-    ];
-
-    // Load funding opportunities on component mount and when category changes
-    useEffect(() => {
-      fetchFundingOpportunities();
-      fetchFundingStats();
-    }, [selectedCategory]);
-
-    // Auto-refresh every 5 minutes for Pro users
-    useEffect(() => {
-      if (user?.tier !== 'free') {
-        const interval = setInterval(() => {
-          fetchFundingOpportunities();
-          fetchFundingStats();
-        }, 5 * 60 * 1000); // 5 minutes
-
-        return () => clearInterval(interval);
-      }
-    }, [user]);
-
-    const categories = [
-      { value: 'all', label: 'All Categories' },
-      { value: 'Defence & Security VC', label: 'Defence & Security VC' },
-      { value: 'Corporate VC & Innovation', label: 'Corporate VC & Innovation' },
-      { value: 'Deep Tech & Dual-Use VC', label: 'Deep Tech & Dual-Use VC' },
-      { value: 'Government-Backed Schemes', label: 'Government-Backed Schemes' },
-      { value: 'University Spin-Out Funds', label: 'University Spin-Out Funds' },
-      { value: 'Growth Equity & Debt', label: 'Growth Equity & Debt' },
-      { value: 'Private Equity', label: 'Private Equity' },
-      { value: 'Accelerators & Incubators', label: 'Accelerators & Incubators' },
-      { value: 'Equity Crowdfunding', label: 'Equity Crowdfunding' }
-    ];
-
-    const filteredProviders = selectedCategory === 'all' 
-      ? fundingProviders 
-      : fundingProviders.filter(provider => provider.category === selectedCategory);
-
-    const getCategoryIcon = (category) => {
-      switch (category) {
-        case 'Defence & Security VC': return <Target className="w-5 h-5" />;
-        case 'Corporate VC & Innovation': return <Building className="w-5 h-5" />;
-        case 'Deep Tech & Dual-Use VC': return <Zap className="w-5 h-5" />;
-        case 'Government-Backed Schemes': return <Award className="w-5 h-5" />;
-        case 'University Spin-Out Funds': return <Star className="w-5 h-5" />;
-        case 'Growth Equity & Debt': return <TrendingUp className="w-5 h-5" />;
-        case 'Private Equity': return <Briefcase className="w-5 h-5" />;
-        case 'Accelerators & Incubators': return <Globe className="w-5 h-5" />;
-        case 'Equity Crowdfunding': return <Users className="w-5 h-5" />;
-        default: return <DollarSign className="w-5 h-5" />;
-      }
-    };
-
-    const getCategoryColor = (category) => {
-      switch (category) {
-        case 'Defence & Security VC': return 'bg-red-100 text-red-800';
-        case 'Corporate VC & Innovation': return 'bg-blue-100 text-blue-800';
-        case 'Deep Tech & Dual-Use VC': return 'bg-purple-100 text-purple-800';
-        case 'Government-Backed Schemes': return 'bg-green-100 text-green-800';
-        case 'University Spin-Out Funds': return 'bg-yellow-100 text-yellow-800';
-        case 'Growth Equity & Debt': return 'bg-cyan-100 text-cyan-800';
-        case 'Private Equity': return 'bg-gray-100 text-gray-800';
-        case 'Accelerators & Incubators': return 'bg-pink-100 text-pink-800';
-        case 'Equity Crowdfunding': return 'bg-indigo-100 text-indigo-800';
-        default: return 'bg-gray-100 text-gray-800';
-      }
-    };
-
-    return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
-      {
-        category: "Defence & Security VC",
-        name: "Paladin Capital Group",
-        investment_focus: "Global multi-stage investor focusing on cybersecurity, artificial intelligence, big data, and advanced computing, with significant defence and national security applications.",
-        investment_stage: "Multi-stage (growth equity to later stage)",
-        geographic_focus: "Global",
-        website_url: "https://www.paladincapgroup.com/investments/"
-      },
-      {
-        category: "Defence & Security VC",
-        name: "Lockheed Martin Ventures",
-        investment_focus: "Accelerating next-generation technologies strategically important to aerospace and defence, helping customers stay ahead of emerging threats.",
-        investment_stage: "Strategic investments",
-        geographic_focus: "Global",
-        website_url: "https://uktechnews.info/2024/02/05/q5d-nabs-10m-series-a-funding-round-led-by-lockheed-martin-ventures/"
-      },
-      {
-        category: "Defence & Security VC",
-        name: "RTX Ventures (Raytheon Technologies Ventures)",
-        investment_focus: "Investing in early-stage companies that will transform aerospace and defense across areas like autonomy & sensing, compute, advanced manufacturing, space, data, analytics & code, and propulsion.",
-        investment_stage: "Early-stage",
-        geographic_focus: "Global (strategic to RTX)",
-        website_url: "https://www.rtx.com/who-we-are/ventures"
-      },
-      {
-        category: "Defence & Security VC",
-        name: "AE Industrial Partners (AEI)",
-        investment_focus: "Private equity firm specializing in Aerospace, Defense & Government Services, Space, Power Generation, and Specialty Industrial markets.",
-        investment_stage: "Growth equity, buyouts",
-        geographic_focus: "Primarily North America, but with global reach for portfolio companies",
-        website_url: "https://www.aeroequity.com/focus/"
-      },
-      {
-        category: "Defence & Security VC",
-        name: "True Global Ventures",
-        investment_focus: "Global investment fund across various sectors including deep tech, often with relevance to digital security.",
-        investment_stage: "Varies by specific fund",
-        geographic_focus: "Global",
-        website_url: "https://www.stradley.com/insights/publications/2023/11/true-global-ventures-4-plus-fund"
-      },
-      
-      // 2. Corporate Venture Capital (CVC) & Innovation Arms
-      {
-        category: "Corporate VC & Innovation",
-        name: "Thales Group (Thales Corporate Ventures / Thales Startups)",
-        investment_focus: "Investing in digital and 'deep tech' innovations (Big Data, AI, connectivity, cybersecurity, and quantum technology) that align with their strategic interests. Engages through partnerships, investment, and acquisitions.",
-        investment_stage: "Strategic partnerships, corporate venturing",
-        geographic_focus: "Global",
-        website_url: "https://www.thalesgroup.com/en/thales-startups"
-      },
-      {
-        category: "Corporate VC & Innovation",
-        name: "Rolls-Royce (Innovation & Future Programmes)",
-        investment_focus: "Actively seeks innovation and partners with SMEs in advanced materials, digital, and propulsion systems; often through collaborative R&D and strategic partnerships.",
-        investment_stage: "Collaborative R&D, strategic partnerships, potential for future acquisition",
-        geographic_focus: "Global",
-        website_url: "https://www.rolls-royce.com/innovation.aspx"
-      },
-      
-      // 3. Generalist Deep Tech / Hard Tech VCs
-      {
-        category: "Deep Tech & Dual-Use VC",
-        name: "Octopus Ventures",
-        investment_focus: "Broad deep tech, AI, fintech, health tech, and other sectors; dual-use potential is often a factor.",
-        investment_stage: "Pre-seed, Seed, Series A, and later-stage",
-        geographic_focus: "UK & Europe",
-        website_url: "https://octopusventures.com/"
-      },
-      {
-        category: "Deep Tech & Dual-Use VC",
-        name: "MMC Ventures",
-        investment_focus: "AI and data-driven companies, including enterprise AI, fintech, data-driven health, data infrastructure, and cloud.",
-        investment_stage: "Series A specialist",
-        geographic_focus: "Europe",
-        website_url: "https://mmc.vc/about-us/"
-      },
-      {
-        category: "Deep Tech & Dual-Use VC",
-        name: "Amadeus Capital Partners",
-        investment_focus: "Deep tech across various sectors, including AI, cybersecurity, and space technologies.",
-        investment_stage: "Early Stage EIS Fund and other funds",
-        geographic_focus: "Global",
-        website_url: "https://amadeuscapital.com/our-approach/"
-      },
-      {
-        category: "Deep Tech & Dual-Use VC",
-        name: "Playfair Capital",
-        investment_focus: "Early-stage technology companies across various sectors, including those with dual-use potential.",
-        investment_stage: "Early-stage VC",
-        geographic_focus: "UK & Europe",
-        website_url: "https://playfair.vc/"
-      },
-      {
-        category: "Deep Tech & Dual-Use VC",
-        name: "2048 Ventures",
-        investment_focus: "Vertical AI, Deep Tech Infrastructure, Healthcare, and Biotech; includes next-gen drone operating systems.",
-        investment_stage: "Pre-seed rounds",
-        geographic_focus: "US & Canada",
-        website_url: "https://2048.vc/"
-      },
-      
-      // 4. UK Government-Backed Investment Schemes
-      {
-        category: "Government-Backed Schemes",
-        name: "British Business Bank",
-        investment_focus: "Facilitates access to finance for smaller businesses via partner funds, covering venture capital, debt finance, and regional funds. (This is an enabler, guiding to many other funds used by Defence SMEs).",
-        investment_stage: "Varies by program/partner fund",
-        geographic_focus: "UK",
-        website_url: "https://www.british-business-bank.co.uk/how-we-help/"
-      },
-      {
-        category: "Government-Backed Schemes",
-        name: "Northern Powerhouse Investment Fund (NPIF)",
-        investment_focus: "Addresses market weakness in providing venture debt, debt, and equity finance to SMEs in the North of England. Includes advanced manufacturing, tech, and digital sectors relevant to defence.",
-        investment_stage: "Seed, early-stage, growth debt/equity",
-        geographic_focus: "North of England, UK",
-        website_url: "https://npif.co.uk/"
-      },
-      {
-        category: "Government-Backed Schemes",
-        name: "Midlands Engine Investment Fund (MEIF)",
-        investment_focus: "Provides debt and equity finance to SMEs across the Midlands. Similar sectoral relevance to NPIF.",
-        investment_stage: "Seed, early-stage, growth debt/equity",
-        geographic_focus: "Midlands, UK",
-        website_url: "https://meif.co.uk/"
-      },
-      
-      // 5. University Spin-Out Funds
-      {
-        category: "University Spin-Out Funds",
-        name: "Oxford Science Enterprises (OSE)",
-        investment_focus: "Investing in deep tech and life sciences spin-outs from the University of Oxford, including AI, quantum, and advanced materials.",
-        investment_stage: "Seed to Series A/B",
-        geographic_focus: "Oxford, UK (for source of tech)",
-        website_url: "https://oxfordscienceenterprises.com/"
-      },
-      {
-        category: "University Spin-Out Funds",
-        name: "Cambridge Enterprise (University of Cambridge)",
-        investment_focus: "Commercializing University of Cambridge research through licensing, consultancy, and creating new spin-out companies across various tech sectors.",
-        investment_stage: "Seed funding for spin-outs",
-        geographic_focus: "Cambridge, UK (for source of tech)",
-        website_url: "https://www.enterprise.cam.ac.uk/"
-      },
-      {
-        category: "University Spin-Out Funds",
-        name: "Imperial College Innovations",
-        investment_focus: "Commercializing research from Imperial College London, with strong departments in engineering, AI, and science.",
-        investment_stage: "Spin-out seed funding",
-        geographic_focus: "London, UK (for source of tech)",
-        website_url: "https://www.imperial.ac.uk/enterprise/commercialisation/imperial-innovations/"
-      },
-      
-      // 6. Growth Equity / Debt Providers
-      {
-        category: "Growth Equity & Debt",
-        name: "Gresham House Ventures",
-        investment_focus: "Provides growth capital for innovative UK software and digitally-enabled businesses.",
-        investment_stage: "Growth capital",
-        geographic_focus: "UK",
-        website_url: "https://greshamhouse.com/businesses/private-equity/gresham-house-ventures/"
-      },
-      {
-        category: "Growth Equity & Debt",
-        name: "HSBC Innovation Banking (formerly Silicon Valley Bank UK)",
-        investment_focus: "Provides banking and debt solutions tailored for technology and innovation companies, including venture debt.",
-        investment_stage: "Growth-stage debt, venture debt",
-        geographic_focus: "UK",
-        website_url: "https://www.business.hsbc.uk/en-gb/campaigns/innovation-banking"
-      },
-      
-      // 7. Private Equity Firms
-      {
-        category: "Private Equity",
-        name: "Inflexion",
-        investment_focus: "High-growth, market-leading companies with strong internationalization potential; sectors include technology and business services.",
-        investment_stage: "Mid-market private equity",
-        geographic_focus: "Global (based in UK)",
-        website_url: "https://www.inflexion.com/"
-      },
-      {
-        category: "Private Equity",
-        name: "ECI Partners",
-        investment_focus: "Growth-focused private equity group investing in businesses across services, consumer, and technology/software.",
-        investment_stage: "Growth-focused private equity (£15m-£200m investment)",
-        geographic_focus: "UK & Europe",
-        website_url: "https://www.ecipartners.com/"
-      },
-      {
-        category: "Private Equity",
-        name: "Livingbridge",
-        investment_focus: "Backs management teams to build 'best in class' businesses across various sectors, including technology.",
-        investment_stage: "Mid-market private equity",
-        geographic_focus: "UK",
-        website_url: "https://www.livingbridge.com/"
-      },
-      
-      // 8. Accelerators & Incubators
-      {
-        category: "Accelerators & Incubators",
-        name: "National Security Innovation Network (NSIN) Accelerators",
-        investment_focus: "Provides funding, prototyping, and resources for translating high-potential concepts into minimum viable products for national security.",
-        investment_stage: "Early-stage, accelerator programs",
-        geographic_focus: "Primarily US, but global partnerships",
-        website_url: "https://www.nsin.mil/"
-      },
-      {
-        category: "Accelerators & Incubators",
-        name: "Techstars",
-        investment_focus: "Operates accelerators focusing on commercially viable startups with dual-purpose technologies, including aerospace and defence.",
-        investment_stage: "Early-stage, accelerator programs",
-        geographic_focus: "Global (via various programs)",
-        website_url: "https://www.techstars.com/"
-      },
-      {
-        category: "Accelerators & Incubators",
-        name: "Plug and Play (Aerospace & Defense Innovation)",
-        investment_focus: "Finds and supports aerospace and defence startups through investment and mentorship, focusing on advanced defence technologies, hardware, aeronautics, and advanced air mobility.",
-        investment_stage: "Early-stage, accelerator programs",
-        geographic_focus: "Global (via various programs)",
-        website_url: "https://www.plugandplaytechcenter.com/industries/aerospace"
-      },
-      
-      // 9. Equity Crowdfunding Platforms
-      {
-        category: "Equity Crowdfunding",
-        name: "Seedrs",
-        investment_focus: "Equity crowdfunding platform for businesses to raise capital across various sectors. Defence SMEs may find investors here, but it's less targeted.",
-        investment_stage: "Early-stage to growth",
-        geographic_focus: "UK, Europe",
-        website_url: "https://www.seedrs.com/raise"
-      },
-      {
-        category: "Equity Crowdfunding",
-        name: "Crowdcube",
-        investment_focus: "Equity crowdfunding platform enabling businesses to raise finance from a community of investors. Defence SMEs may find investors here, but it's less targeted.",
-        investment_stage: "Early-stage to growth",
-        geographic_focus: "UK, Europe",
-        website_url: "https://www.crowdcube.com/raise"
-      }
-    ];
-
-    // Load funding opportunities on component mount and when category changes
-    useEffect(() => {
-      fetchFundingOpportunities();
-      fetchFundingStats();
-    }, [selectedCategory]);
-
-    // Auto-refresh every 5 minutes for Pro users
-    useEffect(() => {
-      if (user?.tier !== 'free') {
-        const interval = setInterval(() => {
-          fetchFundingOpportunities();
-          fetchFundingStats();
-        }, 5 * 60 * 1000); // 5 minutes
-
-        return () => clearInterval(interval);
-      }
-    }, [user]);
-
-    const categories = [
-      { value: 'all', label: 'All Categories' },
-      { value: 'Defence & Security VC', label: 'Defence & Security VC' },
-      { value: 'Corporate VC & Innovation', label: 'Corporate VC & Innovation' },
-      { value: 'Deep Tech & Dual-Use VC', label: 'Deep Tech & Dual-Use VC' },
-      { value: 'Government-Backed Schemes', label: 'Government-Backed Schemes' },
-      { value: 'University Spin-Out Funds', label: 'University Spin-Out Funds' },
-      { value: 'Growth Equity & Debt', label: 'Growth Equity & Debt' },
-      { value: 'Private Equity', label: 'Private Equity' },
-      { value: 'Accelerators & Incubators', label: 'Accelerators & Incubators' },
-      { value: 'Equity Crowdfunding', label: 'Equity Crowdfunding' }
-    ];
-
-    const filteredProviders = selectedCategory === 'all' 
-      ? fundingProviders 
-      : fundingProviders.filter(provider => provider.category === selectedCategory);
-
-    const getCategoryIcon = (category) => {
-      switch (category) {
-        case 'Defence & Security VC': return <Target className="w-5 h-5" />;
-        case 'Corporate VC & Innovation': return <Building className="w-5 h-5" />;
-        case 'Deep Tech & Dual-Use VC': return <Zap className="w-5 h-5" />;
-        case 'Government-Backed Schemes': return <Award className="w-5 h-5" />;
-        case 'University Spin-Out Funds': return <Star className="w-5 h-5" />;
-        case 'Growth Equity & Debt': return <TrendingUp className="w-5 h-5" />;
-        case 'Private Equity': return <Briefcase className="w-5 h-5" />;
-        case 'Accelerators & Incubators': return <Globe className="w-5 h-5" />;
-        case 'Equity Crowdfunding': return <Users className="w-5 h-5" />;
-        default: return <DollarSign className="w-5 h-5" />;
-      }
-    };
-
-    const getCategoryColor = (category) => {
-      switch (category) {
-        case 'Defence & Security VC': return 'bg-red-100 text-red-800';
-        case 'Corporate VC & Innovation': return 'bg-blue-100 text-blue-800';
-        case 'Deep Tech & Dual-Use VC': return 'bg-purple-100 text-purple-800';
-        case 'Government-Backed Schemes': return 'bg-green-100 text-green-800';
-        case 'University Spin-Out Funds': return 'bg-yellow-100 text-yellow-800';
-        case 'Growth Equity & Debt': return 'bg-cyan-100 text-cyan-800';
-        case 'Private Equity': return 'bg-gray-100 text-gray-800';
-        case 'Accelerators & Incubators': return 'bg-pink-100 text-pink-800';
-        case 'Equity Crowdfunding': return 'bg-indigo-100 text-indigo-800';
-        default: return 'bg-gray-100 text-gray-800';
-      }
-    };
-
-    return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <BackButton onClick={() => setCurrentView('dashboard')} text="Back to Dashboard" />
-          
-          {/* Header Section */}
-          <div className="bg-gradient-to-r from-green-900 to-blue-900 rounded-xl p-8 mb-8 text-white">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <DollarSign className="w-8 h-8 mr-3" />
-                <h1 className="text-4xl font-bold">Funding Opportunities for Defence SMEs</h1>
-              </div>
-              
-              {/* Live Data Indicator */}
-              <div className="flex items-center space-x-4">
-                {user?.tier !== 'free' && (
-                  <button
-                    onClick={handleRefreshFunding}
-                    disabled={isRefreshingFunding}
-                    className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
-                  >
-                    <Zap className={`w-4 h-4 mr-2 ${isRefreshingFunding ? 'animate-spin' : ''}`} />
-                    {isRefreshingFunding ? 'Refreshing...' : 'Refresh Data'}
-                  </button>
-                )}
-                
-                <div className="text-right">
-                  <div className="flex items-center text-green-200">
-                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
-                    <span className="text-sm font-medium">LIVE DATA</span>
-                  </div>
-                  {lastRefresh && (
-                    <div className="text-xs text-green-100">
-                      Updated: {lastRefresh.toLocaleTimeString()}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            <p className="text-xl text-green-100 mb-4">
-              Comprehensive directory of private investment and funding opportunities - continuously updated in real-time
-            </p>
-            <div className="bg-white bg-opacity-20 rounded-lg p-4">
-              <p className="text-green-100">
-                <strong>🚀 Our USP:</strong> This data is continuously scanned and updated from live sources across the funding ecosystem. 
-                For procurement opportunities, visit our <button 
-                  onClick={() => setCurrentView('opportunities')} 
-                  className="underline hover:text-white transition-colors"
-                >
-                  Opportunities page
-                </button>.
-              </p>
-            </div>
-          </div>
-
-          {/* Filter Section */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Filter by Category
-                </label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                >
-                  {categories.map(cat => (
-                    <option key={cat.value} value={cat.value}>{cat.label}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="flex items-end space-x-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-slate-900">{filteredProviders.length}</div>
-                  <div className="text-sm text-gray-600">Funding Sources</div>
-                </div>
-                
-                {user?.tier === 'free' && (
-                  <button
-                    onClick={() => setShowUpgradeModal(true)}
-                    className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
-                  >
-                    <Crown className="w-4 h-4 mr-2" />
-                    Get Live Updates
-                  </button>
-                )}
-              </div>
-            </div>
-            
-            {user?.tier === 'free' && (
-              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  <strong>📊 Limited Access:</strong> Free users see our curated database. 
-                  <button onClick={() => setShowUpgradeModal(true)} className="underline hover:text-yellow-900 ml-1">
-                    Upgrade to Pro
-                  </button> for real-time updates, new funding alerts, and expanded coverage.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Stats Overview */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-lg p-4 text-center border border-gray-200">
-              <div className="text-2xl font-bold text-red-600">
-                {fundingStats.category_breakdown?.filter(cat => cat._id === 'Defence & Security VC')[0]?.count || 6}
-              </div>
-              <div className="text-sm text-gray-600">Defence-Focused VCs</div>
-            </div>
-            <div className="bg-white rounded-lg p-4 text-center border border-gray-200">
-              <div className="text-2xl font-bold text-blue-600">
-                {fundingStats.category_breakdown?.filter(cat => cat._id === 'Deep Tech & Dual-Use VC')[0]?.count || 5}
-              </div>
-              <div className="text-sm text-gray-600">Deep Tech VCs</div>
-            </div>
-            <div className="bg-white rounded-lg p-4 text-center border border-gray-200">
-              <div className="text-2xl font-bold text-green-600">
-                {fundingStats.category_breakdown?.filter(cat => cat._id === 'Government-Backed Schemes')[0]?.count || 3}
-              </div>
-              <div className="text-sm text-gray-600">Government Schemes</div>
-            </div>
-            <div className="bg-white rounded-lg p-4 text-center border border-gray-200">
-              <div className="text-2xl font-bold text-purple-600">
-                {fundingStats.recently_updated || 0}
-              </div>
-              <div className="text-sm text-gray-600">Updated This Week</div>
-            </div>
-          </div>
-
-          {/* Loading State */}
-          {isLoadingFunding ? (
-            <div className="text-center py-20">
-              <div className="w-8 h-8 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading live funding opportunities...</p>
-            </div>
-          ) : (
-            <>
-              {/* Funding Providers Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                {filteredProviders.map((provider, index) => (
-                  <div 
-                    key={provider.id || index}
-                    className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-cyan-300 hover:shadow-md transition-all duration-200"
-                  >
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center mb-2">
-                          <div className={`p-2 rounded-lg mr-3 ${getCategoryColor(provider.category)}`}>
-                            {getCategoryIcon(provider.category)}
-                          </div>
-                          <h3 className="text-lg font-bold text-slate-900 leading-tight">
-                            {provider.name}
-                          </h3>
-                        </div>
-                        <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(provider.category)}`}>
-                          {provider.category}
-                        </div>
-                      </div>
-                      
-                      {/* Live indicator for recently updated */}
-                      {provider.updated_at && new Date(provider.updated_at) > new Date(Date.now() - 7*24*60*60*1000) && (
-                        <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center">
-                          <div className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></div>
-                          UPDATED
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Main Investment Focus */}
-                    <div className="mb-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                        <Target className="w-4 h-4 mr-2 text-gray-500" />
-                        Defence Investment Focus
-                      </h4>
-                      <p className="text-gray-700 text-sm leading-relaxed">
-                        {provider.investment_focus}
-                      </p>
-                    </div>
-
-                    {/* Key Details */}
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-start">
-                        <TrendingUp className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <div className="text-xs font-medium text-gray-500">Investment Stage</div>
-                          <div className="text-sm text-gray-900">{provider.investment_stage}</div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start">
-                        <MapPin className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <div className="text-xs font-medium text-gray-500">Geographic Focus</div>
-                          <div className="text-sm text-gray-900">{provider.geographic_focus}</div>
-                        </div>
-                      </div>
-
-                      {provider.last_verified && (
-                        <div className="flex items-start">
-                          <Clock className="w-4 h-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <div className="text-xs font-medium text-gray-500">Last Verified</div>
-                            <div className="text-sm text-gray-900">
-                              {new Date(provider.last_verified).toLocaleDateString()}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Action Button */}
-                    <button
-                      onClick={() => window.open(provider.website_url, '_blank', 'noopener,noreferrer')}
-                      className="w-full flex items-center justify-center px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold transition-colors"
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Visit {provider.name}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* Real-Time Data Banner */}
-          <div className="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-xl p-6 mb-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-cyan-500 rounded-full mr-3 animate-pulse"></div>
-                <div>
-                  <h3 className="text-lg font-bold text-cyan-900">Continuous Data Updates</h3>
-                  <p className="text-cyan-700">
-                    Our system scans funding sources every hour to bring you the latest opportunities.
-                    {user?.tier !== 'free' ? (
-                      <span className="font-semibold"> Real-time updates active.</span>
-                    ) : (
-                      <span> Upgrade for real-time alerts.</span>
-                    )}
-                  </p>
-                </div>
-              </div>
-              
-              {user?.tier !== 'free' && lastRefresh && (
-                <div className="text-right text-cyan-700">
-                  <div className="text-sm font-medium">Last Scan</div>
-                  <div className="text-xs">{lastRefresh.toLocaleString()}</div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Bottom CTA Section */}
-          <div className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl p-8 text-white text-center">
-            <h3 className="text-2xl font-bold mb-4">Ready to Secure Funding for Your Defence SME?</h3>
-            <p className="text-xl text-cyan-100 mb-6">
-              These funding sources are actively investing in defence and dual-use technologies. Research each one that matches your stage and focus area.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-              <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                <h4 className="font-semibold mb-2">Early Stage (Pre-Seed/Seed)</h4>
-                <p className="text-sm text-cyan-100">Focus on Shield Capital, university funds, and accelerators</p>
-              </div>
-              <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                <h4 className="font-semibold mb-2">Growth Stage (Series A+)</h4>
-                <p className="text-sm text-cyan-100">Consider Paladin Capital, Octopus Ventures, and growth equity firms</p>
-              </div>
-              <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                <h4 className="font-semibold mb-2">Mature Companies</h4>
-                <p className="text-sm text-cyan-100">Explore private equity firms and corporate venture arms</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // UK Defence Procurement Guide Component
   const ProcurementActHub = () => {
     const [openAccordions, setOpenAccordions] = useState({});
     
