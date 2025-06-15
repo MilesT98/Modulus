@@ -2482,6 +2482,48 @@ Opportunities have been refreshed with enhanced metadata including SME scores, t
     const [sortBy, setSortBy] = useState('deadline_asc');
     const [showFilters, setShowFilters] = useState(false);
 
+    // Phase 2: Save Searches & Export
+    const [savedSearches, setSavedSearches] = useState([]);
+    const [showSaveSearch, setShowSaveSearch] = useState(false);
+    const [searchName, setSearchName] = useState('');
+    const [showSavedSearches, setShowSavedSearches] = useState(false);
+    const [bookmarkedOpportunities, setBookmarkedOpportunities] = useState([]);
+    const [opportunityNotes, setOpportunityNotes] = useState({});
+    const [showNotesModal, setShowNotesModal] = useState(false);
+    const [currentNoteOpportunity, setCurrentNoteOpportunity] = useState(null);
+    const [noteText, setNoteText] = useState('');
+
+    // Load saved searches from localStorage on component mount
+    useEffect(() => {
+      const saved = localStorage.getItem('modulus_saved_searches');
+      if (saved) {
+        setSavedSearches(JSON.parse(saved));
+      }
+      
+      const bookmarks = localStorage.getItem('modulus_bookmarked_opportunities');
+      if (bookmarks) {
+        setBookmarkedOpportunities(JSON.parse(bookmarks));
+      }
+      
+      const notes = localStorage.getItem('modulus_opportunity_notes');
+      if (notes) {
+        setOpportunityNotes(JSON.parse(notes));
+      }
+    }, []);
+
+    // Save to localStorage whenever savedSearches changes
+    useEffect(() => {
+      localStorage.setItem('modulus_saved_searches', JSON.stringify(savedSearches));
+    }, [savedSearches]);
+
+    useEffect(() => {
+      localStorage.setItem('modulus_bookmarked_opportunities', JSON.stringify(bookmarkedOpportunities));
+    }, [bookmarkedOpportunities]);
+
+    useEffect(() => {
+      localStorage.setItem('modulus_opportunity_notes', JSON.stringify(opportunityNotes));
+    }, [opportunityNotes]);
+
     // Get unique funding bodies for filter dropdown
     const fundingBodies = [...new Set(opportunities.map(opp => opp.funding_body))].sort();
     
