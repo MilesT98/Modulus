@@ -209,23 +209,56 @@ function App() {
     const providerName = context.replace('funding-', '').replace('opportunity-', '');
     const fallbackUrls = getFallbackUrls(providerName, originalUrl);
     
-    let message = `Having trouble accessing the link?\n\n`;
-    message += `Original URL: ${originalUrl}\n\n`;
-    message += `Try these alternatives:\n`;
+    // Create a more user-friendly modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+      <div class="bg-white rounded-xl max-w-md w-full p-6 relative">
+        <button onclick="this.parentElement.parentElement.remove()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+        
+        <div class="text-center">
+          <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L5.036 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+          </div>
+          
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Link Access Issue</h3>
+          <p class="text-gray-600 mb-4">
+            The main website for <strong>${providerName}</strong> may be blocking direct access. 
+            Try these alternatives:
+          </p>
+          
+          <div class="space-y-2 mb-6">
+            ${fallbackUrls.slice(0, 3).map((url, index) => `
+              <button onclick="window.open('${url}', '_blank', 'noopener,noreferrer')" 
+                      class="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                <div class="font-medium text-sm">${index === 0 ? 'Try Main Website' : index === 1 ? 'View Company Profile' : 'Alternative Link'}</div>
+                <div class="text-xs text-gray-600 truncate">${url}</div>
+              </button>
+            `).join('')}
+          </div>
+          
+          <button onclick="this.parentElement.parentElement.remove()" 
+                  class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-medium transition-colors">
+            Close
+          </button>
+        </div>
+      </div>
+    `;
     
-    if (fallbackUrls.length > 0) {
-      fallbackUrls.forEach((url, index) => {
-        message += `${index + 1}. ${url}\n`;
-      });
-      message += `\nWould you like to try the main website?`;
-      
-      if (window.confirm(message)) {
-        window.open(fallbackUrls[0], '_blank', 'noopener,noreferrer');
+    document.body.appendChild(modal);
+    
+    // Auto-remove after 30 seconds
+    setTimeout(() => {
+      if (modal.parentNode) {
+        modal.remove();
       }
-    } else {
-      message += `No alternatives available. You can copy and paste the URL directly into your browser.`;
-      alert(message);
-    }
+    }, 30000);
   };
 
   useEffect(() => {
